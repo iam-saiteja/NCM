@@ -20,3 +20,6 @@ Thumbs.db
 
 # Temporary benchmark files
 results/bench_*.ncm
+
+
+venv/

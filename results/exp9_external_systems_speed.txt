@@ -1,0 +1,23 @@
+EXP9: External Systems Speed Comparison
+======================================
+Dataset: 1200 memories, 1000 queries
+
+Ranking by avg latency (lower is better)
+1. recency_only: avg=0.0258ms, p95=0.0341ms, p99=0.0418ms, qps=38811.89, setup=0.00ms
+2. dense_sbert_cosine: avg=0.2538ms, p95=0.3059ms, p99=0.3448ms, qps=3940.81, setup=1236.55ms
+3. rag_semantic_only: avg=0.3044ms, p95=0.3500ms, p99=0.4048ms, qps=3285.04, setup=0.00ms
+4. rag_semantic_recency: avg=0.3442ms, p95=0.3951ms, p99=0.4122ms, qps=2904.87, setup=0.00ms
+5. tfidf_cosine: avg=0.5977ms, p95=0.8489ms, p99=0.9449ms, qps=1673.06, setup=23.23ms
+6. ncm_cached_full: avg=0.6011ms, p95=0.7522ms, p99=0.7891ms, qps=1663.63, setup=0.01ms
+7. bm25_text: avg=1.1128ms, p95=1.7902ms, p99=1.9837ms, qps=898.61, setup=5.32ms
+8. ncm_full: avg=2.4630ms, p95=3.3103ms, p99=3.7365ms, qps=406.01, setup=0.00ms
+
+Ranking by throughput (higher is better)
+1. recency_only: qps=38811.89, avg=0.0258ms, setup=0.00ms
+2. dense_sbert_cosine: qps=3940.81, avg=0.2538ms, setup=1236.55ms
+3. rag_semantic_only: qps=3285.04, avg=0.3044ms, setup=0.00ms
+4. rag_semantic_recency: qps=2904.87, avg=0.3442ms, setup=0.00ms
+5. tfidf_cosine: qps=1673.06, avg=0.5977ms, setup=23.23ms
+6. ncm_cached_full: qps=1663.63, avg=0.6011ms, setup=0.01ms
+7. bm25_text: qps=898.61, avg=1.1128ms, setup=5.32ms
+8. ncm_full: qps=406.01, avg=2.4630ms, setup=0.00ms

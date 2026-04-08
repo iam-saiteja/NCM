@@ -1,10 +1,20 @@
 # NCM — Native Cognitive Memory
 
-> **v1.0** · Tensor-based episodic memory with state-conditioned retrieval for AI systems
-
 NCM is a memory storage and retrieval architecture where memories are encoded as multi-field geometric objects in a composite retrieval space. The system retrieves not just what is textually similar, but what is **cognitively resonant** — matching meaning, emotional context, internal state at encoding time, and recency simultaneously.
 
 **The core novel contribution**: `s_snapshot` — storing a copy of the system's internal state vector at memory encoding time and using it as an independent retrieval dimension. This enables state-conditioned episodic retrieval, where the same query produces different results depending on the system's current internal state. No existing RAG, DNC, or attention-based memory system implements this.
+
+---
+
+## Features
+
+- Tensor-based episodic memory representation
+- Multi-field encoding (`e_semantic`, `e_emotional`, `s_snapshot`, time, strength)
+- State-conditioned retrieval behavior
+- Vectorized top-k retrieval with cached and uncached paths
+- Adaptive softmax retrieval probabilities
+- Reinforcement strength dynamics with bounded growth
+- Binary persistence via `.ncm` serialization
 
 ---
 
@@ -77,7 +87,7 @@ Both vectors are L2-normalized at encoding time, so `A · B` computes cosine sim
 - **Emotional**: For L2-normalized vectors, max `||a - b||` = 2.0 (when `cos(θ) = -1`), from `||a-b||² = 2 - 2·cos(θ)`. Divide by 2.0.
 - **State**: For L2-normalized vectors in the positive orthant (all components ≥ 0), `cos(θ) ≥ 0` always, so max `||a - b||` = √2. Divide by √2.
 
-**Critical fix in v1**: Emotional distance compares **projected-to-projected** vectors (both through W_emo), not projected vs. raw state. Both the memory's `e_emotional` and the query's emotional vector are computed via `W_emo · s`.
+**Critical fix**: Emotional distance compares **projected-to-projected** vectors (both through W_emo), not projected vs. raw state. Both the memory's `e_emotional` and the query's emotional vector are computed via `W_emo · s`.
 
 ### 3. Orthonormal Emotional Projection
 
@@ -129,7 +139,7 @@ L_balance = Σ(w_i - 0.25)²
 P(m_i | q) = exp(-d_i / T) / Σ_j exp(-d_j / T)
 ```
 
-**New in v1**: Adaptive temperature that responds to novelty:
+Adaptive temperature that responds to novelty:
 ```
 T(t) = T_base · (1 + η · novelty)
 novelty = min(distances)  # how far is the closest memory
@@ -213,6 +223,95 @@ Same semantic query presented in two different internal states. Jaccard distance
 - **Storage efficiency**: 560 bytes/memory (compressed .ncm binary format)
 - **Cached retrieval at 50k**: 11.3 ms/query (real-time viable)
 
+### Experiment 5: Memory Systems Comparison
+
+From [results/exp5_memory_systems_comparison.txt](results/exp5_memory_systems_comparison.txt):
+
+- `ncm_cached_full`: state_avg=0.7350, category_avg=0.9973, latency_ms=0.4873
+- `ncm_full`: state_avg=0.7350, category_avg=0.9973, latency_ms=2.1402
+- `semantic_only`: state_avg=0.1239, category_avg=1.0000, latency_ms=0.8542
+
+### Experiment 6: Current Memory Systems vs NCM
+
+From [results/exp6_current_memory_systems_vs_ncm.txt](results/exp6_current_memory_systems_vs_ncm.txt):
+
+- `semantic_emotional`: state_avg=0.7672, category_avg=0.8764, latency_ms=1.9810
+- `ncm_cached_full`: state_avg=0.5835, category_avg=0.6050, latency_ms=0.6482
+- `rag_semantic_only`: state_avg=0.1200, category_avg=0.9847, latency_ms=0.3129
+
+### Experiment 7: Standardized Ranking and Visualization
+
+From [results/exp7_standard_ranking.txt](results/exp7_standard_ranking.txt):
+
+- Composite ranking used NDCG@10, Recall@10, MRR@10, MAP@10, state precision@10, latency, throughput, and memory footprint.
+- Top systems in this run:
+  1. `semantic_emotional`
+  2. `ncm_cached_full`
+  3. `ncm_full`
+
+### Experiment 8: External Systems vs NCM
+
+From [results/exp8_external_systems_vs_ncm.txt](results/exp8_external_systems_vs_ncm.txt):
+
+- Baselines: `bm25_text`, `tfidf_cosine`, `dense_sbert_cosine`, `rag_semantic_only`, `rag_semantic_recency`, `recency_only`
+- Top systems in this run:
+  1. `ncm_cached_full`
+  2. `ncm_full`
+  3. `rag_semantic_only`
+
+### Experiment 9: External Systems Speed Comparison
+
+From [results/exp9_external_systems_speed.txt](results/exp9_external_systems_speed.txt):
+
+- `recency_only`: avg=0.0258ms
+- `dense_sbert_cosine`: avg=0.2538ms
+- `ncm_cached_full`: avg=0.6011ms
+- `ncm_full`: avg=2.4630ms
+
+Interpretation: quality/state-aware retrieval and pure speed optimize for different targets. Cached NCM provides a practical latency-quality tradeoff.
+
+---
+
+## Image Guide (what each image shows and where it is)
+
+All generated images are placed in the [results](results) folder.
+
+- [results/exp1_precision_bars.png](results/exp1_precision_bars.png): Combined precision bars for Experiment 1.
+- [results/exp1_category_precision.png](results/exp1_category_precision.png): Category precision comparison for semantic vs manifold retrieval.
+- [results/exp1_state_precision.png](results/exp1_state_precision.png): State precision comparison, highlighting state-conditioned retrieval behavior.
+- [results/exp2_novelty_scale.png](results/exp2_novelty_scale.png): Novelty trend as memory size scales.
+- [results/exp3_state_conditioned.png](results/exp3_state_conditioned.png): Retrieval-set divergence under different states (Jaccard view).
+- [results/exp4_speed.png](results/exp4_speed.png): Speed scaling across memory sizes.
+- [results/exp7_quality_metrics.png](results/exp7_quality_metrics.png): Quality metrics (NDCG/Recall/State precision) for standardized ranking.
+- [results/exp7_efficiency_metrics.png](results/exp7_efficiency_metrics.png): Efficiency comparison (latency/throughput/memory indicators).
+- [results/exp7_overall_ranking.png](results/exp7_overall_ranking.png): Overall composite ranking for the standardized benchmark.
+- [results/exp8_external_quality.png](results/exp8_external_quality.png): Quality comparison for external baselines vs NCM.
+- [results/exp8_external_ranking.png](results/exp8_external_ranking.png): Composite ranking for external baselines vs NCM.
+- [results/exp9_external_systems_speed_latency.png](results/exp9_external_systems_speed_latency.png): Avg and p95 latency comparison for speed benchmark.
+- [results/exp9_external_systems_speed_qps.png](results/exp9_external_systems_speed_qps.png): Throughput (QPS) comparison for speed benchmark.
+- [results/ncm_dashboard.png](results/ncm_dashboard.png): Consolidated dashboard chart of key benchmark outputs.
+
+---
+
+## Experimentation and Hardware
+
+### Experimentation setup
+
+- Synthetic benchmark dataset with ~1,200 memories spanning multiple semantic categories and internal state archetypes.
+- Query sets include direct and paraphrase-style prompts.
+- Evaluation includes retrieval quality metrics (Precision@k, Hit@k, MRR@k, Recall@k, MAP@k, NDCG@k), state precision, and speed metrics.
+
+### Computer hardware used
+
+All tests were run locally on your laptop:
+
+- Device: **ideapad gaming 3**
+- Processor (CPU): **AMD Ryzen 7 6800H**
+- Graphics (GPU): **NVIDIA GeForce RTX 3050 (4GB VRAM)**
+- RAM: **16GB**
+- Storage: **512GB SSD**
+- OS: **Windows**
+
 ---
 
 ## Project Structure
@@ -229,25 +328,27 @@ NCM/
 │   └── exceptions.py             # Custom exception hierarchy
 ├── experiments/
 │   ├── exp1_redesigned.py        # Precision@k evaluation
+│   ├── exp5_memory_systems_comparison.py
+│   ├── exp6_current_memory_systems_vs_ncm.py
+│   ├── exp7_standard_ranking_and_viz.py
+│   ├── exp8_external_systems_vs_ncm.py
+│   ├── exp9_external_systems_speed.py
 │   ├── run_fast.py               # Novelty, state-conditioned, speed experiments
+│   ├── run_all_experiments.py
 │   ├── generate_plots.py         # Plot generation
 │   └── fix_dashboard.py          # Dashboard chart
-├── results/                      # Experiment outputs (JSON + PNG)
-│   ├── exp1_redesigned.json
-│   ├── exp1_precision_bars.png
-│   ├── exp1_state_precision.png
-│   ├── exp1_category_precision.png
-│   ├── exp2_novelty.json
-│   ├── exp2_novelty_scale.png
-│   ├── exp3_state.json
-│   ├── exp3_state_conditioned.png
-│   ├── exp4_speed.json
-│   ├── exp4_speed.png
-│   ├── ncm_dashboard.png
-│   └── math_verification.json
-└── docs/
-    ├── NCM_Math_Explained.pdf    # Full math derivations
-    └── NCM_Native_Cognitive_Memory.pdf  # Architecture spec
+├── results/                      # Experiment outputs (JSON + TXT + PNG)
+│   ├── exp1_*
+│   ├── exp2_*
+│   ├── exp3_*
+│   ├── exp4_*
+│   ├── exp5_*
+│   ├── exp6_*
+│   ├── exp7_*
+│   ├── exp8_*
+│   ├── exp9_*
+│   └── ncm_dashboard.png
+└── README.md
 ```
 
 ---
@@ -294,6 +395,8 @@ for distance, probability, mem in results:
 - numpy
 - sentence-transformers (for semantic encoding)
 - matplotlib (for experiments only)
+- rank-bm25 (for external lexical baseline experiments)
+- scikit-learn (for TF-IDF baseline experiments)
 
 ---
 
@@ -301,9 +404,40 @@ for distance, probability, mem in results:
 
 This is **Invention 1 of 3** in the TES project stack. NCM is architecturally independent and constitutes a standalone research contribution. Three claims are independently testable:
 
-1. **State-conditioned retrieval** produces measurably different behavioral trajectories than semantic-only retrieval ✅ (Experiment 3: Jaccard = 0.718)
+1. **State-conditioned retrieval** produces measurably different behavioral trajectories than semantic-only retrieval ✅ (Experiment 3: **Jaccard = 0.718**)
 2. **Four-dimensional retrieval** maintains competitive category precision while enabling state-conditioned retrieval ✅ (Experiment 1)
-3. **Full manifold novelty detection** maintains sensitivity at scale where semantic-only degrades ✅ (Experiment 2: 33× advantage at 50k)
+3. **Full manifold novelty detection** maintains sensitivity at scale where semantic-only degrades ✅ (Experiment 2: **33× advantage at 50k**)
+
+---
+
+## Where NCM Outperforms
+
+- Strong **state-conditioned recall behavior** (retrieval set shifts with internal state).
+- Better **state precision** than semantic-only retrieval systems.
+- Strong performance in external ranking runs where state-aware quality is weighted (Experiment 8).
+- Practical latency with caching (`ncm_cached_full`) while preserving state-aware behavior.
+
+## Where NCM Is Not Performing Best
+
+- **Raw speed**: `ncm_full` is slower than lightweight baselines in pure latency benchmarks (Experiment 9).
+- In some mixed objective setups, **`semantic_emotional`** can rank above NCM on composite quality score (Experiment 7).
+- **Category-only retrieval** tasks can favor semantic-only systems when state sensitivity is not required.
+
+## How NCM Helps in Real Systems
+
+- Improves memory retrieval in agents where **contextual internal state** should affect recall.
+- Supports more human-like episodic behavior by combining semantic, emotional, temporal, and state dimensions.
+- Offers deployment flexibility through **cached retrieval** for better latency-quality tradeoff.
+- Enables debugging/interpretability via structured memory fields and experiment traces.
+
+## Future Features
+
+- Learnable/auto-tuned retrieval weights per user or domain.
+- ANN indexing (e.g., FAISS/HNSW) for faster large-scale manifold retrieval.
+- Better calibration of strength dynamics (decay/reinforcement scheduling).
+- Hybrid routing: fast semantic pre-filter + state-aware manifold rerank.
+- Online adaptation from feedback signals (implicit relevance and correction loops).
+- Expanded benchmark suite with larger real-world corpora and multilingual memory tests.
 
 ---
 

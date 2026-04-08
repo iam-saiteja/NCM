@@ -1,0 +1,16 @@
+EXP6: Current Memory Systems vs NCM
+====================================
+Dataset: 1200 memories, 144 paraphrase queries
+
+Standings
+1. semantic_emotional: state_avg=0.7672, category_avg=0.8764, latency_ms=1.9810
+2. ncm_cached_full: state_avg=0.5835, category_avg=0.6050, latency_ms=0.6482
+3. ncm_full: state_avg=0.5835, category_avg=0.6050, latency_ms=3.1341
+4. rag_semantic_only: state_avg=0.1200, category_avg=0.9847, latency_ms=0.3129
+5. rag_semantic_recency: state_avg=0.0782, category_avg=0.6111, latency_ms=0.3766
+6. recency_only: state_avg=0.0208, category_avg=0.1667, latency_ms=0.0519
+
+State-conditioning Jaccard (same semantic query, different states)
+- calm_happy_vs_stressed_angry: {'rag_semantic_only_jaccard': 0.0, 'rag_semantic_recency_jaccard': 0.0, 'semantic_emotional_jaccard': 1.0, 'ncm_full_jaccard': 1.0}
+- confident_vs_fearful: {'rag_semantic_only_jaccard': 0.0, 'rag_semantic_recency_jaccard': 0.0, 'semantic_emotional_jaccard': 1.0, 'ncm_full_jaccard': 1.0}
+- neutral_vs_exhausted: {'rag_semantic_only_jaccard': 0.0, 'rag_semantic_recency_jaccard': 0.0, 'semantic_emotional_jaccard': 0.9474, 'ncm_full_jaccard': 1.0}
