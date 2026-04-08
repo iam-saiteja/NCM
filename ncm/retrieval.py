@@ -55,6 +55,8 @@ def vectorized_manifold_distance(
     current_step: int,
     weights: RetrievalWeights,
     decay_rate: float = 0.001,
+    strength_array: np.ndarray = None,  # (N,) memory strengths for strength-weighted retrieval
+    strength_boost: float = 0.1,        # how much strength reduces distance
 ) -> np.ndarray:
     """
     Compute manifold distance for ALL memories at once via vectorized numpy.
@@ -62,11 +64,20 @@ def vectorized_manifold_distance(
     Returns (N,) array of distances in [0, 1].
     
     Math:
-      d(m, q) = α·d_sem + β·d_emo + γ·d_state + δ·d_time
+      d_raw(m, q) = α·d_sem + β·d_emo + γ·d_state + δ·d_time
+      d(m, q)     = d_raw · (1 - strength_boost · (strength - 1))
       
-      d_sem   = 1 - cos(e_sem_m, e_sem_q)           ∈ [0, 2] → clip [0, 1]
-      d_emo   = ||e_emo_m - e_emo_q|| / 2.0          ∈ [0, 1]  (FIXED: projected vs projected)
-      d_state = ||s_snap_m - s_current|| / sqrt(2)    ∈ [0, 1]  (DERIVED from positive orthant)
+      Strength modulation:
+        strength=1.0 (default) -> no change
+        strength=2.0 (max, heavily reinforced) -> distance reduced by strength_boost
+        strength=0.5 (decayed) -> distance increased by 0.5·strength_boost
+        
+        This implements the spacing effect: frequently retrieved memories
+        are easier to recall (Ebbinghaus, 1885; Cepeda et al., 2006).
+      
+      d_sem   = 1 - cos(e_sem_m, e_sem_q)           ∈ [0, 1]
+      d_emo   = ||e_emo_m - e_emo_q|| / 2.0          ∈ [0, 1]  (projected vs projected)
+      d_state = ||s_snap_m - s_current|| / sqrt(2)    ∈ [0, 1]  (positive orthant bound)
       d_time  = 1 - exp(-λ · Δt)                      ∈ [0, 1]
     """
     N = sem_matrix.shape[0]
@@ -79,11 +90,11 @@ def vectorized_manifold_distance(
     sem_sims = sem_matrix @ query_semantic  # (N,)
     d_sem = np.clip(1.0 - sem_sims, 0.0, 1.0)
 
-    # Emotional: Euclidean between PROJECTED vectors (FIXED)
+    # Emotional: Euclidean between PROJECTED vectors
     emo_diff = emo_matrix - query_emotional[np.newaxis, :]  # (N, k)
     d_emo = np.clip(np.linalg.norm(emo_diff, axis=1) / EMO_NORM, 0.0, 1.0)
 
-    # State: Euclidean between L2-normalized state vectors (DERIVED normalization)
+    # State: Euclidean between L2-normalized state vectors
     state_diff = state_matrix - s_current[np.newaxis, :]  # (N, n)
     d_state = np.clip(np.linalg.norm(state_diff, axis=1) / STATE_NORM, 0.0, 1.0)
 
@@ -93,6 +104,15 @@ def vectorized_manifold_distance(
 
     # Weighted sum
     total = alpha * d_sem + beta * d_emo + gamma * d_state + delta * d_time
+
+    # Strength modulation: reinforced memories are easier to recall
+    if strength_array is not None and strength_boost > 0:
+        # strength ranges [0, 2], centered at 1.0
+        # modulator = 1 - boost * (strength - 1) -> range [1+boost, 1-boost]
+        modulator = 1.0 - strength_boost * (strength_array - 1.0)
+        modulator = np.clip(modulator, 0.5, 1.5)  # safety clamp
+        total = total * modulator
+
     return np.clip(total, 0.0, 1.0).astype(np.float32)
 
 
@@ -147,22 +167,20 @@ def adaptive_temperature(
 
 def retrieve_top_k(
     query_semantic: np.ndarray,
-    query_emotional: np.ndarray,  # NEW: must be pre-projected via encode_emotional
+    query_emotional: np.ndarray,  # must be pre-projected via encode_emotional
     store: MemoryStore,
-    s_current_normalized: np.ndarray,  # NEW: must be pre-normalized via encode_state
+    s_current_normalized: np.ndarray,  # must be pre-normalized via encode_state
     current_step: int,
     k: int = 3,
     tag_filter: str = None,
     use_adaptive_temp: bool = True,
+    use_strength: bool = True,
 ) -> list:
     """
     Retrieve k most relevant memories using vectorized manifold distance.
     
-    CHANGES from v1:
-      - query_emotional must be pre-projected (not raw state)
-      - s_current must be pre-normalized
-      - Uses vectorized computation, not Python loop
-      - Supports adaptive temperature
+    Uses strength-weighted retrieval by default: reinforced memories are
+    easier to recall, decayed memories are harder (spacing effect).
     
     Returns list of (distance, probability, MemoryEntry) tuples.
     """
@@ -180,6 +198,7 @@ def retrieve_top_k(
     emo_matrix = np.array([m.e_emotional for m in candidates], dtype=np.float32)
     state_matrix = np.array([m.s_snapshot for m in candidates], dtype=np.float32)
     ts_array = np.array([m.timestamp for m in candidates], dtype=np.int64)
+    str_array = np.array([m.strength for m in candidates], dtype=np.float32) if use_strength else None
 
     weights = store.profile.retrieval_weights
     decay_rate = store.profile.decay_rate
@@ -188,6 +207,7 @@ def retrieve_top_k(
         sem_matrix, emo_matrix, state_matrix, ts_array,
         query_semantic, query_emotional, s_current_normalized,
         current_step, weights, decay_rate,
+        strength_array=str_array,
     )
 
     # Adaptive temperature
@@ -219,10 +239,13 @@ def retrieve_top_k_fast(
     s_current_normalized: np.ndarray,
     current_step: int,
     k: int = 3,
+    use_strength: bool = True,
 ) -> list:
     """
     Ultra-fast retrieval using pre-cached matrices from MemoryStore.
     Avoids rebuilding numpy arrays on every call.
+    
+    Includes strength-weighted retrieval by default.
     """
     store._rebuild_cache()
     
@@ -231,11 +254,13 @@ def retrieve_top_k_fast(
 
     weights = store.profile.retrieval_weights
     decay_rate = store.profile.decay_rate
+    str_array = store._str_cache if use_strength else None
 
     distances = vectorized_manifold_distance(
         store._sem_cache, store._emo_cache, store._state_cache, store._ts_cache,
         query_semantic, query_emotional, s_current_normalized,
         current_step, weights, decay_rate,
+        strength_array=str_array,
     )
 
     temp = adaptive_temperature(distances, store.profile.temperature)
