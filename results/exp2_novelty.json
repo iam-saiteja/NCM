@@ -1,0 +1,51 @@
+{
+  "100": {
+    "semantic_novelty_mean": 0.006035,
+    "semantic_novelty_std": 0.000424,
+    "full_novelty_mean": 0.127016,
+    "full_novelty_std": 0.023806,
+    "ratio": 21.046
+  },
+  "500": {
+    "semantic_novelty_mean": 0.005115,
+    "semantic_novelty_std": 0.000248,
+    "full_novelty_mean": 0.124869,
+    "full_novelty_std": 0.027694,
+    "ratio": 24.411
+  },
+  "1000": {
+    "semantic_novelty_mean": 0.004988,
+    "semantic_novelty_std": 0.000291,
+    "full_novelty_mean": 0.129691,
+    "full_novelty_std": 0.037015,
+    "ratio": 25.998
+  },
+  "5000": {
+    "semantic_novelty_mean": 0.004293,
+    "semantic_novelty_std": 0.000274,
+    "full_novelty_mean": 0.124381,
+    "full_novelty_std": 0.025753,
+    "ratio": 28.975
+  },
+  "10000": {
+    "semantic_novelty_mean": 0.004264,
+    "semantic_novelty_std": 0.000237,
+    "full_novelty_mean": 0.123369,
+    "full_novelty_std": 0.026787,
+    "ratio": 28.934
+  },
+  "25000": {
+    "semantic_novelty_mean": 0.004077,
+    "semantic_novelty_std": 0.000171,
+    "full_novelty_mean": 0.13223,
+    "full_novelty_std": 0.032474,
+    "ratio": 32.434
+  },
+  "50000": {
+    "semantic_novelty_mean": 0.004006,
+    "semantic_novelty_std": 0.000155,
+    "full_novelty_mean": 0.130489,
+    "full_novelty_std": 0.023538,
+    "ratio": 32.571
+  }
+}

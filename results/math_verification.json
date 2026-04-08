@@ -1,0 +1,11 @@
+{
+  "w_emo_ortho_err": 2.1026952315993608e-07,
+  "sem_norm": 0.9999999403953552,
+  "emo_norm": 0.9999999403953552,
+  "state_norm": 1.0,
+  "emo_max": 0.7742093801498413,
+  "state_max": 0.843120140421509,
+  "jl_min_dim": 9868.221827117337,
+  "dirichlet_balanced": 0.0,
+  "dirichlet_skewed": 0.26999999999999996
+}
