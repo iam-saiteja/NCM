@@ -118,12 +118,30 @@ class MemoryStore:
         self._str_cache = np.array([m.strength for m in mems], dtype=np.float32)
         self._cache_dirty = False
 
-    def add(self, memory: MemoryEntry) -> MemoryEntry:
+    def add(self, memory: MemoryEntry, gate_check: bool = False) -> MemoryEntry:
+        """
+        Add a memory to the store.
+        
+        Args:
+            memory: MemoryEntry to add
+            gate_check: If True, only add if the memory is novel enough
+                        (encoding gate > write_threshold from profile).
+                        Implements selective encoding: not everything is
+                        worth remembering (Dubrow & Davachi, 2016).
+        """
         expected_sem = self.profile.semantic_dim
         if memory.e_semantic.shape != (expected_sem,):
             raise DimensionMismatchError(
                 expected=(expected_sem,), got=memory.e_semantic.shape, context="e_semantic"
             )
+
+        # Selective encoding gate
+        if gate_check and self._memories:
+            self._rebuild_cache()
+            sims = self._sem_cache @ memory.e_semantic
+            novelty = 1.0 - float(np.max(sims)) if len(sims) > 0 else 1.0
+            if novelty < self.profile.write_threshold:
+                return memory  # too predictable, skip storing
 
         if len(self._memories) >= self.profile.max_size:
             self._evict_weakest()
@@ -133,9 +151,26 @@ class MemoryStore:
         return memory
 
     def _evict_weakest(self) -> None:
+        """
+        Evict the least valuable memory.
+        
+        Score = strength * recency_factor
+        where recency_factor = exp(-0.001 * age)
+        
+        This means a recent weak memory can survive over an old strong one
+        that hasn't been accessed. Combines Hebbian reinforcement with
+        temporal relevance.
+        """
         if not self._memories:
             return
-        weakest_id = min(self._memories, key=lambda mid: self._memories[mid].strength)
+        
+        def eviction_score(mid):
+            m = self._memories[mid]
+            age = max(0, self.step - m.timestamp)
+            recency = np.exp(-0.001 * age)
+            return m.strength * recency
+        
+        weakest_id = min(self._memories, key=eviction_score)
         del self._memories[weakest_id]
         self._invalidate_cache()
 
@@ -186,6 +221,67 @@ class MemoryStore:
         """Return (N, semantic_dim) matrix of all semantic vectors. For fast retrieval."""
         self._rebuild_cache()
         return self._sem_cache
+
+    def consolidate(self, similarity_threshold: float = 0.95) -> int:
+        """
+        Memory consolidation: merge highly similar memories.
+        
+        Inspired by hippocampal replay during sleep (Diekelmann & Born, 2010).
+        When two memories are semantically near-identical (cosine sim > threshold),
+        the weaker one is absorbed into the stronger:
+          - Stronger memory's strength increases
+          - Weaker memory is removed
+          - This prevents redundant storage and strengthens core memories
+        
+        Returns number of memories consolidated.
+        """
+        if len(self._memories) < 2:
+            return 0
+        
+        self._rebuild_cache()
+        N = self._sem_cache.shape[0]
+        
+        # Compute pairwise cosine similarities
+        # Only upper triangle to avoid duplicates
+        sims = self._sem_cache @ self._sem_cache.T
+        
+        to_remove = set()
+        consolidated = 0
+        
+        for i in range(N):
+            if self._id_order[i] in to_remove:
+                continue
+            for j in range(i + 1, N):
+                if self._id_order[j] in to_remove:
+                    continue
+                if sims[i, j] > similarity_threshold:
+                    # Merge: keep stronger, absorb weaker
+                    mem_i = self._memories[self._id_order[i]]
+                    mem_j = self._memories[self._id_order[j]]
+                    
+                    if mem_i.strength >= mem_j.strength:
+                        mem_i.strength = min(mem_i.strength + 0.05, 2.0)
+                        to_remove.add(self._id_order[j])
+                    else:
+                        mem_j.strength = min(mem_j.strength + 0.05, 2.0)
+                        to_remove.add(self._id_order[i])
+                    consolidated += 1
+                    break  # move to next i
+        
+        for mid in to_remove:
+            if mid in self._memories:
+                del self._memories[mid]
+        
+        if to_remove:
+            self._invalidate_cache()
+        
+        return consolidated
+
+    def remove(self, memory_id: str) -> None:
+        """Remove a specific memory by ID."""
+        if memory_id in self._memories:
+            del self._memories[memory_id]
+            self._invalidate_cache()
 
     def __len__(self) -> int:
         return len(self._memories)
