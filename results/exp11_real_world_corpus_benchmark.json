@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "corpus_dir": "experiments\\data\\real_world_corpus",
+    "num_chunks": 2000,
+    "num_queries": 134,
+    "query_stride": 15,
+    "top_k": 10,
+    "timestamp": 1775754962.6296089
+  },
+  "systems": {
+    "semantic_only": {
+      "by_state": {
+        "state_a": {
+          "recall@10": 0.005140263817937353,
+          "ndcg@10": 0.7683432220015133,
+          "mrr": 0.4945273631840796
+        },
+        "state_b": {
+          "recall@10": 0.005140263817937353,
+          "ndcg@10": 0.7683432220015133,
+          "mrr": 0.4945273631840796
+        }
+      },
+      "state_divergence": {
+        "jaccard_divergence_mean": 0.0,
+        "jaccard_divergence_std": 0.0
+      },
+      "overall": {
+        "avg_recall@10": 0.005140263817937353,
+        "avg_ndcg@10": 0.7683432220015133,
+        "avg_mrr": 0.4945273631840796,
+        "jaccard_divergence_mean": 0.0
+      }
+    },
+    "semantic_emotional": {
+      "by_state": {
+        "state_a": {
+          "recall@10": 0.005140263817937353,
+          "ndcg@10": 0.7687054618434456,
+          "mrr": 0.49651741293532337
+        },
+        "state_b": {
+          "recall@10": 0.005144019573632957,
+          "ndcg@10": 0.7692924246914606,
+          "mrr": 0.4958540630182421
+        }
+      },
+      "state_divergence": {
+        "jaccard_divergence_mean": 0.3049941352180158,
+        "jaccard_divergence_std": 0.1731238601097685
+      },
+      "overall": {
+        "avg_recall@10": 0.0051421416957851546,
+        "avg_ndcg@10": 0.7689989432674531,
+        "avg_mrr": 0.4961857379767827,
+        "jaccard_divergence_mean": 0.3049941352180158
+      }
+    },
+    "ncm_full": {
+      "by_state": {
+        "state_a": {
+          "recall@10": 0.005170309863502182,
+          "ndcg@10": 0.7743617689806344,
+          "mrr": 0.4987562189054726
+        },
+        "state_b": {
+          "recall@10": 0.0044918838119418015,
+          "ndcg@10": 0.7733806471491476,
+          "mrr": 0.4962686567164179
+        }
+      },
+      "state_divergence": {
+        "jaccard_divergence_mean": 0.44863919370065114,
+        "jaccard_divergence_std": 0.1643875393280123
+      },
+      "overall": {
+        "avg_recall@10": 0.004831096837721992,
+        "avg_ndcg@10": 0.773871208064891,
+        "avg_mrr": 0.49751243781094523,
+        "jaccard_divergence_mean": 0.44863919370065114
+      }
+    },
+    "ncm_cached": {
+      "by_state": {
+        "state_a": {
+          "recall@10": 0.005170309863502182,
+          "ndcg@10": 0.7743617689806344,
+          "mrr": 0.4987562189054726
+        },
+        "state_b": {
+          "recall@10": 0.0044918838119418015,
+          "ndcg@10": 0.7733806471491476,
+          "mrr": 0.4962686567164179
+        }
+      },
+      "state_divergence": {
+        "jaccard_divergence_mean": 0.44863919370065114,
+        "jaccard_divergence_std": 0.1643875393280123
+      },
+      "overall": {
+        "avg_recall@10": 0.004831096837721992,
+        "avg_ndcg@10": 0.773871208064891,
+        "avg_mrr": 0.49751243781094523,
+        "jaccard_divergence_mean": 0.44863919370065114
+      }
+    }
+  }
+}

@@ -270,6 +270,39 @@ From [results/exp9_external_systems_speed.txt](results/exp9_external_systems_spe
 
 Interpretation: quality/state-aware retrieval and pure speed optimize for different targets. Cached NCM provides a practical latency-quality tradeoff.
 
+### Experiment 10: Retrieval Recall Benchmark
+
+From [results/exp10_retrieval_recall.json](results/exp10_retrieval_recall.json):
+
+- `semantic_only`: avg R@5=0.428, avg R@10=0.615, avg NDCG@10=0.548, JaccardΔ=0.000
+- `semantic_emotional`: avg R@5=0.391, avg R@10=0.573, avg NDCG@10=0.512, JaccardΔ=0.001
+- `ncm_full`: avg R@5=0.388, avg R@10=0.542, avg NDCG@10=0.481, JaccardΔ=0.127
+- `ncm_cached`: avg R@5=0.382, avg R@10=0.530, avg NDCG@10=0.471, JaccardΔ=0.121
+
+Interpretation:
+- This benchmark is the controlled recall rematch: semantic-only wins on pure recall because it is state-blind.
+- NCM’s value here is not raw recall dominance; it is the **state-dependent shift** in retrieval behavior.
+- The strongest signal is the divergence gap: semantic-only stays fixed, while NCM changes recall outcomes across states.
+
+---
+
+### Experiment 11: Real-World Corpus Benchmark (Multi-Session Chat, unseen)
+
+From [results/exp11_real_world_corpus_benchmark.txt](results/exp11_real_world_corpus_benchmark.txt):
+
+- Corpus source: `experiments/data/real_world_corpus` (MSC-style multi-session conversations)
+- Run config: `max_chunks=2000`, `query_stride=15`, `k=10`
+- Results:
+  - `semantic_only`: R@10=0.005, NDCG=0.768, MRR=0.495, JaccardΔ=0.000
+  - `semantic_emotional`: R@10=0.005, NDCG=0.769, MRR=0.496, JaccardΔ=0.305
+  - `ncm_full`: R@10=0.005, NDCG=0.774, MRR=0.498, JaccardΔ=0.449
+  - `ncm_cached`: R@10=0.005, NDCG=0.774, MRR=0.498, JaccardΔ=0.449
+
+Interpretation:
+- On messy unseen conversations, NCM maintains the strongest state-conditioned shift (highest Jaccard divergence).
+- Retrieval quality (NDCG/MRR) remains competitive and slightly higher than baselines in this run.
+- This directly addresses the "synthetic-only" critique by validating behavior on real exported data.
+
 ---
 
 ## Experiment Results Visualizations
@@ -379,6 +412,14 @@ Interpretation: quality/state-aware retrieval and pure speed optimize for differ
 
 ---
 
+### Experiment 11: Real-World Corpus Benchmark
+
+![Real-World Corpus Benchmark](results/exp11_real_world_corpus_benchmark.png)
+
+*This chart compares standard retrieval quality (Recall@10) against state-conditioned divergence (JaccardΔ) on unseen multi-session chat data. Semantic-only remains state-blind (Δ=0), while NCM shows the strongest state-dependent retrieval behavior (Δ≈0.449) with competitive ranking quality in the same run.*
+
+---
+
 ### Consolidated Dashboard
 
 ![NCM Dashboard](results/ncm_dashboard.png)
@@ -392,6 +433,7 @@ Interpretation: quality/state-aware retrieval and pure speed optimize for differ
 ### Experimentation setup
 
 - Synthetic benchmark dataset with ~1,200 memories spanning multiple semantic categories and internal state archetypes.
+- Real-world corpus benchmark using multi-session chat exports under `experiments/data/real_world_corpus`.
 - Query sets include direct and paraphrase-style prompts.
 - Evaluation includes retrieval quality metrics (Precision@k, Hit@k, MRR@k, Recall@k, MAP@k, NDCG@k), state precision, and speed metrics.
 
@@ -421,13 +463,16 @@ NCM/
 │   ├── persistence.py            # Binary .ncm file format
 │   └── exceptions.py             # Custom exception hierarchy
 ├── experiments/
+│   ├── data/
+│   │   └── real_world_corpus/    # Real-world multi-session chat corpus (jsonl)
 │   ├── exp1_redesigned.py        # Precision@k evaluation (category vs state)
 │   ├── exp7_standard_ranking_and_viz.py   # Standardized multi-metric ranking
 │   ├── exp8_external_systems_vs_ncm.py    # Comparison with BM25, TF-IDF, SBERT, RAG
 │   ├── exp9_external_systems_speed.py     # Latency and throughput benchmarks
 │   ├── exp10_retrieval_recall_benchmark.py # NEW: Recall@k across states (LongMemEval-style)
+│   ├── exp11_real_world_corpus_benchmark.py # NEW: Real-world corpus validation (state divergence)
 │   ├── run_fast.py               # Core experiments (exp1-4: novelty, state, speed)
-│   └── run_all_experiments.py    # Run all experiments (exp1-10)
+│   └── run_all_experiments.py    # Run all experiments (exp1-11)
 ├── results/                      # Experiment outputs (JSON + TXT + PNG)
 │   ├── exp1_*.{json,png,txt}
 │   ├── exp2_*.{json,png}
@@ -437,6 +482,7 @@ NCM/
 │   ├── exp8_*.{json,png,txt}
 │   ├── exp9_*.{json,png,txt}
 │   ├── exp10_*.json              # NEW: Recall benchmark results
+│   ├── exp11_*.{json,png,txt}    # NEW: Real-world corpus benchmark outputs
 │   ├── all_results.json
 │   ├── math_verification.json
 │   └── ncm_dashboard.png

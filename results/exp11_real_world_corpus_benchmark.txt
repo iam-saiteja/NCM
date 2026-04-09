@@ -1,0 +1,10 @@
+EXP11: Real-World Corpus Benchmark
+===================================
+Corpus dir: experiments\data\real_world_corpus
+Chunks: 2000
+Queries: 134
+
+semantic_only: R@10=0.005  NDCG=0.768  MRR=0.495  JaccardΔ=0.000
+semantic_emotional: R@10=0.005  NDCG=0.769  MRR=0.496  JaccardΔ=0.305
+ncm_full: R@10=0.005  NDCG=0.774  MRR=0.498  JaccardΔ=0.449
+ncm_cached: R@10=0.005  NDCG=0.774  MRR=0.498  JaccardΔ=0.449

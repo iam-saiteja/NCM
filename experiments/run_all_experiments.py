@@ -776,6 +776,8 @@ if __name__ == "__main__":
         "exp7_standard_ranking_and_viz.py",
         "exp8_external_systems_vs_ncm.py",
         "exp9_external_systems_speed.py",
+        "exp10_retrieval_recall_benchmark.py",
+        "exp11_real_world_corpus_benchmark.py",
     ]
     for script_name in extra_experiments:
         script_path = os.path.join(os.path.dirname(__file__), script_name)
