@@ -1,0 +1,17 @@
+EXP12: Weight Sensitivity Analysis
+===================================
+Corpus: C:\Users\iamsa\Documents\NCM-RELEASE\experiments\data\real_world_corpus
+Chunks: 50
+Queries: 10
+
+Top configurations by avg NDCG@10:
+- temporal_heavy: NDCG=0.609, R@10=0.218, JaccardΔ=0.267, weights={'alpha': 0.35, 'beta': 0.15, 'gamma': 0.2, 'delta': 0.3}
+- semantic_light: NDCG=0.605, R@10=0.218, JaccardΔ=0.343, weights={'alpha': 0.25, 'beta': 0.2, 'gamma': 0.35, 'delta': 0.2}
+- default: NDCG=0.605, R@10=0.220, JaccardΔ=0.306, weights={'alpha': 0.4, 'beta': 0.2, 'gamma': 0.3, 'delta': 0.1}
+- no_temporal: NDCG=0.601, R@10=0.218, JaccardΔ=0.291, weights={'alpha': 0.45, 'beta': 0.2, 'gamma': 0.35, 'delta': 0.0}
+- emotional_heavy: NDCG=0.600, R@10=0.217, JaccardΔ=0.363, weights={'alpha': 0.3, 'beta': 0.4, 'gamma': 0.2, 'delta': 0.1}
+
+Default weights: NDCG=0.605, R@10=0.220, JaccardΔ=0.306
+Interpretation:
+- If best/worst spread is small, NCM is robust to weight choice.
+- If spread is large, the weights need to be tuned carefully before publication.

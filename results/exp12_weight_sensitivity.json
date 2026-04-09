@@ -1,0 +1,250 @@
+{
+  "metadata": {
+    "corpus_dir": "C:\\Users\\iamsa\\Documents\\NCM-RELEASE\\experiments\\data\\real_world_corpus",
+    "num_chunks": 50,
+    "num_queries": 10,
+    "query_stride": 5,
+    "top_k": 10,
+    "timestamp": 1775755515.9988253
+  },
+  "weight_sweep": [
+    {
+      "preset": {
+        "name": "default",
+        "alpha": 0.4,
+        "beta": 0.2,
+        "gamma": 0.3,
+        "delta": 0.1
+      },
+      "weights": {
+        "alpha": 0.4,
+        "beta": 0.2,
+        "gamma": 0.3,
+        "delta": 0.1
+      },
+      "by_state": {
+        "state_a": {
+          "recall@10": 0.22653562653562656,
+          "ndcg@10": 0.6241899304870796,
+          "mrr": 0.4666666666666666
+        },
+        "state_b": {
+          "recall@10": 0.21302211302211305,
+          "ndcg@10": 0.5851112947891922,
+          "mrr": 0.43666666666666665
+        }
+      },
+      "overall": {
+        "avg_recall@10": 0.2197788697788698,
+        "avg_ndcg@10": 0.6046506126381359,
+        "avg_mrr": 0.45166666666666666,
+        "jaccard_divergence_mean": 0.3063270063270063,
+        "jaccard_divergence_std": 0.14928404928404929
+      }
+    },
+    {
+      "preset": {
+        "name": "semantic_heavy",
+        "alpha": 0.55,
+        "beta": 0.15,
+        "gamma": 0.2,
+        "delta": 0.1
+      },
+      "weights": {
+        "alpha": 0.55,
+        "beta": 0.15,
+        "gamma": 0.2,
+        "delta": 0.1
+      },
+      "by_state": {
+        "state_a": {
+          "recall@10": 0.2093366093366093,
+          "ndcg@10": 0.5946451631617349,
+          "mrr": 0.4833333333333333
+        },
+        "state_b": {
+          "recall@10": 0.213022113022113,
+          "ndcg@10": 0.5820721458579834,
+          "mrr": 0.43666666666666665
+        }
+      },
+      "overall": {
+        "avg_recall@10": 0.21117936117936115,
+        "avg_ndcg@10": 0.5883586545098591,
+        "avg_mrr": 0.45999999999999996,
+        "jaccard_divergence_mean": 0.2393939393939394,
+        "jaccard_divergence_std": 0.10709452755801392
+      }
+    },
+    {
+      "preset": {
+        "name": "semantic_light",
+        "alpha": 0.25,
+        "beta": 0.2,
+        "gamma": 0.35,
+        "delta": 0.2
+      },
+      "weights": {
+        "alpha": 0.25,
+        "beta": 0.2,
+        "gamma": 0.35,
+        "delta": 0.2
+      },
+      "by_state": {
+        "state_a": {
+          "recall@10": 0.22653562653562656,
+          "ndcg@10": 0.6263490435436746,
+          "mrr": 0.4666666666666666
+        },
+        "state_b": {
+          "recall@10": 0.21031941031941032,
+          "ndcg@10": 0.5833089326864798,
+          "mrr": 0.4666666666666666
+        }
+      },
+      "overall": {
+        "avg_recall@10": 0.21842751842751845,
+        "avg_ndcg@10": 0.6048289881150772,
+        "avg_mrr": 0.4666666666666666,
+        "jaccard_divergence_mean": 0.3429570429570429,
+        "jaccard_divergence_std": 0.17388226767633838
+      }
+    },
+    {
+      "preset": {
+        "name": "emotional_heavy",
+        "alpha": 0.3,
+        "beta": 0.4,
+        "gamma": 0.2,
+        "delta": 0.1
+      },
+      "weights": {
+        "alpha": 0.3,
+        "beta": 0.4,
+        "gamma": 0.2,
+        "delta": 0.1
+      },
+      "by_state": {
+        "state_a": {
+          "recall@10": 0.22113022113022113,
+          "ndcg@10": 0.6129915247252382,
+          "mrr": 0.4666666666666666
+        },
+        "state_b": {
+          "recall@10": 0.213022113022113,
+          "ndcg@10": 0.5863737031415974,
+          "mrr": 0.43666666666666665
+        }
+      },
+      "overall": {
+        "avg_recall@10": 0.21707616707616706,
+        "avg_ndcg@10": 0.5996826139334178,
+        "avg_mrr": 0.45166666666666666,
+        "jaccard_divergence_mean": 0.36346986346986354,
+        "jaccard_divergence_std": 0.19719762668911373
+      }
+    },
+    {
+      "preset": {
+        "name": "state_heavy",
+        "alpha": 0.3,
+        "beta": 0.1,
+        "gamma": 0.5,
+        "delta": 0.1
+      },
+      "weights": {
+        "alpha": 0.3,
+        "beta": 0.1,
+        "gamma": 0.5,
+        "delta": 0.1
+      },
+      "by_state": {
+        "state_a": {
+          "recall@10": 0.22211302211302214,
+          "ndcg@10": 0.6012342609189937,
+          "mrr": 0.4666666666666666
+        },
+        "state_b": {
+          "recall@10": 0.21400491400491398,
+          "ndcg@10": 0.5747761676586303,
+          "mrr": 0.45
+        }
+      },
+      "overall": {
+        "avg_recall@10": 0.21805896805896807,
+        "avg_ndcg@10": 0.5880052142888119,
+        "avg_mrr": 0.4583333333333333,
+        "jaccard_divergence_mean": 0.3301365301365301,
+        "jaccard_divergence_std": 0.16933335099353242
+      }
+    },
+    {
+      "preset": {
+        "name": "temporal_heavy",
+        "alpha": 0.35,
+        "beta": 0.15,
+        "gamma": 0.2,
+        "delta": 0.3
+      },
+      "weights": {
+        "alpha": 0.35,
+        "beta": 0.15,
+        "gamma": 0.2,
+        "delta": 0.3
+      },
+      "by_state": {
+        "state_a": {
+          "recall@10": 0.21744471744471747,
+          "ndcg@10": 0.6195948972024379,
+          "mrr": 0.4833333333333333
+        },
+        "state_b": {
+          "recall@10": 0.21842751842751845,
+          "ndcg@10": 0.5976497175892899,
+          "mrr": 0.43666666666666665
+        }
+      },
+      "overall": {
+        "avg_recall@10": 0.21793611793611795,
+        "avg_ndcg@10": 0.6086223073958639,
+        "avg_mrr": 0.45999999999999996,
+        "jaccard_divergence_mean": 0.26736596736596735,
+        "jaccard_divergence_std": 0.1236532473081312
+      }
+    },
+    {
+      "preset": {
+        "name": "no_temporal",
+        "alpha": 0.45,
+        "beta": 0.2,
+        "gamma": 0.35,
+        "delta": 0.0
+      },
+      "weights": {
+        "alpha": 0.45,
+        "beta": 0.2,
+        "gamma": 0.35,
+        "delta": 0.0
+      },
+      "by_state": {
+        "state_a": {
+          "recall@10": 0.22383292383292383,
+          "ndcg@10": 0.6168633269943914,
+          "mrr": 0.4666666666666666
+        },
+        "state_b": {
+          "recall@10": 0.21302211302211305,
+          "ndcg@10": 0.5847180247729339,
+          "mrr": 0.43666666666666665
+        }
+      },
+      "overall": {
+        "avg_recall@10": 0.21842751842751845,
+        "avg_ndcg@10": 0.6007906758836626,
+        "avg_mrr": 0.45166666666666666,
+        "jaccard_divergence_mean": 0.2911754911754912,
+        "jaccard_divergence_std": 0.1534062238876752
+      }
+    }
+  ]
+}

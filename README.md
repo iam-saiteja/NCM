@@ -303,6 +303,38 @@ Interpretation:
 - Retrieval quality (NDCG/MRR) remains competitive and slightly higher than baselines in this run.
 - This directly addresses the "synthetic-only" critique by validating behavior on real exported data.
 
+### Experiment 12: Weight Sensitivity Analysis
+
+From [results/exp12_weight_sensitivity.txt](results/exp12_weight_sensitivity.txt):
+
+- Corpus slice: `experiments/data/real_world_corpus`
+- Run config: `max_chunks=50`, `query_stride=5`, `k=10`
+- Best configurations by avg NDCG@10:
+  - `temporal_heavy`: NDCG=0.609, R@10=0.218, JaccardΔ=0.267
+  - `semantic_light`: NDCG=0.605, R@10=0.218, JaccardΔ=0.343
+  - `default`: NDCG=0.605, R@10=0.220, JaccardΔ=0.306
+- Default weights stayed near the top of the sweep, which suggests the model is reasonably robust rather than fragile.
+- The spread across presets was modest, with a small best-vs-default difference and no catastrophic failure region.
+
+### Experiment 13: Honest Head-to-Head Rematch
+
+From [results/exp13_baseline_rematch.txt](results/exp13_baseline_rematch.txt):
+
+- Corpus slice: `experiments/data/real_world_corpus`
+- Run config: `max_chunks=50`, `query_stride=5`, `k=10`
+- Overall:
+  - `semantic_emotional`: R@10=0.208, NDCG=0.587, MRR=0.463, Divergence=0.252
+  - `ncm_full`: R@10=0.220, NDCG=0.605, MRR=0.452, Divergence=0.306
+- Bucketed boundary analysis:
+  - Low shift: NCM wins on NDCG by about +0.033
+  - Medium shift: semantic_emotional is slightly ahead by about +0.005
+  - High shift: NCM wins again by about +0.022
+
+Interpretation:
+- `semantic_emotional` is not universally better; it is competitive in the middle regime.
+- NCM’s advantage appears when the state shift is either small enough for stable recall or large enough for state sensitivity to matter.
+- That gives the paper a real boundary condition instead of a vague composite-score story.
+
 ---
 
 ## Experiment Results Visualizations
@@ -418,6 +450,18 @@ Interpretation:
 
 *This chart compares standard retrieval quality (Recall@10) against state-conditioned divergence (JaccardΔ) on unseen multi-session chat data. Semantic-only remains state-blind (Δ=0), while NCM shows the strongest state-dependent retrieval behavior (Δ≈0.449) with competitive ranking quality in the same run.*
 
+### Experiment 12: Weight Sensitivity Analysis
+
+![Weight Sensitivity](results/exp12_weight_sensitivity.png)
+
+*The default weights stay near the top of the sweep, and the spread across tested presets is modest. That means the retrieval behavior is reasonably robust to moderate reweighting rather than hinging on a single fragile setting.*
+
+### Experiment 13: Baseline Rematch
+
+![Baseline Rematch](results/exp13_baseline_rematch.png)
+
+*The rematch shows the actual boundary: `semantic_emotional` is close in the middle regime, but NCM is stronger at low-shift and high-shift query buckets. That gives a cleaner explanation for when the state term helps and when it adds little signal.*
+
 ---
 
 ### Consolidated Dashboard
@@ -471,8 +515,10 @@ NCM/
 │   ├── exp9_external_systems_speed.py     # Latency and throughput benchmarks
 │   ├── exp10_retrieval_recall_benchmark.py # NEW: Recall@k across states (LongMemEval-style)
 │   ├── exp11_real_world_corpus_benchmark.py # NEW: Real-world corpus validation (state divergence)
+│   ├── exp12_weight_sensitivity.py       # NEW: Weight sweep over alpha/beta/gamma/delta
+│   ├── exp13_baseline_rematch.py         # NEW: Semantic_emotional vs NCM boundary analysis
 │   ├── run_fast.py               # Core experiments (exp1-4: novelty, state, speed)
-│   └── run_all_experiments.py    # Run all experiments (exp1-11)
+│   └── run_all_experiments.py    # Run all experiments (exp1-13)
 ├── results/                      # Experiment outputs (JSON + TXT + PNG)
 │   ├── exp1_*.{json,png,txt}
 │   ├── exp2_*.{json,png}
@@ -483,6 +529,8 @@ NCM/
 │   ├── exp9_*.{json,png,txt}
 │   ├── exp10_*.json              # NEW: Recall benchmark results
 │   ├── exp11_*.{json,png,txt}    # NEW: Real-world corpus benchmark outputs
+│   ├── exp12_*.{json,png,txt}    # NEW: Weight sensitivity outputs
+│   ├── exp13_*.{json,png,txt}    # NEW: Baseline rematch outputs
 │   ├── all_results.json
 │   ├── math_verification.json
 │   └── ncm_dashboard.png
