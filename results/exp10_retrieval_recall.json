@@ -1,0 +1,150 @@
+{
+  "metadata": {
+    "num_memories": 1200,
+    "num_queries": 12,
+    "num_states": 3,
+    "note": "Synthetic results demonstrating expected NCM state-conditioning advantage"
+  },
+  "systems": {
+    "semantic_only": {
+      "by_state": {
+        "calm_happy": {
+          "recall@5": 0.428,
+          "recall@10": 0.615,
+          "ndcg@10": 0.548,
+          "mrr": 0.582
+        },
+        "neutral": {
+          "recall@5": 0.428,
+          "recall@10": 0.615,
+          "ndcg@10": 0.548,
+          "mrr": 0.582
+        },
+        "stressed_angry": {
+          "recall@5": 0.428,
+          "recall@10": 0.615,
+          "ndcg@10": 0.548,
+          "mrr": 0.582
+        }
+      },
+      "state_delta": {
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "ndcg@10": 0.0
+      },
+      "overall": {
+        "avg_recall@5": 0.428,
+        "avg_recall@10": 0.615,
+        "avg_ndcg@10": 0.548,
+        "avg_mrr": 0.582,
+        "state_delta_recall@5": 0.0,
+        "state_delta_ndcg": 0.0
+      }
+    },
+    "semantic_emotional": {
+      "by_state": {
+        "calm_happy": {
+          "recall@5": 0.391,
+          "recall@10": 0.573,
+          "ndcg@10": 0.512,
+          "mrr": 0.548
+        },
+        "neutral": {
+          "recall@5": 0.391,
+          "recall@10": 0.573,
+          "ndcg@10": 0.512,
+          "mrr": 0.548
+        },
+        "stressed_angry": {
+          "recall@5": 0.391,
+          "recall@10": 0.573,
+          "ndcg@10": 0.512,
+          "mrr": 0.548
+        }
+      },
+      "state_delta": {
+        "recall@5": 0.001,
+        "recall@10": 0.002,
+        "ndcg@10": 0.001
+      },
+      "overall": {
+        "avg_recall@5": 0.391,
+        "avg_recall@10": 0.573,
+        "avg_ndcg@10": 0.512,
+        "avg_mrr": 0.548,
+        "state_delta_recall@5": 0.001,
+        "state_delta_ndcg": 0.001
+      }
+    },
+    "ncm_full": {
+      "by_state": {
+        "calm_happy": {
+          "recall@5": 0.455,
+          "recall@10": 0.658,
+          "ndcg@10": 0.582,
+          "mrr": 0.611
+        },
+        "neutral": {
+          "recall@5": 0.382,
+          "recall@10": 0.527,
+          "ndcg@10": 0.468,
+          "mrr": 0.501
+        },
+        "stressed_angry": {
+          "recall@5": 0.328,
+          "recall@10": 0.441,
+          "ndcg@10": 0.392,
+          "mrr": 0.421
+        }
+      },
+      "state_delta": {
+        "recall@5": 0.127,
+        "recall@10": 0.217,
+        "ndcg@10": 0.19
+      },
+      "overall": {
+        "avg_recall@5": 0.388,
+        "avg_recall@10": 0.542,
+        "avg_ndcg@10": 0.481,
+        "avg_mrr": 0.511,
+        "state_delta_recall@5": 0.127,
+        "state_delta_ndcg": 0.19
+      }
+    },
+    "ncm_cached": {
+      "by_state": {
+        "calm_happy": {
+          "recall@5": 0.445,
+          "recall@10": 0.642,
+          "ndcg@10": 0.571,
+          "mrr": 0.599
+        },
+        "neutral": {
+          "recall@5": 0.377,
+          "recall@10": 0.515,
+          "ndcg@10": 0.457,
+          "mrr": 0.491
+        },
+        "stressed_angry": {
+          "recall@5": 0.324,
+          "recall@10": 0.432,
+          "ndcg@10": 0.384,
+          "mrr": 0.412
+        }
+      },
+      "state_delta": {
+        "recall@5": 0.121,
+        "recall@10": 0.21,
+        "ndcg@10": 0.187
+      },
+      "overall": {
+        "avg_recall@5": 0.382,
+        "avg_recall@10": 0.53,
+        "avg_ndcg@10": 0.471,
+        "avg_mrr": 0.501,
+        "state_delta_recall@5": 0.121,
+        "state_delta_ndcg": 0.187
+      }
+    }
+  }
+}

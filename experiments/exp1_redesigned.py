@@ -25,7 +25,9 @@ This gives us two metrics:
 import sys, os, time, json
 import numpy as np
 
-sys.path.insert(0, '/home/user/workspace/ncm_project')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
 from ncm.encoder import SentenceEncoder
 from ncm.memory import MemoryEntry, MemoryStore
@@ -35,10 +37,10 @@ from ncm.retrieval import (
     retrieve_semantic_emotional,
 )
 
-RESULTS_DIR = '/home/user/workspace/ncm_project/results'
+RESULTS_DIR = os.path.join(ROOT_DIR, 'results')
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
-encoder = SentenceEncoder(model_dir='/home/user/workspace/ncm_project/models/')
+encoder = SentenceEncoder(model_dir=os.path.join(ROOT_DIR, 'models'))
 
 STATE_ARCHETYPES = {
     "calm_happy":      np.array([0.7, 0.8, 0.2, 0.8, 0.3, 0.7, 0.2], dtype=np.float32),

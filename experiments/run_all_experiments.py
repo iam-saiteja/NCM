@@ -7,7 +7,7 @@ Experiment 2: Novelty Sensitivity at Scale (up to 100k memories)
 Experiment 3: State-Conditioned Retrieval Validation
 Experiment 4: Speed Benchmarks (store/retrieve throughput)
 
-All results saved to /home/user/workspace/ncm_project/results/
+All results saved to workspace-relative /results/
 """
 
 import sys
@@ -15,10 +15,13 @@ import os
 import time
 import json
 import traceback
+import runpy
 
 import numpy as np
 
-sys.path.insert(0, '/home/user/workspace/ncm_project')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
 from ncm.encoder import SentenceEncoder
 from ncm.memory import MemoryEntry, MemoryStore
@@ -30,11 +33,11 @@ from ncm.retrieval import (
 )
 from ncm.persistence import NCMFile
 
-RESULTS_DIR = '/home/user/workspace/ncm_project/results'
+RESULTS_DIR = os.path.join(ROOT_DIR, 'results')
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
 # Initialize encoder once
-encoder = SentenceEncoder(model_dir='/home/user/workspace/ncm_project/models/')
+encoder = SentenceEncoder(model_dir=os.path.join(ROOT_DIR, 'models'))
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # HELPER: Generate synthetic interaction histories
@@ -687,10 +690,11 @@ def verify_math():
     n_points = 100000
     epsilon = 0.1
     k_min = 4 * np.log(n_points) / (epsilon**2 / 2 - epsilon**3 / 3)
+    jl_ok = bool(128 >= float(k_min))
     print(f"8. JL lemma minimum dim for n={n_points}, ε={epsilon}: {k_min:.0f}")
-    print(f"   NCM uses: 128 (≥ {k_min:.0f}) ✓")
+    print(f"   NCM uses: 128 (≥ {k_min:.0f}) {'✓' if jl_ok else '✗'}")
     results["jl_min_dim"] = float(k_min)
-    results["jl_satisfied"] = 128 >= k_min
+    results["jl_satisfied"] = jl_ok
     
     # 9. Dirichlet regularization works
     w_balanced = RetrievalWeights(0.25, 0.25, 0.25, 0.25)
@@ -764,6 +768,23 @@ if __name__ == "__main__":
     # Save combined results
     with open(os.path.join(RESULTS_DIR, 'all_results.json'), 'w') as f:
         json.dump(all_results, f, indent=2, default=str)
+
+    # Run newer standalone experiments
+    extra_experiments = [
+        "exp5_memory_systems_comparison.py",
+        "exp6_current_memory_systems_vs_ncm.py",
+        "exp7_standard_ranking_and_viz.py",
+        "exp8_external_systems_vs_ncm.py",
+        "exp9_external_systems_speed.py",
+    ]
+    for script_name in extra_experiments:
+        script_path = os.path.join(os.path.dirname(__file__), script_name)
+        try:
+            print(f"\n▶ Running {script_name} ...")
+            runpy.run_path(script_path, run_name="__main__")
+        except Exception as e:
+            print(f"\n❌ {script_name} FAILED: {e}")
+            traceback.print_exc()
     
     print("\n" + "=" * 70)
     print("ALL EXPERIMENTS COMPLETE")
