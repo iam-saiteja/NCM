@@ -225,7 +225,7 @@ For detailed assessment of all experiment outputs (consolidated table, image-fir
 | Signal | Snapshot |
 |---|---|
 | Canonical Exp1 protocol | Uses `exp1_redesigned.py` (stored event texts as queries, 1200-memory table) |
-| State-conditioned recall shift | Exp3 mean Jaccard ≈ 0.718 for NCM vs ~0 for state-blind baseline |
+| State-conditioned recall shift | Exp3 mean Jaccard ≈ 0.714 for NCM vs ~0 for state-blind baseline |
 | Large-scale novelty | Exp2 (AG News): semantic novelty trends to ~0 at 100k while full-manifold remains ~0.119 |
 | Real-world corpus | Exp11 (bounded): NCM keeps strongest divergence (JaccardΔ≈0.374) with competitive NDCG/MRR |
 | Speed snapshot | Exp4 (100k): semantic 49.346ms, full 10.131ms, cached 7.860ms/query |
@@ -379,7 +379,7 @@ for distance, probability, mem in results:
 
 This is **Invention 1 of 3** in the TES project stack. NCM is architecturally independent and constitutes a standalone research contribution. Three core claims are independently testable:
 
-1. **State-conditioned retrieval** produces measurably different behavioral trajectories than semantic-only retrieval ✅ (Experiment 3: **Jaccard = 0.718**)
+1. **State-conditioned retrieval** produces measurably different behavioral trajectories than semantic-only retrieval ✅ (Experiment 3: **Jaccard ≈ 0.714**)
 2. **Four-dimensional retrieval** maintains competitive category precision while enabling state-conditioned retrieval ✅ (Experiment 1)
 3. **Full manifold novelty detection** remains non-zero at large scale where semantic novelty collapses ✅ (Experiment 2 AG News: semantic ≈ 0 at 100k, full ≈ 0.119)
 

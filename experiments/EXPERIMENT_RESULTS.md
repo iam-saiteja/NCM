@@ -32,7 +32,7 @@ This is the full experiment report for NCM.
 
 | Signal | Snapshot |
 |---|---|
-| State-conditioned retrieval | Exp3 mean Jaccard ≈ 0.718 for NCM vs ~0 semantic baseline |
+| State-conditioned retrieval | Exp3 mean Jaccard ≈ 0.714 for NCM vs ~0 semantic baseline |
 | Novelty scaling | Exp2 (AG News): semantic novelty collapses toward ~0 at 100k while full-manifold remains ~0.119 |
 | Real-data behavior | Exp11 (bounded run): strongest divergence remains with NCM (JaccardΔ≈0.374) |
 | Weight robustness | Exp12 default near top-performing settings |
@@ -106,11 +106,11 @@ This is the direct proof test for the `s_snapshot` contribution.
 | State Pair | Semantic Jaccard | NCM Jaccard |
 |:---|:---:|:---:|
 | Calm-Happy vs Stressed-Angry | 0.000 | 0.792 |
-| Excited-Curious vs Sad-Withdrawn | 0.000 | 0.764 |
-| Confident vs Fearful | 0.000 | 0.861 |
+| Excited-Curious vs Sad-Withdrawn | 0.000 | 0.769 |
+| Confident vs Fearful | 0.000 | 0.832 |
 | Neutral vs Exhausted | 0.000 | 0.333 |
 
-Mean Jaccard (NCM) ≈ 0.718.
+Mean Jaccard (NCM) ≈ 0.714.
 
 ### What does it say?
 Baseline is state-blind; NCM retrieval changes with state in a measurable way.
