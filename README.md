@@ -381,7 +381,7 @@ This is **Invention 1 of 3** in the TES project stack. NCM is architecturally in
 
 1. **State-conditioned retrieval** produces measurably different behavioral trajectories than semantic-only retrieval ✅ (Experiment 3: **Jaccard = 0.718**)
 2. **Four-dimensional retrieval** maintains competitive category precision while enabling state-conditioned retrieval ✅ (Experiment 1)
-3. **Full manifold novelty detection** maintains sensitivity at scale where semantic-only degrades ✅ (Experiment 2: **33× advantage at 50k**)
+3. **Full manifold novelty detection** remains non-zero at large scale where semantic novelty collapses ✅ (Experiment 2 AG News: semantic ≈ 0 at 100k, full ≈ 0.119)
 
 **New in Experiment 10**: Recall@k across multiple internal states (LongMemEval-style benchmark). Tests whether NCM achieves state-dependent recall patterns while maintaining competitive recall scores vs semantic-only and SBERT baselines.
 

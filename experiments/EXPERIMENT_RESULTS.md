@@ -13,7 +13,7 @@ This is the full experiment report for NCM.
 | Experiment | What it tests | Why needed | Key result |
 |---|---|---|---|
 | Exp1 | Category vs state precision | Show baseline semantic strength vs NCM state strength | Semantic wins category; NCM wins state precision |
-| Exp2 | Novelty sensitivity at scale | Check if novelty collapses as memory grows | NCM novelty remains high; advantage grows with scale |
+| Exp2 | Novelty sensitivity at scale | Check if novelty collapses as memory grows | Semantic novelty collapses by 100k; full-manifold remains non-zero |
 | Exp3 | State-conditioned retrieval | Validate core claim (`s_snapshot`) | Same query returns different sets in NCM, not in baseline |
 | Exp4 | Speed scaling | Confirm practical latency | Cached NCM remains practical at larger store sizes |
 | Exp5 | Internal memory comparison | Compare NCM modes and simple baselines | NCM cached gives best quality-latency tradeoff |
