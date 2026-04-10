@@ -52,19 +52,21 @@ Evaluates precision on category matching and state matching using controlled syn
 To separate “semantic recall quality” from “state-conditioned recall quality” in a clean setting.
 
 ### Results
+Source: [experiments/results/exp1/exp1_redesigned.json](results/exp1/exp1_redesigned.json)
+
 | Metric | k | Semantic Only | Sem + Emotional | NCM Full |
 |--------|---|:---:|:---:|:---:|
-| n=100 | 1 | 0.000 | 0.000 | 0.000 |
-| n=100 | 3 | 0.000 | 0.000 | 0.013 |
-| n=100 | 5 | 0.000 | 0.000 | 0.020 |
-| n=100 | 10 | 0.000 | 0.004 | 0.012 |
-| n=5000 | 1 | 0.000 | 0.000 | 0.000 |
-| n=5000 | 3 | 0.000 | 0.000 | 0.000 |
-| n=5000 | 5 | 0.000 | 0.000 | 0.000 |
-| n=5000 | 10 | 0.000 | 0.000 | 0.000 |
+| Category P@k | 1 | 0.925 | 0.625 | 0.625 |
+| Category P@k | 3 | 0.933 | 0.692 | 0.692 |
+| Category P@k | 5 | 0.950 | 0.800 | 0.800 |
+| Category P@k | 10 | 0.955 | 0.900 | 0.890 |
+| State P@k | 1 | 0.075 | 0.625 | 0.625 |
+| State P@k | 3 | 0.083 | 0.683 | 0.692 |
+| State P@k | 5 | 0.105 | 0.435 | 0.435 |
+| State P@k | 10 | 0.095 | 0.217 | 0.217 |
 
 ### What does it say?
-In the current strict setup, absolute precision is near zero for all systems at larger scales; at small scale, NCM full shows a slight edge at k=3/5.
+At the canonical 1200-memory setting (stored-event queries), semantic-only dominates category precision, while NCM variants carry much stronger state precision.
 
 ---
 
