@@ -18,7 +18,7 @@
         "5": 0.1292,
         "10": 0.1233
       },
-      "latency_ms_avg": 0.6516
+      "latency_ms_avg": 0.6467
     },
     {
       "system": "semantic_emotional",
@@ -34,7 +34,7 @@
         "5": 0.6258,
         "10": 0.3133
       },
-      "latency_ms_avg": 1.0595
+      "latency_ms_avg": 1.0611
     },
     {
       "system": "ncm_full",
@@ -50,7 +50,7 @@
         "5": 0.6267,
         "10": 0.3133
       },
-      "latency_ms_avg": 0.427
+      "latency_ms_avg": 0.3989
     },
     {
       "system": "ncm_full_no_strength",
@@ -66,7 +66,7 @@
         "5": 0.6267,
         "10": 0.3133
       },
-      "latency_ms_avg": 0.4171
+      "latency_ms_avg": 0.4152
     },
     {
       "system": "ncm_cached_full",
@@ -82,7 +82,7 @@
         "5": 0.6267,
         "10": 0.3133
       },
-      "latency_ms_avg": 0.4058
+      "latency_ms_avg": 0.3903
     }
   ],
   "state_conditioning": {
@@ -107,31 +107,31 @@
       "system": "ncm_cached_full",
       "category_avg": 0.9973,
       "state_avg": 0.735,
-      "latency_ms_avg": 0.4058
+      "latency_ms_avg": 0.3903
     },
     {
       "system": "ncm_full",
       "category_avg": 0.9973,
       "state_avg": 0.735,
-      "latency_ms_avg": 0.427
+      "latency_ms_avg": 0.3989
     },
     {
       "system": "ncm_full_no_strength",
       "category_avg": 0.9972,
       "state_avg": 0.735,
-      "latency_ms_avg": 0.4171
+      "latency_ms_avg": 0.4152
     },
     {
       "system": "semantic_emotional",
       "category_avg": 1.0,
       "state_avg": 0.733,
-      "latency_ms_avg": 1.0595
+      "latency_ms_avg": 1.0611
     },
     {
       "system": "semantic_only",
       "category_avg": 1.0,
       "state_avg": 0.1239,
-      "latency_ms_avg": 0.6516
+      "latency_ms_avg": 0.6467
     }
   ]
 }

@@ -3,21 +3,21 @@ EXP9: External Systems Speed Comparison
 Dataset: 1200 memories, 1000 queries
 
 Ranking by avg latency (lower is better)
-1. recency_only: avg=0.0179ms, p95=0.0251ms, p99=0.0336ms, qps=55919.34, setup=0.00ms
-2. dense_sbert_cosine: avg=0.2005ms, p95=0.2537ms, p99=0.3021ms, qps=4988.15, setup=523.68ms
-3. rag_semantic_only: avg=0.2171ms, p95=0.2676ms, p99=0.3148ms, qps=4606.26, setup=0.00ms
-4. rag_semantic_recency: avg=0.2590ms, p95=0.3339ms, p99=0.3853ms, qps=3860.84, setup=0.00ms
-5. ncm_full: avg=0.4525ms, p95=0.6069ms, p99=0.6806ms, qps=2209.75, setup=0.00ms
-6. ncm_cached_full: avg=0.4549ms, p95=0.5944ms, p99=0.7289ms, qps=2198.05, setup=0.00ms
-7. tfidf_cosine: avg=0.5487ms, p95=0.7156ms, p99=0.8388ms, qps=1822.54, setup=63.00ms
-8. bm25_text: avg=1.0802ms, p95=1.5954ms, p99=2.0202ms, qps=925.72, setup=3.82ms
+1. recency_only: avg=0.0107ms, p95=0.0115ms, p99=0.0163ms, qps=93604.91, setup=0.00ms
+2. dense_sbert_cosine: avg=0.1380ms, p95=0.1737ms, p99=0.2034ms, qps=7247.60, setup=269.87ms
+3. rag_semantic_only: avg=0.1571ms, p95=0.1990ms, p99=0.2460ms, qps=6367.11, setup=0.00ms
+4. rag_semantic_recency: avg=0.1838ms, p95=0.2369ms, p99=0.2551ms, qps=5440.80, setup=0.00ms
+5. ncm_cached_full: avg=0.2946ms, p95=0.3894ms, p99=0.4405ms, qps=3394.38, setup=0.00ms
+6. ncm_full: avg=0.3075ms, p95=0.3998ms, p99=0.4462ms, qps=3252.10, setup=0.00ms
+7. tfidf_cosine: avg=0.3254ms, p95=0.3522ms, p99=0.4003ms, qps=3072.74, setup=9.03ms
+8. bm25_text: avg=0.6269ms, p95=0.7906ms, p99=0.8418ms, qps=1595.14, setup=2.28ms
 
 Ranking by throughput (higher is better)
-1. recency_only: qps=55919.34, avg=0.0179ms, setup=0.00ms
-2. dense_sbert_cosine: qps=4988.15, avg=0.2005ms, setup=523.68ms
-3. rag_semantic_only: qps=4606.26, avg=0.2171ms, setup=0.00ms
-4. rag_semantic_recency: qps=3860.84, avg=0.2590ms, setup=0.00ms
-5. ncm_full: qps=2209.75, avg=0.4525ms, setup=0.00ms
-6. ncm_cached_full: qps=2198.05, avg=0.4549ms, setup=0.00ms
-7. tfidf_cosine: qps=1822.54, avg=0.5487ms, setup=63.00ms
-8. bm25_text: qps=925.72, avg=1.0802ms, setup=3.82ms
+1. recency_only: qps=93604.91, avg=0.0107ms, setup=0.00ms
+2. dense_sbert_cosine: qps=7247.60, avg=0.1380ms, setup=269.87ms
+3. rag_semantic_only: qps=6367.11, avg=0.1571ms, setup=0.00ms
+4. rag_semantic_recency: qps=5440.80, avg=0.1838ms, setup=0.00ms
+5. ncm_cached_full: qps=3394.38, avg=0.2946ms, setup=0.00ms
+6. ncm_full: qps=3252.10, avg=0.3075ms, setup=0.00ms
+7. tfidf_cosine: qps=3072.74, avg=0.3254ms, setup=9.03ms
+8. bm25_text: qps=1595.14, avg=0.6269ms, setup=2.28ms

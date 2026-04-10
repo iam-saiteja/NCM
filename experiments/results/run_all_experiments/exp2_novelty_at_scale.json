@@ -6,10 +6,10 @@
     "full_novelty_mean": 0.3769573748111725,
     "full_novelty_std": 0.03811760096775249,
     "timing_sec": {
-      "add_memories": 0.5060259000019869,
-      "rebuild_cache": 0.0002207000070484355,
-      "evaluate_queries": 0.18133020000823308,
-      "total_scale": 0.6877128000051016
+      "add_memories": 0.2338896000001114,
+      "rebuild_cache": 0.00016569998115301132,
+      "evaluate_queries": 0.15294979998725466,
+      "total_scale": 0.3871923999977298
     }
   },
   "500": {
@@ -19,10 +19,10 @@
     "full_novelty_mean": 0.3508830040693283,
     "full_novelty_std": 0.031318948439709664,
     "timing_sec": {
-      "add_memories": 0.704127699995297,
-      "rebuild_cache": 0.0015067999920574948,
-      "evaluate_queries": 0.18329699999594595,
-      "total_scale": 0.8891177000041353
+      "add_memories": 0.7058727999974508,
+      "rebuild_cache": 0.0007410999969579279,
+      "evaluate_queries": 0.1619436000182759,
+      "total_scale": 0.8687745000061113
     }
   },
   "1000": {
@@ -32,10 +32,10 @@
     "full_novelty_mean": 0.3558069683611393,
     "full_novelty_std": 0.03997135607513357,
     "timing_sec": {
-      "add_memories": 0.5557618000020739,
-      "rebuild_cache": 0.001513900002464652,
-      "evaluate_queries": 0.16365689999656752,
-      "total_scale": 0.7210828999959631
+      "add_memories": 0.5402204999991227,
+      "rebuild_cache": 0.001190200011478737,
+      "evaluate_queries": 0.18155510001815856,
+      "total_scale": 0.7232253999973182
     }
   },
   "5000": {
@@ -45,10 +45,10 @@
     "full_novelty_mean": 0.34104074314236643,
     "full_novelty_std": 0.06300504869739353,
     "timing_sec": {
-      "add_memories": 3.2842361999937566,
-      "rebuild_cache": 0.005717199994251132,
-      "evaluate_queries": 0.1607413000019733,
-      "total_scale": 3.451271400001133
+      "add_memories": 3.2231185999989975,
+      "rebuild_cache": 0.005346799996914342,
+      "evaluate_queries": 0.16415279998909682,
+      "total_scale": 3.3932950999878813
     }
   },
   "10000": {
@@ -58,10 +58,10 @@
     "full_novelty_mean": 0.3111003957688808,
     "full_novelty_std": 0.10391509090398253,
     "timing_sec": {
-      "add_memories": 3.8199265000002924,
-      "rebuild_cache": 0.011054500006139278,
-      "evaluate_queries": 0.17454569999244995,
-      "total_scale": 4.0058925000048475
+      "add_memories": 3.752788399986457,
+      "rebuild_cache": 0.010906899988185614,
+      "evaluate_queries": 0.1759775999817066,
+      "total_scale": 3.9401595999952406
     }
   },
   "50000": {
@@ -71,10 +71,10 @@
     "full_novelty_mean": 0.2191430326551199,
     "full_novelty_std": 0.1093582729542458,
     "timing_sec": {
-      "add_memories": 29.74177979999513,
-      "rebuild_cache": 0.07959269999992102,
-      "evaluate_queries": 0.28746370000590105,
-      "total_scale": 30.109468000009656
+      "add_memories": 29.182483899989165,
+      "rebuild_cache": 0.06483260000823066,
+      "evaluate_queries": 0.2637051000201609,
+      "total_scale": 29.511934399983147
     }
   },
   "100000": {
@@ -84,10 +84,10 @@
     "full_novelty_mean": 0.1188836231827736,
     "full_novelty_std": 0.008403269869143856,
     "timing_sec": {
-      "add_memories": 37.410817099997075,
-      "rebuild_cache": 0.14952579999226145,
-      "evaluate_queries": 0.38785939999797847,
-      "total_scale": 37.949330200004624
+      "add_memories": 37.08098309999332,
+      "rebuild_cache": 0.13418789999559522,
+      "evaluate_queries": 0.3759678000060376,
+      "total_scale": 37.59292729999288
     }
   }
 }

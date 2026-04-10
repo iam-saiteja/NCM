@@ -6,14 +6,14 @@
     "query_stride": 20,
     "max_queries": 20,
     "top_k": 10,
-    "timestamp": 1775815438.0800061,
+    "timestamp": 1775817097.3221924,
     "timing_sec": {
-      "load_corpus": 2.929940500005614,
-      "build_store": 26.322637599994778,
-      "build_queries": 4.879999323748052e-05,
-      "precompute": 0.2999084000039147,
-      "evaluate": 0.060359700000844896,
-      "total": 29.68573589999869
+      "load_corpus": 2.4620797999959905,
+      "build_store": 12.715576799993869,
+      "build_queries": 4.569999873638153e-05,
+      "precompute": 0.24001330000464804,
+      "evaluate": 0.04511010000715032,
+      "total": 15.524465299997246
     }
   },
   "systems": {

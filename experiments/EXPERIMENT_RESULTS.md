@@ -54,6 +54,8 @@ To separate “semantic recall quality” from “state-conditioned recall quali
 ### Results
 Source: [experiments/results/exp1/exp1_redesigned.json](results/exp1/exp1_redesigned.json)
 
+Canonical note: this section tracks `exp1_redesigned.py` (stored-event query protocol), not the legacy `run_all_experiments` Exp1 helper.
+
 | Metric | k | Semantic Only | Sem + Emotional | NCM Full |
 |--------|---|:---:|:---:|:---:|
 | Category P@k | 1 | 0.925 | 0.625 | 0.625 |
@@ -126,12 +128,12 @@ To ensure state-aware retrieval remains practical.
 ### Results
 | Memories | Semantic (ms) | Full Manifold (ms) | NCM Cached (ms) |
 |:---:|:---:|:---:|:---:|
-| 1,000 | 0.459 | 0.330 | 0.314 |
-| 10,000 | 4.346 | 1.136 | 0.973 |
-| 50,000 | 25.291 | 5.310 | 4.106 |
+| 1,000 | 0.436 | 0.303 | 0.298 |
+| 10,000 | 4.063 | 1.006 | 0.819 |
+| 50,000 | 24.590 | 5.226 | 3.973 |
 
-- Store throughput: ~20.7k to ~23.6k memories/sec
-- Encoding throughput: ~2.8k to ~7.9k texts/sec
+- Store throughput: ~21.4k to ~24.4k memories/sec
+- Encoding throughput: ~2.3k to ~7.9k texts/sec
 - Storage efficiency: ~560 bytes/memory
 
 ### What does it say?
@@ -150,9 +152,9 @@ To show whether NCM quality gains are still practical on latency.
 ### Results
 Source: [experiments/results/exp5/exp5_memory_systems_comparison.txt](results/exp5/exp5_memory_systems_comparison.txt)
 
-- ncm_cached_full: state_avg=0.7350, category_avg=0.9973, latency_ms=0.4058
-- ncm_full: state_avg=0.7350, category_avg=0.9973, latency_ms=0.4270
-- semantic_only: state_avg=0.1239, category_avg=1.0000, latency_ms=0.6516
+- ncm_cached_full: state_avg=0.7350, category_avg=0.9973, latency_ms=0.3903
+- ncm_full: state_avg=0.7350, category_avg=0.9973, latency_ms=0.3989
+- semantic_only: state_avg=0.1239, category_avg=1.0000, latency_ms=0.6467
 
 ### What does it say?
 NCM cached preserves most quality benefits with much lower latency than full mode.
@@ -170,9 +172,9 @@ To test NCM beyond weak baselines.
 ### Results
 Source: [experiments/results/exp6/exp6_current_memory_systems_vs_ncm.txt](results/exp6/exp6_current_memory_systems_vs_ncm.txt)
 
-- semantic_emotional: state_avg=0.7672, category_avg=0.8764, latency_ms=1.0591
-- ncm_cached_full: state_avg=0.5835, category_avg=0.6050, latency_ms=0.3973
-- rag_semantic_only: state_avg=0.1200, category_avg=0.9847, latency_ms=0.2369
+- semantic_emotional: state_avg=0.7672, category_avg=0.8764, latency_ms=1.1338
+- ncm_cached_full: state_avg=0.5835, category_avg=0.6050, latency_ms=0.3605
+- rag_semantic_only: state_avg=0.1200, category_avg=0.9847, latency_ms=0.2094
 
 ### What does it say?
 Different systems optimize different objectives; NCM stays competitive while preserving state-conditioning.
@@ -234,10 +236,10 @@ To quantify speed tradeoffs transparently.
 ### Results
 Source: [experiments/results/exp9/exp9_external_systems_speed.txt](results/exp9/exp9_external_systems_speed.txt)
 
-- recency_only: avg=0.0179ms
-- dense_sbert_cosine: avg=0.2005ms
-- ncm_cached_full: avg=0.4549ms
-- ncm_full: avg=0.4525ms
+- recency_only: avg=0.0107ms
+- dense_sbert_cosine: avg=0.1380ms
+- ncm_cached_full: avg=0.2946ms
+- ncm_full: avg=0.3075ms
 
 ### What does it say?
 NCM cached is slower than trivial baselines but still practical for interactive usage.

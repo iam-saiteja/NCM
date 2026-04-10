@@ -32,10 +32,10 @@
       "map@10": 0.047,
       "ndcg@10": 0.4006,
       "state_precision@10": 0.1194,
-      "latency_ms_avg": 0.2324,
-      "throughput_qps_est": 4303.45,
+      "latency_ms_avg": 0.2418,
+      "throughput_qps_est": 4136.41,
       "index_footprint_bytes": 614400,
-      "composite_score": 0.3209
+      "composite_score": 0.3195
     },
     {
       "system": "rag_semantic_recency",
@@ -46,10 +46,10 @@
       "map@10": 0.0306,
       "ndcg@10": 0.2569,
       "state_precision@10": 0.0813,
-      "latency_ms_avg": 0.2748,
-      "throughput_qps_est": 3639.61,
+      "latency_ms_avg": 0.2887,
+      "throughput_qps_est": 3463.39,
       "index_footprint_bytes": 624000,
-      "composite_score": 0.2172
+      "composite_score": 0.2156
     },
     {
       "system": "recency_only",
@@ -60,8 +60,8 @@
       "map@10": 0.0083,
       "ndcg@10": 0.0694,
       "state_precision@10": 0.0208,
-      "latency_ms_avg": 0.0299,
-      "throughput_qps_est": 33444.82,
+      "latency_ms_avg": 0.0287,
+      "throughput_qps_est": 34891.33,
       "index_footprint_bytes": 9600,
       "composite_score": 0.2451
     },
@@ -74,8 +74,8 @@
       "map@10": 0.0371,
       "ndcg@10": 0.6862,
       "state_precision@10": 0.5139,
-      "latency_ms_avg": 1.0529,
-      "throughput_qps_est": 949.72,
+      "latency_ms_avg": 1.05,
+      "throughput_qps_est": 952.36,
       "index_footprint_bytes": 628800,
       "composite_score": 0.3998
     },
@@ -88,10 +88,10 @@
       "map@10": 0.0241,
       "ndcg@10": 0.5541,
       "state_precision@10": 0.5076,
-      "latency_ms_avg": 0.423,
-      "throughput_qps_est": 2364.14,
+      "latency_ms_avg": 0.4353,
+      "throughput_qps_est": 2297.32,
       "index_footprint_bytes": 676800,
-      "composite_score": 0.3686
+      "composite_score": 0.3676
     },
     {
       "system": "ncm_cached_full",
@@ -102,10 +102,10 @@
       "map@10": 0.0241,
       "ndcg@10": 0.5541,
       "state_precision@10": 0.5076,
-      "latency_ms_avg": 0.4216,
-      "throughput_qps_est": 2371.71,
+      "latency_ms_avg": 0.4259,
+      "throughput_qps_est": 2348.15,
       "index_footprint_bytes": 676800,
-      "composite_score": 0.3687
+      "composite_score": 0.3682
     }
   ],
   "ranking": [
@@ -118,8 +118,8 @@
       "map@10": 0.0371,
       "ndcg@10": 0.6862,
       "state_precision@10": 0.5139,
-      "latency_ms_avg": 1.0529,
-      "throughput_qps_est": 949.72,
+      "latency_ms_avg": 1.05,
+      "throughput_qps_est": 952.36,
       "index_footprint_bytes": 628800,
       "composite_score": 0.3998
     },
@@ -132,10 +132,10 @@
       "map@10": 0.0241,
       "ndcg@10": 0.5541,
       "state_precision@10": 0.5076,
-      "latency_ms_avg": 0.4216,
-      "throughput_qps_est": 2371.71,
+      "latency_ms_avg": 0.4259,
+      "throughput_qps_est": 2348.15,
       "index_footprint_bytes": 676800,
-      "composite_score": 0.3687
+      "composite_score": 0.3682
     },
     {
       "system": "ncm_full",
@@ -146,10 +146,10 @@
       "map@10": 0.0241,
       "ndcg@10": 0.5541,
       "state_precision@10": 0.5076,
-      "latency_ms_avg": 0.423,
-      "throughput_qps_est": 2364.14,
+      "latency_ms_avg": 0.4353,
+      "throughput_qps_est": 2297.32,
       "index_footprint_bytes": 676800,
-      "composite_score": 0.3686
+      "composite_score": 0.3676
     },
     {
       "system": "rag_semantic_only",
@@ -160,10 +160,10 @@
       "map@10": 0.047,
       "ndcg@10": 0.4006,
       "state_precision@10": 0.1194,
-      "latency_ms_avg": 0.2324,
-      "throughput_qps_est": 4303.45,
+      "latency_ms_avg": 0.2418,
+      "throughput_qps_est": 4136.41,
       "index_footprint_bytes": 614400,
-      "composite_score": 0.3209
+      "composite_score": 0.3195
     },
     {
       "system": "recency_only",
@@ -174,8 +174,8 @@
       "map@10": 0.0083,
       "ndcg@10": 0.0694,
       "state_precision@10": 0.0208,
-      "latency_ms_avg": 0.0299,
-      "throughput_qps_est": 33444.82,
+      "latency_ms_avg": 0.0287,
+      "throughput_qps_est": 34891.33,
       "index_footprint_bytes": 9600,
       "composite_score": 0.2451
     },
@@ -188,10 +188,10 @@
       "map@10": 0.0306,
       "ndcg@10": 0.2569,
       "state_precision@10": 0.0813,
-      "latency_ms_avg": 0.2748,
-      "throughput_qps_est": 3639.61,
+      "latency_ms_avg": 0.2887,
+      "throughput_qps_est": 3463.39,
       "index_footprint_bytes": 624000,
-      "composite_score": 0.2172
+      "composite_score": 0.2156
     }
   ],
   "state_conditioning": {

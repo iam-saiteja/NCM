@@ -224,9 +224,11 @@ For detailed assessment of all experiment outputs (consolidated table, image-fir
 
 | Signal | Snapshot |
 |---|---|
+| Canonical Exp1 protocol | Uses `exp1_redesigned.py` (stored event texts as queries, 1200-memory table) |
 | State-conditioned recall shift | Exp3 mean Jaccard ≈ 0.718 for NCM vs ~0 for state-blind baseline |
 | Large-scale novelty | Exp2 (AG News): semantic novelty trends to ~0 at 100k while full-manifold remains ~0.119 |
 | Real-world corpus | Exp11 (bounded): NCM keeps strongest divergence (JaccardΔ≈0.374) with competitive NDCG/MRR |
+| Speed snapshot | Exp4 (100k): semantic 49.346ms, full 10.131ms, cached 7.860ms/query |
 | Weight robustness | Exp12: default remains near top-performing preset |
 | Honest rematch | Exp13: NCM stronger in low/high shift buckets |
 
