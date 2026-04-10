@@ -301,9 +301,11 @@ To test whether the system is robust or fragile to weight selection.
 ### Results
 Source: [experiments/results/exp12/exp12_weight_sensitivity.txt](results/exp12/exp12_weight_sensitivity.txt)
 
-- temporal_heavy: NDCG=0.609, R@10=0.218, JaccardΔ=0.267
-- semantic_light: NDCG=0.605, R@10=0.218, JaccardΔ=0.343
-- default: NDCG=0.605, R@10=0.220, JaccardΔ=0.306
+- semantic_light: NDCG=0.763, R@10=0.011, JaccardΔ=0.529
+- emotional_heavy: NDCG=0.763, R@10=0.012, JaccardΔ=0.509
+- state_heavy: NDCG=0.762, R@10=0.013, JaccardΔ=0.578
+- temporal_heavy: NDCG=0.762, R@10=0.011, JaccardΔ=0.302
+- default: NDCG=0.760, R@10=0.012, JaccardΔ=0.369
 
 ### What does it say?
 Default weights are stable and close to best; no brittle single optimum.
