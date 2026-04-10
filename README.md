@@ -407,8 +407,21 @@ This is **Invention 1 of 3** in the TES project stack. NCM is architecturally in
 - Offers deployment flexibility through **cached retrieval** for better latency-quality tradeoff.
 - Enables debugging/interpretability via structured memory fields and experiment traces.
 
+## Live Local Memory Proof (Ollama + NCM)
+
+A real local run in the Ollama integration showed:
+
+- A persisted `.ncm` memory file was written and then loaded again in a later chat session.
+- A follow-up user question retrieved relevant earlier context from memory and used it in the response.
+
+This confirms live behavior is working as intended: responses are influenced by relevant persisted memory, not only the immediate turn.
+
 ## Future Features
 
+- Automated memory curation pipeline.
+    - Introduce relevance/novelty-based pruning to remove low-utility and duplicate memory entries.
+    - Retain high-signal memories to sustain retrieval quality over long-running sessions.
+- Evaluate how each retrieval dimension influences chat behavior while developing stable persona patterns from conversation history.
 - Learnable/auto-tuned retrieval weights per user or domain.
 - ANN indexing (e.g., FAISS/HNSW) for faster large-scale manifold retrieval.
 - Better calibration of strength dynamics (decay/reinforcement scheduling).
