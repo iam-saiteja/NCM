@@ -1,0 +1,15 @@
+EXP5: Memory Systems Comparison
+==================================
+Dataset: 1200 memories, 240 queries
+
+Standings (higher state/category, lower latency)
+1. ncm_cached_full: state_avg=0.7350, category_avg=0.9973, latency_ms=0.4058
+2. ncm_full: state_avg=0.7350, category_avg=0.9973, latency_ms=0.4270
+3. ncm_full_no_strength: state_avg=0.7350, category_avg=0.9972, latency_ms=0.4171
+4. semantic_emotional: state_avg=0.7330, category_avg=1.0000, latency_ms=1.0595
+5. semantic_only: state_avg=0.1239, category_avg=1.0000, latency_ms=0.6516
+
+State-conditioning Jaccard (same text, different states)
+- calm_happy_vs_stressed_angry: semantic=0.0, sem+emo=1.0, ncm=1.0
+- confident_vs_fearful: semantic=0.0, sem+emo=1.0, ncm=1.0
+- neutral_vs_exhausted: semantic=0.0, sem+emo=0.1818, ncm=0.5714

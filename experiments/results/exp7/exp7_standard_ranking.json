@@ -1,0 +1,230 @@
+{
+  "dataset": {
+    "memories": 1200,
+    "queries": 144,
+    "query_type": "category paraphrases (not exact memory strings)"
+  },
+  "metrics_used": [
+    "precision@10",
+    "hit@10",
+    "mrr@10",
+    "recall@10",
+    "map@10",
+    "ndcg@10",
+    "state_precision@10",
+    "latency_ms_avg",
+    "throughput_qps_est",
+    "index_footprint_bytes"
+  ],
+  "composite_formula": {
+    "relevance": "0.20*NDCG@10 + 0.15*Recall@10 + 0.10*MRR@10 + 0.05*Hit@10 + 0.10*MAP@10",
+    "state": "0.20*StatePrecision@10",
+    "efficiency": "0.10*norm(Throughput) + 0.05*(1-norm(Latency)) + 0.05*(1-norm(Memory))",
+    "total": "Composite = relevance + state + efficiency"
+  },
+  "systems": [
+    {
+      "system": "rag_semantic_only",
+      "precision@10": 0.95,
+      "hit@10": 1.0,
+      "mrr@10": 1.0,
+      "recall@10": 0.0475,
+      "map@10": 0.047,
+      "ndcg@10": 0.4006,
+      "state_precision@10": 0.1194,
+      "latency_ms_avg": 0.2324,
+      "throughput_qps_est": 4303.45,
+      "index_footprint_bytes": 614400,
+      "composite_score": 0.3209
+    },
+    {
+      "system": "rag_semantic_recency",
+      "precision@10": 0.6111,
+      "hit@10": 0.6111,
+      "mrr@10": 0.6111,
+      "recall@10": 0.0306,
+      "map@10": 0.0306,
+      "ndcg@10": 0.2569,
+      "state_precision@10": 0.0813,
+      "latency_ms_avg": 0.2748,
+      "throughput_qps_est": 3639.61,
+      "index_footprint_bytes": 624000,
+      "composite_score": 0.2172
+    },
+    {
+      "system": "recency_only",
+      "precision@10": 0.1667,
+      "hit@10": 0.1667,
+      "mrr@10": 0.1667,
+      "recall@10": 0.0083,
+      "map@10": 0.0083,
+      "ndcg@10": 0.0694,
+      "state_precision@10": 0.0208,
+      "latency_ms_avg": 0.0299,
+      "throughput_qps_est": 33444.82,
+      "index_footprint_bytes": 9600,
+      "composite_score": 0.2451
+    },
+    {
+      "system": "semantic_emotional",
+      "precision@10": 0.7903,
+      "hit@10": 1.0,
+      "mrr@10": 0.9653,
+      "recall@10": 0.0395,
+      "map@10": 0.0371,
+      "ndcg@10": 0.6862,
+      "state_precision@10": 0.5139,
+      "latency_ms_avg": 1.0529,
+      "throughput_qps_est": 949.72,
+      "index_footprint_bytes": 628800,
+      "composite_score": 0.3998
+    },
+    {
+      "system": "ncm_full",
+      "precision@10": 0.566,
+      "hit@10": 0.9167,
+      "mrr@10": 0.6868,
+      "recall@10": 0.0283,
+      "map@10": 0.0241,
+      "ndcg@10": 0.5541,
+      "state_precision@10": 0.5076,
+      "latency_ms_avg": 0.423,
+      "throughput_qps_est": 2364.14,
+      "index_footprint_bytes": 676800,
+      "composite_score": 0.3686
+    },
+    {
+      "system": "ncm_cached_full",
+      "precision@10": 0.566,
+      "hit@10": 0.9167,
+      "mrr@10": 0.6868,
+      "recall@10": 0.0283,
+      "map@10": 0.0241,
+      "ndcg@10": 0.5541,
+      "state_precision@10": 0.5076,
+      "latency_ms_avg": 0.4216,
+      "throughput_qps_est": 2371.71,
+      "index_footprint_bytes": 676800,
+      "composite_score": 0.3687
+    }
+  ],
+  "ranking": [
+    {
+      "system": "semantic_emotional",
+      "precision@10": 0.7903,
+      "hit@10": 1.0,
+      "mrr@10": 0.9653,
+      "recall@10": 0.0395,
+      "map@10": 0.0371,
+      "ndcg@10": 0.6862,
+      "state_precision@10": 0.5139,
+      "latency_ms_avg": 1.0529,
+      "throughput_qps_est": 949.72,
+      "index_footprint_bytes": 628800,
+      "composite_score": 0.3998
+    },
+    {
+      "system": "ncm_cached_full",
+      "precision@10": 0.566,
+      "hit@10": 0.9167,
+      "mrr@10": 0.6868,
+      "recall@10": 0.0283,
+      "map@10": 0.0241,
+      "ndcg@10": 0.5541,
+      "state_precision@10": 0.5076,
+      "latency_ms_avg": 0.4216,
+      "throughput_qps_est": 2371.71,
+      "index_footprint_bytes": 676800,
+      "composite_score": 0.3687
+    },
+    {
+      "system": "ncm_full",
+      "precision@10": 0.566,
+      "hit@10": 0.9167,
+      "mrr@10": 0.6868,
+      "recall@10": 0.0283,
+      "map@10": 0.0241,
+      "ndcg@10": 0.5541,
+      "state_precision@10": 0.5076,
+      "latency_ms_avg": 0.423,
+      "throughput_qps_est": 2364.14,
+      "index_footprint_bytes": 676800,
+      "composite_score": 0.3686
+    },
+    {
+      "system": "rag_semantic_only",
+      "precision@10": 0.95,
+      "hit@10": 1.0,
+      "mrr@10": 1.0,
+      "recall@10": 0.0475,
+      "map@10": 0.047,
+      "ndcg@10": 0.4006,
+      "state_precision@10": 0.1194,
+      "latency_ms_avg": 0.2324,
+      "throughput_qps_est": 4303.45,
+      "index_footprint_bytes": 614400,
+      "composite_score": 0.3209
+    },
+    {
+      "system": "recency_only",
+      "precision@10": 0.1667,
+      "hit@10": 0.1667,
+      "mrr@10": 0.1667,
+      "recall@10": 0.0083,
+      "map@10": 0.0083,
+      "ndcg@10": 0.0694,
+      "state_precision@10": 0.0208,
+      "latency_ms_avg": 0.0299,
+      "throughput_qps_est": 33444.82,
+      "index_footprint_bytes": 9600,
+      "composite_score": 0.2451
+    },
+    {
+      "system": "rag_semantic_recency",
+      "precision@10": 0.6111,
+      "hit@10": 0.6111,
+      "mrr@10": 0.6111,
+      "recall@10": 0.0306,
+      "map@10": 0.0306,
+      "ndcg@10": 0.2569,
+      "state_precision@10": 0.0813,
+      "latency_ms_avg": 0.2748,
+      "throughput_qps_est": 3639.61,
+      "index_footprint_bytes": 624000,
+      "composite_score": 0.2172
+    }
+  ],
+  "state_conditioning": {
+    "calm_happy_vs_stressed_angry": {
+      "rag_semantic_only_jaccard": 0.0,
+      "rag_semantic_recency_jaccard": 0.0,
+      "semantic_emotional_jaccard": 1.0,
+      "ncm_full_jaccard": 1.0,
+      "ncm_cached_full_jaccard": 1.0
+    },
+    "confident_vs_fearful": {
+      "rag_semantic_only_jaccard": 0.0,
+      "rag_semantic_recency_jaccard": 0.0,
+      "semantic_emotional_jaccard": 1.0,
+      "ncm_full_jaccard": 1.0,
+      "ncm_cached_full_jaccard": 1.0
+    },
+    "neutral_vs_exhausted": {
+      "rag_semantic_only_jaccard": 0.0,
+      "rag_semantic_recency_jaccard": 0.0,
+      "semantic_emotional_jaccard": 0.9474,
+      "ncm_full_jaccard": 1.0,
+      "ncm_cached_full_jaccard": 1.0
+    }
+  },
+  "references": [
+    "https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-of-ranked-retrieval-results-1.html",
+    "https://www.elastic.co/docs/reference/elasticsearch/rest-apis/search-rank-eval",
+    "https://openreview.net/forum?id=wCu6T5xFjeJ",
+    "https://github.com/beir-cellar/beir/wiki/Metrics-available",
+    "https://recommenders-team.github.io/recommenders/evaluation.html",
+    "https://www.tensorflow.org/recommenders/examples/basic_retrieval",
+    "https://learn.microsoft.com/en-us/azure/search/search-performance-analysis",
+    "https://mlcommons.org/benchmarks/inference-datacenter/"
+  ]
+}

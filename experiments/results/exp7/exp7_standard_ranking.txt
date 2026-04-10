@@ -1,0 +1,26 @@
+EXP7: Standardized Ranking for Current Memory Systems
+=======================================================
+Dataset: 1200 memories, 144 queries
+
+Ranking (composite score)
+1. semantic_emotional: score=0.3998, ndcg@10=0.6862, recall@10=0.0395, state_p@10=0.5139, latency_ms=1.0529, mem=628800
+2. ncm_cached_full: score=0.3687, ndcg@10=0.5541, recall@10=0.0283, state_p@10=0.5076, latency_ms=0.4216, mem=676800
+3. ncm_full: score=0.3686, ndcg@10=0.5541, recall@10=0.0283, state_p@10=0.5076, latency_ms=0.4230, mem=676800
+4. rag_semantic_only: score=0.3209, ndcg@10=0.4006, recall@10=0.0475, state_p@10=0.1194, latency_ms=0.2324, mem=614400
+5. recency_only: score=0.2451, ndcg@10=0.0694, recall@10=0.0083, state_p@10=0.0208, latency_ms=0.0299, mem=9600
+6. rag_semantic_recency: score=0.2172, ndcg@10=0.2569, recall@10=0.0306, state_p@10=0.0813, latency_ms=0.2748, mem=624000
+
+State-conditioning Jaccard
+- calm_happy_vs_stressed_angry: {'rag_semantic_only_jaccard': 0.0, 'rag_semantic_recency_jaccard': 0.0, 'semantic_emotional_jaccard': 1.0, 'ncm_full_jaccard': 1.0, 'ncm_cached_full_jaccard': 1.0}
+- confident_vs_fearful: {'rag_semantic_only_jaccard': 0.0, 'rag_semantic_recency_jaccard': 0.0, 'semantic_emotional_jaccard': 1.0, 'ncm_full_jaccard': 1.0, 'ncm_cached_full_jaccard': 1.0}
+- neutral_vs_exhausted: {'rag_semantic_only_jaccard': 0.0, 'rag_semantic_recency_jaccard': 0.0, 'semantic_emotional_jaccard': 0.9474, 'ncm_full_jaccard': 1.0, 'ncm_cached_full_jaccard': 1.0}
+
+References used for metrics
+- https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-of-ranked-retrieval-results-1.html
+- https://www.elastic.co/docs/reference/elasticsearch/rest-apis/search-rank-eval
+- https://openreview.net/forum?id=wCu6T5xFjeJ
+- https://github.com/beir-cellar/beir/wiki/Metrics-available
+- https://recommenders-team.github.io/recommenders/evaluation.html
+- https://www.tensorflow.org/recommenders/examples/basic_retrieval
+- https://learn.microsoft.com/en-us/azure/search/search-performance-analysis
+- https://mlcommons.org/benchmarks/inference-datacenter/

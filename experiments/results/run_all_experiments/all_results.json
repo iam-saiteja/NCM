@@ -1,0 +1,267 @@
+{
+  "math": {
+    "w_emo_orthonormality_error": 2.1026952315993608e-07,
+    "sem_norm_1": 0.9999999403953552,
+    "sem_norm_2": 0.9999999403953552,
+    "emo_norm": 1.0,
+    "state_norm": 1.0,
+    "distance_bounds_verified": true,
+    "cosine_bounds_verified": true,
+    "weight_sum": 1.0,
+    "jl_min_dim": 9868.221827117337,
+    "jl_satisfied": false,
+    "dirichlet_balanced": 0.0,
+    "dirichlet_skewed": 0.26999999999999996,
+    "temporal_decay_verified": true
+  },
+  "exp1": {
+    "n=100,k=1": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "n=100,k=3": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.013333333333333332
+    },
+    "n=100,k=5": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.02
+    },
+    "n=100,k=10": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.004,
+      "full_manifold": 0.012000000000000002
+    },
+    "n=500,k=1": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "n=500,k=3": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "n=500,k=5": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "n=500,k=10": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.01
+    },
+    "n=1000,k=1": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "n=1000,k=3": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "n=1000,k=5": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "n=1000,k=10": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "n=5000,k=1": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "n=5000,k=3": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "n=5000,k=5": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "n=5000,k=10": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    }
+  },
+  "exp3": {
+    "calm_happy_vs_stressed_angry": {
+      "semantic_jaccard_mean": 0.0,
+      "manifold_jaccard_mean": 0.7916666666666666,
+      "manifold_jaccard_std": 0.06364688465216442,
+      "improvement": 0.7916666666666666
+    },
+    "excited_curious_vs_sad_withdrawn": {
+      "semantic_jaccard_mean": 0.0,
+      "manifold_jaccard_mean": 0.7685185185185186,
+      "manifold_jaccard_std": 0.04721314364437762,
+      "improvement": 0.7685185185185186
+    },
+    "confident_vs_fearful": {
+      "semantic_jaccard_mean": 0.0,
+      "manifold_jaccard_mean": 0.8324074074074075,
+      "manifold_jaccard_std": 0.07470219796862945,
+      "improvement": 0.8324074074074075
+    },
+    "neutral_vs_exhausted": {
+      "semantic_jaccard_mean": 0.0,
+      "manifold_jaccard_mean": 0.3333333333333334,
+      "manifold_jaccard_std": 5.551115123125783e-17,
+      "improvement": 0.3333333333333334
+    },
+    "calm_happy_vs_fearful": {
+      "semantic_jaccard_mean": 0.0,
+      "manifold_jaccard_mean": 0.7916666666666666,
+      "manifold_jaccard_std": 0.06364688465216442,
+      "improvement": 0.7916666666666666
+    },
+    "excited_curious_vs_exhausted": {
+      "semantic_jaccard_mean": 0.0,
+      "manifold_jaccard_mean": 0.7685185185185186,
+      "manifold_jaccard_std": 0.04721314364437762,
+      "improvement": 0.7685185185185186
+    }
+  },
+  "exp4": {
+    "100": {
+      "encode_throughput_per_sec": 471.6,
+      "store_throughput_per_sec": 14797.5,
+      "retrieval_semantic_ms": 0.155,
+      "retrieval_full_manifold_ms": 0.243,
+      "retrieval_fast_cached_ms": 0.239,
+      "save_time_sec": 0.004,
+      "load_time_sec": 0.009,
+      "file_size_bytes": 56298,
+      "file_size_mb": 0.05,
+      "bytes_per_memory": 563.0
+    },
+    "500": {
+      "encode_throughput_per_sec": 1496.4,
+      "store_throughput_per_sec": 17036.4,
+      "retrieval_semantic_ms": 0.258,
+      "retrieval_full_manifold_ms": 0.249,
+      "retrieval_fast_cached_ms": 0.227,
+      "save_time_sec": 0.013,
+      "load_time_sec": 0.012,
+      "file_size_bytes": 279984,
+      "file_size_mb": 0.27,
+      "bytes_per_memory": 560.0
+    },
+    "1000": {
+      "encode_throughput_per_sec": 1520.3,
+      "store_throughput_per_sec": 19060.8,
+      "retrieval_semantic_ms": 0.424,
+      "retrieval_full_manifold_ms": 0.359,
+      "retrieval_fast_cached_ms": 0.353,
+      "save_time_sec": 0.027,
+      "load_time_sec": 0.015,
+      "file_size_bytes": 559771,
+      "file_size_mb": 0.53,
+      "bytes_per_memory": 559.8
+    },
+    "5000": {
+      "encode_throughput_per_sec": 1538.0,
+      "store_throughput_per_sec": 21758.9,
+      "retrieval_semantic_ms": 2.387,
+      "retrieval_full_manifold_ms": 0.595,
+      "retrieval_fast_cached_ms": 0.535,
+      "save_time_sec": 0.122,
+      "load_time_sec": 0.045,
+      "file_size_bytes": 2797606,
+      "file_size_mb": 2.67,
+      "bytes_per_memory": 559.5
+    },
+    "10000": {
+      "encode_throughput_per_sec": 1563.4,
+      "store_throughput_per_sec": 21521.6,
+      "retrieval_semantic_ms": 4.362,
+      "retrieval_full_manifold_ms": 0.963,
+      "retrieval_fast_cached_ms": 0.815,
+      "save_time_sec": 0.237,
+      "load_time_sec": 0.082,
+      "file_size_bytes": 5595184,
+      "file_size_mb": 5.34,
+      "bytes_per_memory": 559.5
+    },
+    "50000": {
+      "encode_throughput_per_sec": 1523.6,
+      "store_throughput_per_sec": 21561.5,
+      "retrieval_semantic_ms": 25.133,
+      "retrieval_full_manifold_ms": 5.169,
+      "retrieval_fast_cached_ms": 3.952,
+      "save_time_sec": 1.198,
+      "load_time_sec": 0.522,
+      "file_size_bytes": 27970795,
+      "file_size_mb": 26.68,
+      "bytes_per_memory": 559.4
+    },
+    "100000": {
+      "encode_throughput_per_sec": 1645.9,
+      "store_throughput_per_sec": 22698.5,
+      "retrieval_semantic_ms": 49.454,
+      "retrieval_full_manifold_ms": 9.916,
+      "retrieval_fast_cached_ms": 7.718,
+      "save_time_sec": 2.405,
+      "load_time_sec": 0.955,
+      "file_size_bytes": 55940127,
+      "file_size_mb": 53.35,
+      "bytes_per_memory": 559.4
+    }
+  },
+  "exp2": {
+    "100": {
+      "semantic_novelty_mean": 0.0826032817363739,
+      "semantic_novelty_std": 0.022414058311580547,
+      "full_novelty_mean": 0.1648280680179596,
+      "full_novelty_std": 0.03749100948879157
+    },
+    "500": {
+      "semantic_novelty_mean": 0.07372505962848663,
+      "semantic_novelty_std": 0.01503191786697367,
+      "full_novelty_mean": 0.16755861975252628,
+      "full_novelty_std": 0.030636883077443267
+    },
+    "1000": {
+      "semantic_novelty_mean": 0.0628826916217804,
+      "semantic_novelty_std": 0.010125514682970037,
+      "full_novelty_mean": 0.15393202491104602,
+      "full_novelty_std": 0.037508783698280944
+    },
+    "5000": {
+      "semantic_novelty_mean": 0.05718095600605011,
+      "semantic_novelty_std": 0.01362044355892229,
+      "full_novelty_mean": 0.16283259056508542,
+      "full_novelty_std": 0.033844028924363646
+    },
+    "10000": {
+      "semantic_novelty_mean": 0.05233006477355957,
+      "semantic_novelty_std": 0.011832024244870967,
+      "full_novelty_mean": 0.15224778652191162,
+      "full_novelty_std": 0.026949462451843587
+    },
+    "50000": {
+      "semantic_novelty_mean": 0.04728328585624695,
+      "semantic_novelty_std": 0.010262898155063961,
+      "full_novelty_mean": 0.158467797935009,
+      "full_novelty_std": 0.028542131336435073
+    },
+    "100000": {
+      "semantic_novelty_mean": 0.046364191174507144,
+      "semantic_novelty_std": 0.009818864925479835,
+      "full_novelty_mean": 0.14442921318113805,
+      "full_novelty_std": 0.03965312302375652
+    }
+  }
+}

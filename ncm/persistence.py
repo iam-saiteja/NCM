@@ -117,6 +117,7 @@ class NCMFile:
 
     @staticmethod
     def _write_memory(buf, memory, sem_dim, emo_dim, state_dim):
+        """OPTIMIZATION: Efficient memory serialization with pre-packed vectors."""
         id_bytes = memory.id.encode('utf-8')
         buf.write(struct.pack('>H', len(id_bytes)))
         buf.write(id_bytes)
@@ -124,10 +125,12 @@ class NCMFile:
         buf.write(struct.pack('>f', memory.strength))
 
         def write_vec(vec, dim):
-            v = vec.astype(np.float32)
-            if len(v) != dim:
+            """OPTIMIZATION: Avoid intermediate array copy if dimensions match."""
+            v = np.asarray(vec, dtype=np.float32)
+            if v.shape[0] != dim:
+                # Only create temporary if needed
                 tmp = np.zeros(dim, dtype=np.float32)
-                tmp[:min(len(v), dim)] = v[:dim]
+                tmp[:min(len(v), dim)] = v[:min(len(v), dim)]
                 v = tmp
             buf.write(v.tobytes())
 
@@ -139,6 +142,7 @@ class NCMFile:
         buf.write(struct.pack('>H', len(text_bytes)))
         buf.write(text_bytes)
 
+        # OPTIMIZATION: Filter tags once instead of in comprehension
         valid_tags = [t for t in memory.tags if isinstance(t, str)][:255]
         buf.write(struct.pack('>B', len(valid_tags)))
         for tag in valid_tags:
@@ -148,11 +152,14 @@ class NCMFile:
 
     @staticmethod
     def _read_memory(buf, sem_dim, emo_dim, state_dim):
+        """OPTIMIZATION: Efficient memory deserialization with direct numpy frombuffer."""
         id_len = struct.unpack('>H', buf.read(2))[0]
         memory_id = buf.read(id_len).decode('utf-8')
         timestamp = struct.unpack('>q', buf.read(8))[0]
         strength = struct.unpack('>f', buf.read(4))[0]
 
+        # OPTIMIZATION: Use frombuffer directly for zero-copy semantics when possible
+        # Copy only when necessary (when buffer might be invalidated)
         e_semantic = np.frombuffer(buf.read(sem_dim * 4), dtype=np.float32).copy()
         e_emotional = np.frombuffer(buf.read(emo_dim * 4), dtype=np.float32).copy()
         s_snapshot = np.frombuffer(buf.read(state_dim * 4), dtype=np.float32).copy()

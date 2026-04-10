@@ -1,0 +1,10 @@
+EXP11: Real-World Corpus Benchmark
+===================================
+Corpus dir: C:\Users\iamsa\Documents\NCM-RELEASE\experiments\data\real_world_corpus
+Chunks: 300
+Queries: 16
+
+semantic_only: R@10=0.034  NDCG=0.720  MRR=0.484  JaccardΔ=0.000
+semantic_emotional: R@10=0.034  NDCG=0.721  MRR=0.487  JaccardΔ=0.299
+ncm_full: R@10=0.037  NDCG=0.731  MRR=0.488  JaccardΔ=0.374
+ncm_cached: R@10=0.037  NDCG=0.731  MRR=0.488  JaccardΔ=0.374

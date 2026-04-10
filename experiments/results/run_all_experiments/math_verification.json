@@ -1,0 +1,15 @@
+{
+  "w_emo_orthonormality_error": 2.1026952315993608e-07,
+  "sem_norm_1": 0.9999999403953552,
+  "sem_norm_2": 1.0,
+  "emo_norm": 1.0,
+  "state_norm": 1.0,
+  "distance_bounds_verified": true,
+  "cosine_bounds_verified": true,
+  "weight_sum": 1.0,
+  "jl_min_dim": 9868.221827117337,
+  "jl_satisfied": false,
+  "dirichlet_balanced": 0.0,
+  "dirichlet_skewed": 0.26999999999999996,
+  "temporal_decay_verified": true
+}

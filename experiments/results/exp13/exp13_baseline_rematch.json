@@ -1,0 +1,79 @@
+{
+  "metadata": {
+    "corpus_dir": "experiments\\data\\real_world_corpus",
+    "num_chunks": 50,
+    "num_queries": 10,
+    "query_stride": 5,
+    "top_k": 10,
+    "timestamp": 1775801501.35228
+  },
+  "systems": {
+    "semantic_emotional": {
+      "overall": {
+        "avg_recall@10": 0.207985257985258,
+        "avg_ndcg@10": 0.58742729414617,
+        "avg_mrr": 0.4625,
+        "avg_retrieval_divergence": 0.2522144522144522
+      },
+      "by_bucket": {
+        "low_shift": {
+          "avg_recall@10": 0.2117117117117117,
+          "avg_ndcg@10": 0.6543002993288065,
+          "avg_mrr": 0.4444444444444444,
+          "avg_retrieval_divergence": 0.22222222222222224
+        },
+        "medium_shift": {
+          "avg_recall@10": 0.2395577395577396,
+          "avg_ndcg@10": 0.5773549913602862,
+          "avg_mrr": 0.5,
+          "avg_retrieval_divergence": 0.18181818181818177
+        },
+        "high_shift": {
+          "avg_recall@10": 0.1815110565110565,
+          "avg_ndcg@10": 0.5448267673486056,
+          "avg_mrr": 0.44791666666666663,
+          "avg_retrieval_divergence": 0.3275058275058275
+        }
+      }
+    },
+    "ncm_full": {
+      "overall": {
+        "avg_recall@10": 0.2197788697788698,
+        "avg_ndcg@10": 0.6046506126381359,
+        "avg_mrr": 0.45166666666666666,
+        "avg_retrieval_divergence": 0.3063270063270063
+      },
+      "by_bucket": {
+        "low_shift": {
+          "avg_recall@10": 0.22522522522522523,
+          "avg_ndcg@10": 0.6873332711195501,
+          "avg_mrr": 0.38888888888888884,
+          "avg_retrieval_divergence": 0.1717171717171717
+        },
+        "medium_shift": {
+          "avg_recall@10": 0.23505323505323505,
+          "avg_ndcg@10": 0.5724320079503836,
+          "avg_mrr": 0.5,
+          "avg_retrieval_divergence": 0.2828282828282828
+        },
+        "high_shift": {
+          "avg_recall@10": 0.20423832923832924,
+          "avg_ndcg@10": 0.5668025722928896,
+          "avg_mrr": 0.4625,
+          "avg_retrieval_divergence": 0.4249084249084249
+        }
+      }
+    }
+  },
+  "query_buckets": {
+    "thresholds": [
+      0.18319618426263334,
+      0.2564099481701851
+    ],
+    "sizes": {
+      "low_shift": 3,
+      "medium_shift": 3,
+      "high_shift": 4
+    }
+  }
+}

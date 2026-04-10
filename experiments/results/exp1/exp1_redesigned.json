@@ -1,0 +1,306 @@
+{
+  "96_k1": {
+    "store_size": 96,
+    "k": 1,
+    "category_precision": {
+      "semantic_only": 0.85,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "state_precision": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "ndcg": {
+      "semantic_only": 0.85,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    }
+  },
+  "96_k3": {
+    "store_size": 96,
+    "k": 3,
+    "category_precision": {
+      "semantic_only": 0.8417,
+      "semantic_emotional": 0.6667,
+      "full_manifold": 0.6667
+    },
+    "state_precision": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "ndcg": {
+      "semantic_only": 0.8441,
+      "semantic_emotional": 0.5307,
+      "full_manifold": 0.5307
+    }
+  },
+  "96_k5": {
+    "store_size": 96,
+    "k": 5,
+    "category_precision": {
+      "semantic_only": 0.875,
+      "semantic_emotional": 0.8,
+      "full_manifold": 0.8
+    },
+    "state_precision": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "ndcg": {
+      "semantic_only": 0.8662,
+      "semantic_emotional": 0.6608,
+      "full_manifold": 0.6608
+    }
+  },
+  "96_k10": {
+    "store_size": 96,
+    "k": 10,
+    "category_precision": {
+      "semantic_only": 0.8225,
+      "semantic_emotional": 0.81,
+      "full_manifold": 0.7875
+    },
+    "state_precision": {
+      "semantic_only": 0.0125,
+      "semantic_emotional": 0.0675,
+      "full_manifold": 0.0775
+    },
+    "ndcg": {
+      "semantic_only": 0.8354,
+      "semantic_emotional": 0.7216,
+      "full_manifold": 0.7055
+    }
+  },
+  "240_k1": {
+    "store_size": 240,
+    "k": 1,
+    "category_precision": {
+      "semantic_only": 0.925,
+      "semantic_emotional": 0.025,
+      "full_manifold": 0.0
+    },
+    "state_precision": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "ndcg": {
+      "semantic_only": 0.925,
+      "semantic_emotional": 0.025,
+      "full_manifold": 0.0
+    }
+  },
+  "240_k3": {
+    "store_size": 240,
+    "k": 3,
+    "category_precision": {
+      "semantic_only": 0.8917,
+      "semantic_emotional": 0.6667,
+      "full_manifold": 0.6667
+    },
+    "state_precision": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.0
+    },
+    "ndcg": {
+      "semantic_only": 0.8969,
+      "semantic_emotional": 0.5351,
+      "full_manifold": 0.5307
+    }
+  },
+  "240_k5": {
+    "store_size": 240,
+    "k": 5,
+    "category_precision": {
+      "semantic_only": 0.875,
+      "semantic_emotional": 0.8,
+      "full_manifold": 0.775
+    },
+    "state_precision": {
+      "semantic_only": 0.0,
+      "semantic_emotional": 0.0,
+      "full_manifold": 0.005
+    },
+    "ndcg": {
+      "semantic_only": 0.8835,
+      "semantic_emotional": 0.664,
+      "full_manifold": 0.6441
+    }
+  },
+  "240_k10": {
+    "store_size": 240,
+    "k": 10,
+    "category_precision": {
+      "semantic_only": 0.765,
+      "semantic_emotional": 0.7575,
+      "full_manifold": 0.715
+    },
+    "state_precision": {
+      "semantic_only": 0.0075,
+      "semantic_emotional": 0.045,
+      "full_manifold": 0.07
+    },
+    "ndcg": {
+      "semantic_only": 0.8095,
+      "semantic_emotional": 0.6894,
+      "full_manifold": 0.6515
+    }
+  },
+  "480_k1": {
+    "store_size": 480,
+    "k": 1,
+    "category_precision": {
+      "semantic_only": 0.95,
+      "semantic_emotional": 0.15,
+      "full_manifold": 0.175
+    },
+    "state_precision": {
+      "semantic_only": 0.025,
+      "semantic_emotional": 0.15,
+      "full_manifold": 0.175
+    },
+    "ndcg": {
+      "semantic_only": 0.95,
+      "semantic_emotional": 0.15,
+      "full_manifold": 0.175
+    }
+  },
+  "480_k3": {
+    "store_size": 480,
+    "k": 3,
+    "category_precision": {
+      "semantic_only": 0.8917,
+      "semantic_emotional": 0.6667,
+      "full_manifold": 0.65
+    },
+    "state_precision": {
+      "semantic_only": 0.05,
+      "semantic_emotional": 0.1167,
+      "full_manifold": 0.1167
+    },
+    "ndcg": {
+      "semantic_only": 0.9013,
+      "semantic_emotional": 0.5567,
+      "full_manifold": 0.5493
+    }
+  },
+  "480_k5": {
+    "store_size": 480,
+    "k": 5,
+    "category_precision": {
+      "semantic_only": 0.88,
+      "semantic_emotional": 0.8,
+      "full_manifold": 0.78
+    },
+    "state_precision": {
+      "semantic_only": 0.035,
+      "semantic_emotional": 0.07,
+      "full_manifold": 0.075
+    },
+    "ndcg": {
+      "semantic_only": 0.8911,
+      "semantic_emotional": 0.6796,
+      "full_manifold": 0.6677
+    }
+  },
+  "480_k10": {
+    "store_size": 480,
+    "k": 10,
+    "category_precision": {
+      "semantic_only": 0.815,
+      "semantic_emotional": 0.8125,
+      "full_manifold": 0.7775
+    },
+    "state_precision": {
+      "semantic_only": 0.035,
+      "semantic_emotional": 0.0725,
+      "full_manifold": 0.105
+    },
+    "ndcg": {
+      "semantic_only": 0.8456,
+      "semantic_emotional": 0.735,
+      "full_manifold": 0.707
+    }
+  },
+  "1200_k1": {
+    "store_size": 1200,
+    "k": 1,
+    "category_precision": {
+      "semantic_only": 0.925,
+      "semantic_emotional": 0.625,
+      "full_manifold": 0.625
+    },
+    "state_precision": {
+      "semantic_only": 0.075,
+      "semantic_emotional": 0.625,
+      "full_manifold": 0.625
+    },
+    "ndcg": {
+      "semantic_only": 0.925,
+      "semantic_emotional": 0.625,
+      "full_manifold": 0.625
+    }
+  },
+  "1200_k3": {
+    "store_size": 1200,
+    "k": 3,
+    "category_precision": {
+      "semantic_only": 0.9333,
+      "semantic_emotional": 0.6917,
+      "full_manifold": 0.6917
+    },
+    "state_precision": {
+      "semantic_only": 0.0833,
+      "semantic_emotional": 0.6833,
+      "full_manifold": 0.6917
+    },
+    "ndcg": {
+      "semantic_only": 0.9324,
+      "semantic_emotional": 0.675,
+      "full_manifold": 0.6765
+    }
+  },
+  "1200_k5": {
+    "store_size": 1200,
+    "k": 5,
+    "category_precision": {
+      "semantic_only": 0.95,
+      "semantic_emotional": 0.8,
+      "full_manifold": 0.8
+    },
+    "state_precision": {
+      "semantic_only": 0.105,
+      "semantic_emotional": 0.435,
+      "full_manifold": 0.435
+    },
+    "ndcg": {
+      "semantic_only": 0.9442,
+      "semantic_emotional": 0.7542,
+      "full_manifold": 0.7553
+    }
+  },
+  "1200_k10": {
+    "store_size": 1200,
+    "k": 10,
+    "category_precision": {
+      "semantic_only": 0.955,
+      "semantic_emotional": 0.9,
+      "full_manifold": 0.89
+    },
+    "state_precision": {
+      "semantic_only": 0.095,
+      "semantic_emotional": 0.2175,
+      "full_manifold": 0.2175
+    },
+    "ndcg": {
+      "semantic_only": 0.9498,
+      "semantic_emotional": 0.8405,
+      "full_manifold": 0.8348
+    }
+  }
+}

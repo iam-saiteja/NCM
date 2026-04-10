@@ -1,0 +1,86 @@
+{
+  "100": {
+    "encode_throughput_per_sec": 2331.5,
+    "store_throughput_per_sec": 23564.9,
+    "retrieval_semantic_ms": 0.183,
+    "retrieval_full_manifold_ms": 0.254,
+    "retrieval_fast_cached_ms": 0.247,
+    "save_time_sec": 0.005,
+    "load_time_sec": 0.01,
+    "file_size_bytes": 56278,
+    "file_size_mb": 0.05,
+    "bytes_per_memory": 562.8
+  },
+  "500": {
+    "encode_throughput_per_sec": 3407.0,
+    "store_throughput_per_sec": 22931.7,
+    "retrieval_semantic_ms": 0.289,
+    "retrieval_full_manifold_ms": 0.303,
+    "retrieval_fast_cached_ms": 0.286,
+    "save_time_sec": 0.013,
+    "load_time_sec": 0.015,
+    "file_size_bytes": 279957,
+    "file_size_mb": 0.27,
+    "bytes_per_memory": 559.9
+  },
+  "1000": {
+    "encode_throughput_per_sec": 4841.7,
+    "store_throughput_per_sec": 23973.7,
+    "retrieval_semantic_ms": 0.459,
+    "retrieval_full_manifold_ms": 0.33,
+    "retrieval_fast_cached_ms": 0.314,
+    "save_time_sec": 0.025,
+    "load_time_sec": 0.017,
+    "file_size_bytes": 559779,
+    "file_size_mb": 0.53,
+    "bytes_per_memory": 559.8
+  },
+  "5000": {
+    "encode_throughput_per_sec": 7253.9,
+    "store_throughput_per_sec": 23236.6,
+    "retrieval_semantic_ms": 2.262,
+    "retrieval_full_manifold_ms": 0.653,
+    "retrieval_fast_cached_ms": 0.608,
+    "save_time_sec": 0.124,
+    "load_time_sec": 0.044,
+    "file_size_bytes": 2797778,
+    "file_size_mb": 2.67,
+    "bytes_per_memory": 559.6
+  },
+  "10000": {
+    "encode_throughput_per_sec": 7867.6,
+    "store_throughput_per_sec": 22659.4,
+    "retrieval_semantic_ms": 4.346,
+    "retrieval_full_manifold_ms": 1.136,
+    "retrieval_fast_cached_ms": 0.973,
+    "save_time_sec": 0.243,
+    "load_time_sec": 0.242,
+    "file_size_bytes": 5595332,
+    "file_size_mb": 5.34,
+    "bytes_per_memory": 559.5
+  },
+  "50000": {
+    "encode_throughput_per_sec": 4452.5,
+    "store_throughput_per_sec": 22854.2,
+    "retrieval_semantic_ms": 25.291,
+    "retrieval_full_manifold_ms": 5.31,
+    "retrieval_fast_cached_ms": 4.106,
+    "save_time_sec": 1.305,
+    "load_time_sec": 0.53,
+    "file_size_bytes": 27971448,
+    "file_size_mb": 26.68,
+    "bytes_per_memory": 559.4
+  },
+  "100000": {
+    "encode_throughput_per_sec": 2798.1,
+    "store_throughput_per_sec": 20723.2,
+    "retrieval_semantic_ms": 51.349,
+    "retrieval_full_manifold_ms": 10.267,
+    "retrieval_fast_cached_ms": 8.036,
+    "save_time_sec": 2.471,
+    "load_time_sec": 0.996,
+    "file_size_bytes": 55942929,
+    "file_size_mb": 53.35,
+    "bytes_per_memory": 559.4
+  }
+}

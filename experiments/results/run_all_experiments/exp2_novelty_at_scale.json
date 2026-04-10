@@ -1,0 +1,93 @@
+{
+  "100": {
+    "dataset": "ag_news_online",
+    "semantic_novelty_mean": 0.6065024010837078,
+    "semantic_novelty_std": 0.09268393521502942,
+    "full_novelty_mean": 0.3769573748111725,
+    "full_novelty_std": 0.03811760096775249,
+    "timing_sec": {
+      "add_memories": 0.5060259000019869,
+      "rebuild_cache": 0.0002207000070484355,
+      "evaluate_queries": 0.18133020000823308,
+      "total_scale": 0.6877128000051016
+    }
+  },
+  "500": {
+    "dataset": "ag_news_online",
+    "semantic_novelty_mean": 0.5470055416226387,
+    "semantic_novelty_std": 0.0832705055498456,
+    "full_novelty_mean": 0.3508830040693283,
+    "full_novelty_std": 0.031318948439709664,
+    "timing_sec": {
+      "add_memories": 0.704127699995297,
+      "rebuild_cache": 0.0015067999920574948,
+      "evaluate_queries": 0.18329699999594595,
+      "total_scale": 0.8891177000041353
+    }
+  },
+  "1000": {
+    "dataset": "ag_news_online",
+    "semantic_novelty_mean": 0.5031476512551307,
+    "semantic_novelty_std": 0.08817977855860842,
+    "full_novelty_mean": 0.3558069683611393,
+    "full_novelty_std": 0.03997135607513357,
+    "timing_sec": {
+      "add_memories": 0.5557618000020739,
+      "rebuild_cache": 0.001513900002464652,
+      "evaluate_queries": 0.16365689999656752,
+      "total_scale": 0.7210828999959631
+    }
+  },
+  "5000": {
+    "dataset": "ag_news_online",
+    "semantic_novelty_mean": 0.4363818675279617,
+    "semantic_novelty_std": 0.13548352377755438,
+    "full_novelty_mean": 0.34104074314236643,
+    "full_novelty_std": 0.06300504869739353,
+    "timing_sec": {
+      "add_memories": 3.2842361999937566,
+      "rebuild_cache": 0.005717199994251132,
+      "evaluate_queries": 0.1607413000019733,
+      "total_scale": 3.451271400001133
+    }
+  },
+  "10000": {
+    "dataset": "ag_news_online",
+    "semantic_novelty_mean": 0.3769142493605614,
+    "semantic_novelty_std": 0.19925022266704984,
+    "full_novelty_mean": 0.3111003957688808,
+    "full_novelty_std": 0.10391509090398253,
+    "timing_sec": {
+      "add_memories": 3.8199265000002924,
+      "rebuild_cache": 0.011054500006139278,
+      "evaluate_queries": 0.17454569999244995,
+      "total_scale": 4.0058925000048475
+    }
+  },
+  "50000": {
+    "dataset": "ag_news_online",
+    "semantic_novelty_mean": 0.17127247750759125,
+    "semantic_novelty_std": 0.194885285441175,
+    "full_novelty_mean": 0.2191430326551199,
+    "full_novelty_std": 0.1093582729542458,
+    "timing_sec": {
+      "add_memories": 29.74177979999513,
+      "rebuild_cache": 0.07959269999992102,
+      "evaluate_queries": 0.28746370000590105,
+      "total_scale": 30.109468000009656
+    }
+  },
+  "100000": {
+    "dataset": "ag_news_online",
+    "semantic_novelty_mean": 8.940696716308593e-09,
+    "semantic_novelty_std": 5.7403326881701416e-08,
+    "full_novelty_mean": 0.1188836231827736,
+    "full_novelty_std": 0.008403269869143856,
+    "timing_sec": {
+      "add_memories": 37.410817099997075,
+      "rebuild_cache": 0.14952579999226145,
+      "evaluate_queries": 0.38785939999797847,
+      "total_scale": 37.949330200004624
+    }
+  }
+}
