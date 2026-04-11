@@ -2,6 +2,22 @@
 
 All notable changes to the NCM project are documented here.
 
+## [Storage + Gate Update] - 2026-04-11
+
+### Write gate behavior
+- Upgraded selective write gating in [ncm/memory.py](ncm/memory.py) from semantic-only novelty to joint content+state novelty.
+- The gate now blocks true duplicates (same topic + same state) while allowing same-topic memories from different state contexts.
+
+### Persistence and file efficiency
+- Added optional FP16-on-disk vector persistence in [ncm/persistence.py](ncm/persistence.py) (`NCMFile.save(..., fp16=True)` default).
+- Added `FLAG_FP16` in file flags for forward/backward-safe decoding.
+- Legacy FP32 `.ncm` files continue to load without migration.
+- Added truncated-read integrity checks that raise `CorruptFileError` for incomplete vector payloads.
+
+### Validation
+- Round-trip checks confirmed FP16 compatibility and stable memory loading.
+- Top-k ordering remained stable on validation queries after FP16 round-trip.
+
 ## [Docs Update] - 2026-04-11
 
 ### Documentation coverage expansion

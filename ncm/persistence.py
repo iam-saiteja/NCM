@@ -18,18 +18,28 @@ NCM_VERSION = 2
 
 FLAG_COMPRESSED = 0b00000001
 FLAG_HAS_PROFILE = 0b00000010
+FLAG_FP16 = 0b00000100
 
 
 class NCMFile:
     """Reads and writes .ncm binary files."""
 
     @staticmethod
-    def save(store: MemoryStore, path: str, compress: bool = True) -> None:
+    def _read_exact(buf, nbytes: int, context: str) -> bytes:
+        data = buf.read(nbytes)
+        if len(data) != nbytes:
+            raise CorruptFileError("<buffer>", f"Truncated data while reading {context}: expected {nbytes} bytes, got {len(data)}")
+        return data
+
+    @staticmethod
+    def save(store: MemoryStore, path: str, compress: bool = True, fp16: bool = True) -> None:
         try:
             buf = io.BytesIO()
             flags = FLAG_HAS_PROFILE
             if compress:
                 flags |= FLAG_COMPRESSED
+            if fp16:
+                flags |= FLAG_FP16
 
             memories = store.get_all_safe()
             buf.write(NCM_MAGIC)
@@ -49,7 +59,7 @@ class NCMFile:
             state_dim = store.profile.state_dim
             
             for memory in memories:
-                NCMFile._write_memory(mem_buf, memory, sem_dim, emo_dim, state_dim)
+                NCMFile._write_memory(mem_buf, memory, sem_dim, emo_dim, state_dim, fp16=fp16)
 
             mem_data = mem_buf.getvalue()
             if compress:
@@ -82,6 +92,7 @@ class NCMFile:
             flags = struct.unpack('>H', buf.read(2))[0]
             compressed = bool(flags & FLAG_COMPRESSED)
             has_profile = bool(flags & FLAG_HAS_PROFILE)
+            fp16 = bool(flags & FLAG_FP16)
 
             step = struct.unpack('>Q', buf.read(8))[0]
             memory_count = struct.unpack('>I', buf.read(4))[0]
@@ -106,7 +117,7 @@ class NCMFile:
             state_dim = profile.state_dim
 
             for _ in range(memory_count):
-                memory = NCMFile._read_memory(mem_buf, sem_dim, emo_dim, state_dim)
+                memory = NCMFile._read_memory(mem_buf, sem_dim, emo_dim, state_dim, fp16=fp16)
                 store.add(memory)
 
             return store
@@ -116,7 +127,7 @@ class NCMFile:
             raise PersistenceError('load', str(e))
 
     @staticmethod
-    def _write_memory(buf, memory, sem_dim, emo_dim, state_dim):
+    def _write_memory(buf, memory, sem_dim, emo_dim, state_dim, fp16: bool = False):
         """OPTIMIZATION: Efficient memory serialization with pre-packed vectors."""
         id_bytes = memory.id.encode('utf-8')
         buf.write(struct.pack('>H', len(id_bytes)))
@@ -132,7 +143,10 @@ class NCMFile:
                 tmp = np.zeros(dim, dtype=np.float32)
                 tmp[:min(len(v), dim)] = v[:min(len(v), dim)]
                 v = tmp
-            buf.write(v.tobytes())
+            if fp16:
+                buf.write(v.astype(np.float16).tobytes())
+            else:
+                buf.write(v.tobytes())
 
         write_vec(memory.e_semantic, sem_dim)
         write_vec(memory.e_emotional, emo_dim)
@@ -151,18 +165,41 @@ class NCMFile:
             buf.write(tag_bytes)
 
     @staticmethod
-    def _read_memory(buf, sem_dim, emo_dim, state_dim):
+    def _read_memory(buf, sem_dim, emo_dim, state_dim, fp16: bool = False):
         """OPTIMIZATION: Efficient memory deserialization with direct numpy frombuffer."""
         id_len = struct.unpack('>H', buf.read(2))[0]
         memory_id = buf.read(id_len).decode('utf-8')
         timestamp = struct.unpack('>q', buf.read(8))[0]
         strength = struct.unpack('>f', buf.read(4))[0]
 
-        # OPTIMIZATION: Use frombuffer directly for zero-copy semantics when possible
-        # Copy only when necessary (when buffer might be invalidated)
-        e_semantic = np.frombuffer(buf.read(sem_dim * 4), dtype=np.float32).copy()
-        e_emotional = np.frombuffer(buf.read(emo_dim * 4), dtype=np.float32).copy()
-        s_snapshot = np.frombuffer(buf.read(state_dim * 4), dtype=np.float32).copy()
+        if fp16:
+            # 2 bytes per float on disk; cast back to FP32 for in-memory math.
+            e_semantic = np.frombuffer(
+                NCMFile._read_exact(buf, sem_dim * 2, "e_semantic(fp16)"),
+                dtype=np.float16,
+            ).astype(np.float32).copy()
+            e_emotional = np.frombuffer(
+                NCMFile._read_exact(buf, emo_dim * 2, "e_emotional(fp16)"),
+                dtype=np.float16,
+            ).astype(np.float32).copy()
+            s_snapshot = np.frombuffer(
+                NCMFile._read_exact(buf, state_dim * 2, "s_snapshot(fp16)"),
+                dtype=np.float16,
+            ).astype(np.float32).copy()
+        else:
+            # Legacy path: 4 bytes per float on disk.
+            e_semantic = np.frombuffer(
+                NCMFile._read_exact(buf, sem_dim * 4, "e_semantic(fp32)"),
+                dtype=np.float32,
+            ).copy()
+            e_emotional = np.frombuffer(
+                NCMFile._read_exact(buf, emo_dim * 4, "e_emotional(fp32)"),
+                dtype=np.float32,
+            ).copy()
+            s_snapshot = np.frombuffer(
+                NCMFile._read_exact(buf, state_dim * 4, "s_snapshot(fp32)"),
+                dtype=np.float32,
+            ).copy()
 
         text_len = struct.unpack('>H', buf.read(2))[0]
         text = buf.read(text_len).decode('utf-8')

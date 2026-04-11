@@ -61,9 +61,9 @@ python experiments/python/exp13_baseline_rematch.py --max-chunks 50 --query-stri
 
 ### Implemented capabilities (documentation catch-up)
 
-- Selective write gate is implemented via `gate_check` + `write_threshold` to skip low-novelty writes.
+- Selective write gate uses joint content+state novelty (`gate_check` + `write_threshold`) to skip true duplicates while keeping context-distinct episodes.
 - Memory profiles are persisted inside `.ncm` files (dimensions, decay, temperature, thresholds, limits).
-- `.ncm` format supports compression and versioned/corruption-safe loading.
+- `.ncm` format supports compression, optional FP16-on-disk vector storage, and compatibility-safe loading for legacy FP32 files.
 - Encoder runtime supports explicit device policy (`auto`/`cpu`/`cuda`) and strict GPU-required mode.
 - Deterministic embedding fallback exists for environments where the sentence-transformer runtime is unavailable.
 - Memory lifecycle operations include reinforcement, decay, weakest-score eviction, and semantic consolidation.
