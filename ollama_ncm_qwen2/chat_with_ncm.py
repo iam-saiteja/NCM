@@ -14,7 +14,7 @@ REPO_ROOT = os.path.dirname(THIS_DIR)
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from ncm import SentenceEncoder, MemoryEntry, MemoryStore, NCMFile, retrieve_top_k_fast
+from ncm import SentenceEncoder, MemoryEntry, MemoryStore, MemoryProfile, NCMFile, retrieve_top_k_fast
 
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
@@ -60,7 +60,7 @@ class LocalNCMOllamaChat:
     def _load_store(self) -> MemoryStore:
         if os.path.exists(NCM_PATH):
             return NCMFile.load(NCM_PATH)
-        return MemoryStore()
+        return MemoryStore(profile=MemoryProfile(write_threshold=0.25))
 
     def _save_store(self) -> None:
         NCMFile.save(self.store, NCM_PATH, compress=True)
@@ -78,7 +78,7 @@ class LocalNCMOllamaChat:
             text=f"{role}: {text}",
             tags=[role],
         )
-        self.store.add(mem)
+        self.store.add(mem, gate_check=True)
         self.store.step += 1
 
     def _retrieve_context(self, user_text: str, state: np.ndarray, top_k: int = 4) -> str:

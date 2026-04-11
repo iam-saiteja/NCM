@@ -59,6 +59,19 @@ python experiments/python/exp13_baseline_rematch.py --max-chunks 50 --query-stri
 - Reinforcement strength dynamics with bounded growth
 - Binary persistence via `.ncm` serialization
 
+### Implemented capabilities (documentation catch-up)
+
+- Selective write gate is implemented via `gate_check` + `write_threshold` to skip low-novelty writes.
+- Memory profiles are persisted inside `.ncm` files (dimensions, decay, temperature, thresholds, limits).
+- `.ncm` format supports compression and versioned/corruption-safe loading.
+- Encoder runtime supports explicit device policy (`auto`/`cpu`/`cuda`) and strict GPU-required mode.
+- Deterministic embedding fallback exists for environments where the sentence-transformer runtime is unavailable.
+- Memory lifecycle operations include reinforcement, decay, weakest-score eviction, and semantic consolidation.
+- Tag-aware memory views are supported for scoped memory use cases.
+- Explicit memory removal is supported for user-driven cleanup and moderation workflows.
+- Profile metadata supports custom key/value fields for app-specific settings.
+- Entropy-style recall confidence signals are available for uncertainty-aware behavior tuning.
+
 ---
 
 ## Architecture

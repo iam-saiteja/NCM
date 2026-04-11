@@ -17,6 +17,11 @@ Use a different local model if needed:
 python ollama_ncm_qwen2/chat_with_ncm.py --model qwen2:0.5b
 python ollama_ncm_qwen2/chat_with_ncm.py --model llama3.2
 
+Or set model once via environment variable:
+
+set OLLAMA_MODEL=llama3.2
+python ollama_ncm_qwen2/chat_with_ncm.py
+
 You can also set an initial state at startup:
 
 python ollama_ncm_qwen2/chat_with_ncm.py --state 0.6,0.4,0.7,0.3,0.5,0.2,0.8
@@ -52,3 +57,6 @@ Why this matters:
 
 - Ollama must be running locally (`http://localhost:11434`).
 - If `memory_store.ncm` does not exist yet, it is created automatically after first interaction.
+- Write-time novelty gating is active in chat storage (`gate_check=True`) to reduce near-duplicate memory writes.
+- New stores are initialized with a tighter write threshold (`write_threshold=0.25`) for chat usage.
+- Existing `.ncm` files keep their saved profile values (including thresholds), enabling stable behavior across restarts.

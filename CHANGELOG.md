@@ -2,6 +2,23 @@
 
 All notable changes to the NCM project are documented here.
 
+## [Docs Update] - 2026-04-11
+
+### Documentation coverage expansion
+- Added documentation for selective write gating behavior (`gate_check` + `write_threshold`) in the Ollama local chat integration README.
+- Added a documentation catch-up section in the main README for implemented capabilities that were previously under-documented:
+  - profile persistence inside `.ncm`
+  - compressed/versioned `.ncm` handling
+  - device policy and GPU-required encoder mode
+  - deterministic embedding fallback
+  - memory lifecycle operations (reinforcement/decay/eviction/consolidation)
+- Added second-pass documentation for additional implemented capabilities:
+  - tag-aware memory views
+  - explicit memory removal support
+  - profile custom metadata fields
+  - entropy-style confidence signals
+  - environment-variable based local model selection (`OLLAMA_MODEL`) in Ollama integration docs
+
 ## [Optimized] - 2026-04-10
 
 ### Runtime Backend Update (Torch CPU + GPU)
