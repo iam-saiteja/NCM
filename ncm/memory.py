@@ -135,11 +135,23 @@ class MemoryStore:
                 expected=(expected_sem,), got=memory.e_semantic.shape, context="e_semantic"
             )
 
-        # Selective encoding gate
+        # Selective encoding gate (joint semantic + state novelty)
         if gate_check and self._memories:
             self._rebuild_cache()
-            sims = self._sem_cache @ memory.e_semantic
-            novelty = 1.0 - float(np.max(sims)) if len(sims) > 0 else 1.0
+
+            # Semantic closeness in [0, 1]
+            sem_sims = self._sem_cache @ memory.e_semantic
+            sem_closeness = np.clip(sem_sims, 0.0, 1.0)
+
+            # State closeness in [0, 1] using normalized state distance
+            state_dists = np.linalg.norm(
+                self._state_cache - memory.s_snapshot[np.newaxis, :], axis=1
+            ) / np.sqrt(2.0)
+            state_closeness = 1.0 - np.clip(state_dists, 0.0, 1.0)
+
+            # High overlap means likely duplicate in both content and context
+            overlap = sem_closeness * state_closeness
+            novelty = 1.0 - float(np.max(overlap)) if len(overlap) > 0 else 1.0
             if novelty < self.profile.write_threshold:
                 return memory  # too predictable, skip storing
 

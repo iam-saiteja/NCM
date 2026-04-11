@@ -432,8 +432,8 @@ This confirms live behavior is working as intended: responses are influenced by 
 ## Future Features
 
 - Automated memory curation pipeline.
-    - Introduce relevance/novelty-based pruning to remove low-utility and duplicate memory entries.
     - Retain high-signal memories to sustain retrieval quality over long-running sessions.
+    - Advanced options: weighted/additive joint score or a learned gate for selective write decisions.
 - Evaluate how each retrieval dimension influences chat behavior while developing stable persona patterns from conversation history.
 - Learnable/auto-tuned retrieval weights per user or domain.
 - ANN indexing (e.g., FAISS/HNSW) for faster large-scale manifold retrieval.

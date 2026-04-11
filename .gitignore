@@ -21,8 +21,8 @@ Thumbs.db
 # Temporary benchmark files
 results/bench_*.ncm
 
-# Local inspection utility (developer-local)
-ollama_ncm_qwen2/decode_ncm_store.py
+# Local utility (developer-local)
+ollama_ncm_qwen2/hidden_vector.py
 
 
 venv/
