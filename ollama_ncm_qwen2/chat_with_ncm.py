@@ -20,6 +20,8 @@ from ncm import SentenceEncoder, MemoryEntry, MemoryStore, MemoryProfile, NCMFil
 OLLAMA_URL = "http://localhost:11434/api/chat"
 DEFAULT_MODEL_NAME = "qwen2:7B"  # Change to any local Ollama model, e.g. "qwen2:0.5b" or "llama3.2"
 NCM_PATH = os.path.join(THIS_DIR, "memory_store.ncm")
+CONSOLIDATE_EVERY_TICKS = 20
+CONSOLIDATE_SIMILARITY_THRESHOLD = 0.95
 
 
 def parse_state_csv(value: str) -> np.ndarray:
@@ -65,6 +67,13 @@ class LocalNCMOllamaChat:
     def _save_store(self) -> None:
         NCMFile.save(self.store, NCM_PATH, compress=True)
 
+    def _maybe_consolidate(self) -> None:
+        if self.store.step <= 0:
+            return
+        if self.store.step % CONSOLIDATE_EVERY_TICKS != 0:
+            return
+        self.store.consolidate(similarity_threshold=CONSOLIDATE_SIMILARITY_THRESHOLD)
+
     def _add_memory(self, role: str, text: str, state: np.ndarray) -> None:
         semantic = self.encoder.encode(text)
         emotional = self.encoder.encode_emotional(state)
@@ -80,6 +89,7 @@ class LocalNCMOllamaChat:
         )
         self.store.add(mem, gate_check=True)
         self.store.step += 1
+        self._maybe_consolidate()
 
     def _retrieve_context(self, user_text: str, state: np.ndarray, top_k: int = 4) -> str:
         memories = self.store.get_all_safe()
