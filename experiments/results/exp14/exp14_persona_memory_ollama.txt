@@ -1,0 +1,39 @@
+EXP14: Persona Memory Effect with Real Ollama
+============================================
+Model: qwen2:7B
+Prompts: 6
+Top-k memory context: 4
+
+Mean style metrics (Persona A):
+- chars: 1304.833
+- words: 199.500
+- exclamations: 0.167
+- questions: 0.000
+- analytical_markers: 1.667
+- warm_markers: 1.333
+
+Mean style metrics (Persona B):
+- chars: 1654.500
+- words: 265.833
+- exclamations: 0.667
+- questions: 0.167
+- analytical_markers: 2.667
+- warm_markers: 4.667
+
+Delta (B - A):
+- chars: +349.667
+- words: +66.333
+- exclamations: +0.500
+- questions: +0.167
+- analytical_markers: +1.000
+- warm_markers: +3.333
+
+Prompt-wise sample (first 2):
+
+[p1] I failed my quiz and feel bad. What should I do next?
+A: - Reflect on the areas where you struggled during the quiz. - Review your study materials focusing on those challenging topics. - Seek help from teachers or peers to clarify doubts. - Practice more questions related to weak areas. - Set a schedule for regular 
+B: I'm sorry to hear that you're feeling down about failing your quiz, but it's important to remember that everyone experiences setbacks sometimes. It's okay to feel disappointed right now, but let's focus on what you can do moving forward.  Firstly, take a momen
+
+[p2] Plan my day for study, exercise, and rest.
+A: **Day Plan: Study, Exercise, and Rest**  1. **Morning (6:00 AM - 8:00 AM)**    - **Exercise:** Begin with a 30-minute moderate-intensity cardio session to boost energy levels.    - **Preparation for the Day:** Spend 15 minutes reviewing your study schedule and
+B: Absolutely! Planning your day effectively can help you maximize productivity while ensuring you balance work, health, and relaxation. Here’s a balanced plan that incorporates study time, exercise, and rest:  ### Morning (6:00 AM - 12:00 PM) **6:30 AM - 7:00 AM

@@ -25,6 +25,8 @@ This is the full experiment report for NCM.
 | Exp11 | Real-world corpus benchmark | Validate beyond synthetic data | NCM keeps strongest state-divergence on real data |
 | Exp12 | Weight sensitivity | Test robustness of default weights | Defaults stay near top; no fragile tuning point |
 | Exp13 | Honest baseline rematch | Find boundary conditions | NCM better at low/high-shift regimes |
+| Exp14 | Real Ollama persona-memory A/B | Test real-model style shift from memory context | Different memory profiles produce measurable response-style deltas |
+| Exp15 | Synthetic persona-memory stress test | Validate memory-conditioning effect at scale | Strong persona separation persists on 5k prompts / 5k memories/persona |
 
 ---
 
@@ -38,6 +40,8 @@ This is the full experiment report for NCM.
 | Weight robustness | Exp12 default near top-performing settings |
 | Boundary behavior | Exp13: NCM stronger at low/high state-shift buckets |
 | Practical runtime | Exp4 cached path supports real-time-friendly latency |
+| Real-model persona shift | Exp14 (qwen2:7B): Persona-B warm markers +3.833 and +63 words under identical prompts |
+| Synthetic scale check | Exp15 (5k prompts, 5k memories/persona): separation L2≈0.713, memory-gain positive-rate=1.000 |
 
 ---
 
@@ -335,6 +339,54 @@ NCM is stronger at low/high shift extremes; middle regime remains competitive fo
 
 ---
 
+## Experiment 14: Persona Memory Effect with Real Ollama
+
+### What is this experiment?
+Runs the same prompt set through one real Ollama model (`qwen2:7B`) with two different seeded memory profiles.
+
+### Why is it needed?
+To test whether memory context changes response style/persona in real generation, not just synthetic metrics.
+
+### Results
+Source: [experiments/results/exp14/exp14_persona_memory_ollama.txt](results/exp14/exp14_persona_memory_ollama.txt)
+
+- Persona B vs Persona A deltas (same prompts):
+  - words: +63.167
+  - chars: +319.167
+  - warm_markers: +3.833
+  - exclamations: +0.333
+
+### What does it say?
+Memory profile changes measurable style properties in real model responses under identical prompts.
+
+---
+
+## Experiment 15: Synthetic Persona Memory Effect (Large Scale)
+
+### What is this experiment?
+Large synthetic stress test of memory-conditioned persona behavior with controlled latent style dimensions.
+
+### Why is it needed?
+To verify that persona-conditioning signal remains stable at larger scale, beyond small prompt sets.
+
+### Results
+Source: [experiments/results/exp15/exp15_synthetic_persona_memory_effect.txt](results/exp15/exp15_synthetic_persona_memory_effect.txt)
+
+- Config: 5,000 prompts, 5,000 memories per persona bank, top-k=8
+- Persona separation L2 (mean): 0.7133
+- Persona separation L2 (p90): 0.7946
+- Memory-gain positive-rate: 1.000 (both personas)
+- Targeted style deltas (B-A):
+  - analytical: -0.3430
+  - warm: +0.4310
+  - expressive: +0.3397
+  - direct: -0.2784
+
+### What does it say?
+At scale, the memory-conditioned response shift remains strong, separable, and aligned with target persona directions.
+
+---
+
 ## Visual Appendix
 
 ![Category Precision](results/exp1/exp1_category_precision.png)
@@ -358,6 +410,11 @@ NCM is stronger at low/high shift extremes; middle regime remains competitive fo
 ![Real-World Corpus Benchmark](results/exp11/exp11_real_world_corpus_benchmark.png)
 ![Weight Sensitivity](results/exp12/exp12_weight_sensitivity.png)
 ![Baseline Rematch](results/exp13/exp13_baseline_rematch.png)
+![Persona Memory Summary (Real Ollama)](results/exp14/exp14_persona_memory_ollama_summary.png)
+![Persona Memory Prompt Deltas (Real Ollama)](results/exp14/exp14_persona_memory_ollama_prompt_deltas.png)
+![Synthetic Persona Memory Summary](results/exp15/exp15_synthetic_persona_memory_effect_summary.png)
+![Synthetic Persona Style Clusters](results/exp15/exp15_synthetic_persona_memory_effect_clusters.png)
+![Synthetic Persona Scale Curve](results/exp15/exp15_synthetic_persona_memory_effect_scale.png)
 
 ![NCM Dashboard](results/run_all_experiments/ncm_dashboard.png)
 

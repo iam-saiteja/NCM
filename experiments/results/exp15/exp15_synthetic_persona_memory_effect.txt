@@ -1,0 +1,21 @@
+EXP15: Synthetic Persona Memory Effect (Large Scale)
+==================================================
+Prompts: 5000
+Memory size per persona bank: 5000
+Top-k: 8
+
+Core metrics:
+- Persona separation L2 (mean): 0.7133
+- Persona separation L2 (p90): 0.7946
+- Memory gain A (mean): 0.4002
+- Memory gain B (mean): 0.3883
+- Memory gain A positive-rate: 1.000
+- Memory gain B positive-rate: 1.000
+- Persona class acc A: 1.000
+- Persona class acc B: 1.000
+
+Targeted style deltas (B - A):
+- analytical: -0.3430
+- warm: +0.4310
+- expressive: +0.3397
+- direct: -0.2784

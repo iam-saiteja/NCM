@@ -1,5 +1,11 @@
 # NCM — Native Cognitive Memory
 
+## Proven Result: Memory-Conditioned Behavior Shift
+
+NCM is now experimentally validated to produce **different response behavior from the same base model** by changing only retrieved memory context (not model weights). This is demonstrated in:
+- **Exp14 (real Ollama)**: measurable style/persona deltas under identical prompts.
+- **Exp15 (large synthetic)**: stable persona-separation signal at scale (5k prompts, 5k memories/persona).
+
 NCM is a memory storage and retrieval architecture where memories are encoded as multi-field geometric objects in a composite retrieval space. The system retrieves not just what is textually similar, but what is **cognitively resonant** — matching meaning, emotional context, internal state at encoding time, and recency simultaneously.
 
 **The core novel contribution**: `s_snapshot` — storing a copy of the system's internal state vector at memory encoding time and using it as an independent retrieval dimension. This enables state-conditioned episodic retrieval, where the same query produces different results depending on the system's current internal state. No existing RAG, DNC, or attention-based memory system implements this.
@@ -232,6 +238,8 @@ For detailed assessment of all experiment outputs (consolidated table, image-fir
 | Exp1–Exp4 | Core behavior (precision, novelty, state shift, speed) | State-aware retrieval validated + practical cached latency |
 | Exp5–Exp9 | System-level ranking and external comparisons | NCM remains competitive, especially when state-awareness is considered |
 | Exp10–Exp13 | Recall rematch, real-world corpus, robustness, boundary analysis | NCM shows strong state divergence, robust defaults, and regime-dependent gains |
+| Exp14 | Real Ollama persona-memory A/B test | Different memory profiles produce measurably different response style under identical prompts |
+| Exp15 | Large synthetic persona-memory stress test | Memory conditioning signal remains strong at scale (5k prompts, 5k memories/persona) |
 
 ### Headline Metrics
 
@@ -244,6 +252,8 @@ For detailed assessment of all experiment outputs (consolidated table, image-fir
 | Speed snapshot | Exp4 (100k): semantic 49.346ms, full 10.131ms, cached 7.860ms/query |
 | Weight robustness | Exp12: default remains near top-performing preset |
 | Honest rematch | Exp13: NCM stronger in low/high shift buckets |
+| Real-model persona effect | Exp14 (qwen2:7B): Persona-B warm markers +3.833 and +63 words vs Persona-A under same prompts |
+| Large-scale persona effect | Exp15 (synthetic 5k×5k): persona separation L2=0.713, memory-gain positive-rate=1.000 |
 
 ### A few visuals
 
@@ -258,6 +268,14 @@ Real-data validation: NCM preserves strongest state-conditioned divergence.
 ![Baseline Rematch](experiments/results/exp13/exp13_baseline_rematch.png)
 
 Boundary behavior: NCM is stronger at low/high shift regimes; middle regime is closer.
+
+![Persona Memory Summary (Real Ollama)](experiments/results/exp14/exp14_persona_memory_ollama_summary.png)
+
+Real-model behavior: same prompt set with different memory profiles yields measurable style shift.
+
+![Synthetic Persona Memory Scale](experiments/results/exp15/exp15_synthetic_persona_memory_effect_scale.png)
+
+Scale behavior: memory-conditioned persona effect remains strong in large synthetic runs.
 
 For full per-experiment explanations, result tables, and all plots, use [experiments/EXPERIMENT_RESULTS.md](experiments/EXPERIMENT_RESULTS.md).
 
