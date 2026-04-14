@@ -1,0 +1,20 @@
+EXP16: Auto-State Integration Validation
+========================================
+
+Verdict: PASS
+
+Trajectory checkpoint max-abs-diff
+- Turn10: 0.00e+00
+- Turn20: 0.00e+00
+- Turn30: 0.00e+00
+
+Retrieval P@5 trend delta (combined - semantic baseline)
+- Era1: +0.400
+- Era2: +0.000
+- Era3: +0.000
+- Mean gain: +0.133
+
+Persistence
+- max_state_diff: 0.00e+00
+- max_score_diff: 0.00e+00
+- turn_ok/alpha_ok/weights_ok/top1_ok: True/True/True/True

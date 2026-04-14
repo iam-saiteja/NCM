@@ -1,0 +1,28 @@
+EXP17: Auto-State Integration at Scale — Real-World Validation
+================================================================
+
+Verdict: PASS
+
+Dataset Summary
+- Conversations tested: 100
+- Total dialogue turns stored: 2009
+- Avg turns per conversation: 20.1
+
+Retrieval Benchmarks (Precision@K)
+- NCM P@5:  1.000  | RAG P@5:  1.000  | Improvement: +0.000
+- NCM P@10: 1.000 | RAG P@10: 1.000 | Improvement: +0.000
+
+Latency (milliseconds)
+- NCM avg: 0.05ms
+- RAG avg: 0.02ms
+- Difference: +0.03ms
+
+State Stability (across 400 turns from 20 diverse conversations)
+- Total samples: 366
+- Mean spread: 0.0150 (±0.0075)
+- Spread range: [0.0022, 0.0473]
+- Mean entropy: 1.7464
+
+Conclusion
+Auto-state integration successfully scales to real-world conversational data.
+State stability maintained across diverse conversation types.

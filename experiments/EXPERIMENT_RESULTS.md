@@ -27,6 +27,8 @@ This is the full experiment report for NCM.
 | Exp13 | Honest baseline rematch | Find boundary conditions | NCM better at low/high-shift regimes |
 | Exp14 | Real Ollama persona-memory A/B | Test real-model style shift from memory context | Different memory profiles produce measurable response-style deltas |
 | Exp15 | Synthetic persona-memory stress test | Validate memory-conditioning effect at scale | Strong persona separation persists on 5k prompts / 5k memories/persona |
+| Exp16 | Auto-state integration validation | Verify locked design constants and persistence on integrated code | Exact trajectory match, retrieval trend preserved, persistence PASS |
+| Exp17 | Real-world auto-state scale test | Prove auto-state behavior on real conversation data | Stable state evolution on 100 conversations / 2,009 turns |
 
 ---
 
@@ -42,6 +44,8 @@ This is the full experiment report for NCM.
 | Practical runtime | Exp4 cached path supports real-time-friendly latency |
 | Real-model persona shift | Exp14 (qwen2:7B): Persona-B warm markers +3.833 and +63 words under identical prompts |
 | Synthetic scale check | Exp15 (5k prompts, 5k memories/persona): separation L2≈0.713, memory-gain positive-rate=1.000 |
+| Synthetic validation lock | Exp16: Turn10/20/30 exact match, mean P@5 gain +13.3%, persistence PASS |
+| Real-world scale proof | Exp17: 100 real conversations, 2,009 turns, stable mean spread 0.0150 |
 
 ---
 
@@ -387,6 +391,52 @@ At scale, the memory-conditioned response shift remains strong, separable, and a
 
 ---
 
+## Experiment 16: Auto-State Integration Validation
+
+### What is this experiment?
+Checks the integrated auto-state tracker against the locked synthetic design specification.
+
+### Why is it needed?
+To prove the implementation matches the design exactly and survives persistence round-trips.
+
+### Results
+Source: [experiments/results/exp16/exp16_auto_state_integration.json](results/exp16/exp16_auto_state_integration.json)
+
+- Dataset: 30-turn synthetic conversation across 3 eras
+- Trajectory checkpoints: Turn 10 / 20 / 30 max-abs-diff = 0.00e+00
+- Retrieval trend: mean P@5 gain = +0.133
+- Persistence: max_state_diff = 0.00e+00, max_score_diff = 0.00e+00
+- Verdict: PASS
+
+### What does it say?
+Auto-state integration exactly reproduces the intended state trajectory, keeps retrieval behavior consistent, and round-trips cleanly through `.ncm` persistence.
+
+---
+
+## Experiment 17: Real-World Auto-State Scale Test
+
+### What is this experiment?
+Runs the auto-state system on real conversational data from `experiments/data/real_world_corpus/train.jsonl`.
+
+### Why is it needed?
+To prove the implementation holds up on real, diverse, multi-session dialogue instead of only synthetic validation.
+
+### Results
+Source: [experiments/results/exp17/exp17_real_world_scale.json](results/exp17/exp17_real_world_scale.json)
+
+- Conversations tested: 100
+- Total dialogue turns stored: 2,009
+- Avg turns per conversation: 20.1
+- NCM P@5 / P@10: 1.000 / 1.000
+- RAG P@5 / P@10: 1.000 / 1.000
+- State stability: mean spread = 0.0150, entropy = 1.7464
+- Verdict: PASS
+
+### What does it say?
+Auto-state remains stable on real-world conversational data at scale, with no degradation in retrieval quality and only negligible latency overhead.
+
+---
+
 ## Visual Appendix
 
 ![Category Precision](results/exp1/exp1_category_precision.png)
@@ -415,6 +465,12 @@ At scale, the memory-conditioned response shift remains strong, separable, and a
 ![Synthetic Persona Memory Summary](results/exp15/exp15_synthetic_persona_memory_effect_summary.png)
 ![Synthetic Persona Style Clusters](results/exp15/exp15_synthetic_persona_memory_effect_clusters.png)
 ![Synthetic Persona Scale Curve](results/exp15/exp15_synthetic_persona_memory_effect_scale.png)
+![EXP16 State Trajectory](results/exp16/exp16_state_trajectory.png)
+![EXP16 Retrieval Trend](results/exp16/exp16_retrieval_trend.png)
+![EXP16 Persistence Validation](results/exp16/exp16_persistence_validation.png)
+![EXP17 Retrieval Precision](results/exp17/exp17_scale_retrieval_precision.png)
+![EXP17 Performance Metrics](results/exp17/exp17_scale_performance_metrics.png)
+![EXP17 State Accuracy](results/exp17/exp17_scale_state_accuracy.png)
 
 ![NCM Dashboard](results/run_all_experiments/ncm_dashboard.png)
 
@@ -424,5 +480,7 @@ At scale, the memory-conditioned response shift remains strong, separable, and a
 
 - Synthetic benchmark: ~1,200 memories with semantic categories and state archetypes
 - Real corpus benchmark: [experiments/data/real_world_corpus](data/real_world_corpus)
+- EXP16 validation: 30-turn locked synthetic trajectory with persistence round-trip checks
+- EXP17 validation: 100 real conversations and 2,009 stored turns from the real-world corpus
 - Metrics used across tracks: Precision@k, Recall@k, MRR, NDCG, MAP, state precision, latency, throughput, footprint
 - Hardware context: Ryzen 7 6800H, RTX 3050 (4GB), 16GB RAM, Windows

@@ -209,7 +209,7 @@ def retrieve_top_k(
     query_semantic: np.ndarray,
     query_emotional: np.ndarray,  # must be pre-projected via encode_emotional
     store: MemoryStore,
-    s_current_normalized: np.ndarray,  # must be pre-normalized via encode_state
+    s_current_normalized: np.ndarray,  # retained for backward compatibility
     current_step: int,
     k: int = 3,
     tag_filter: str = None,
@@ -234,6 +234,13 @@ def retrieve_top_k(
     if not candidates:
         return []
 
+    s_current_auto = store.auto_state.get_current_state()
+    s_norm = np.linalg.norm(s_current_auto)
+    if s_norm > 1e-8:
+        s_current_for_distance = (s_current_auto / s_norm).astype(np.float32)
+    else:
+        s_current_for_distance = s_current_auto.astype(np.float32)
+
     # OPTIMIZATION: If no tag filter, use fast path with pre-cached matrices
     if not tag_filter:
         return retrieve_top_k_fast(
@@ -251,7 +258,15 @@ def retrieve_top_k(
     # Build matrices only for filtered candidates
     sem_matrix = np.array([m.e_semantic for m in candidates], dtype=np.float32)
     emo_matrix = np.array([m.e_emotional for m in candidates], dtype=np.float32)
-    state_matrix = np.array([m.s_snapshot for m in candidates], dtype=np.float32)
+    def _memory_auto_state(m: MemoryEntry) -> np.ndarray:
+        if m.auto_state_snapshot is not None:
+            raw = np.asarray(m.auto_state_snapshot, dtype=np.float32)
+        else:
+            raw = np.asarray(m.s_snapshot[:5], dtype=np.float32)
+        n = float(np.linalg.norm(raw))
+        return (raw / n).astype(np.float32) if n > 1e-8 else raw
+
+    state_matrix = np.array([_memory_auto_state(m) for m in candidates], dtype=np.float32)
     ts_array = np.array([m.timestamp for m in candidates], dtype=np.int64)
     str_array = np.array([m.strength for m in candidates], dtype=np.float32) if use_strength else None
 
@@ -260,7 +275,7 @@ def retrieve_top_k(
 
     distances = vectorized_manifold_distance(
         sem_matrix, emo_matrix, state_matrix, ts_array,
-        query_semantic, query_emotional, s_current_normalized,
+        query_semantic, query_emotional, s_current_for_distance,
         current_step, weights, decay_rate,
         strength_array=str_array,
         use_fast_temporal=use_fast_temporal,
@@ -322,13 +337,20 @@ def retrieve_top_k_fast(
     if store._sem_cache.shape[0] == 0:
         return []
 
+    s_current_auto = store.auto_state.get_current_state()
+    s_norm = np.linalg.norm(s_current_auto)
+    if s_norm > 1e-8:
+        s_current_for_distance = (s_current_auto / s_norm).astype(np.float32)
+    else:
+        s_current_for_distance = s_current_auto.astype(np.float32)
+
     weights = store.profile.retrieval_weights
     decay_rate = store.profile.decay_rate
     str_array = store._str_cache if use_strength else None
 
     distances = vectorized_manifold_distance(
-        store._sem_cache, store._emo_cache, store._state_cache, store._ts_cache,
-        query_semantic, query_emotional, s_current_normalized,
+        store._sem_cache, store._emo_cache, store._auto_state_cache, store._ts_cache,
+        query_semantic, query_emotional, s_current_for_distance,
         current_step, weights, decay_rate,
         strength_array=str_array,
         use_fast_temporal=use_fast_temporal,

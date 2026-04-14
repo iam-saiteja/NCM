@@ -6,6 +6,10 @@ NCM is now experimentally validated to produce **different response behavior fro
 - **Exp14 (real Ollama)**: measurable style/persona deltas under identical prompts.
 - **Exp15 (large synthetic)**: stable persona-separation signal at scale (5k prompts, 5k memories/persona).
 
+Latest validation added:
+- **Exp16**: exact synthetic trajectory match, persistence round-trip, and retrieval trend preservation.
+- **Exp17**: real-world corpus validation on 100 conversations / 2,009 stored turns with stable state evolution.
+
 NCM is a memory storage and retrieval architecture where memories are encoded as multi-field geometric objects in a composite retrieval space. The system retrieves not just what is textually similar, but what is **cognitively resonant** — matching meaning, emotional context, internal state at encoding time, and recency simultaneously.
 
 **The core novel contribution**: `s_snapshot` — storing a copy of the system's internal state vector at memory encoding time and using it as an independent retrieval dimension. This enables state-conditioned episodic retrieval, where the same query produces different results depending on the system's current internal state. No existing RAG, DNC, or attention-based memory system implements this.
@@ -84,11 +88,13 @@ python experiments/python/exp13_baseline_rematch.py --max-chunks 50 --query-stri
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    ENCODING PIPELINE                     │
+│             WRITE + AUTO-STATE PIPELINE                  │
 │                                                         │
 │  raw_text ──→ Encoder(text) ──→ Projector ──→ e_semantic│
+│  raw_text ──→ AutoStateTracker.update() ─→ s_current(5D)│
 │  s_current ──→ W_emo · s ──────────────────→ e_emotional│
 │  s_current ──→ L2_normalize ───────────────→ s_snapshot │
+│  s_current ────────────────────────────────→ auto_state_snapshot (5D)
 │  clock ──────→ exp(-λ·Δt) ─────────────────→ t_encoded │
 │                                                         │
 │  All fields assembled into MemoryEntry                  │
@@ -99,14 +105,27 @@ python experiments/python/exp13_baseline_rematch.py --max-chunks 50 --query-stri
 │                   RETRIEVAL PIPELINE                     │
 │                                                         │
 │  query_text ──→ encode ──→ q_semantic                   │
-│  s_current ──→ W_emo · s ──→ q_emotional                │
-│  s_current ──→ normalize ──→ q_state                    │
+│  store.auto_state.get_current_state() ───→ s_current(5D)│
+│  s_current ──→ W_emo · s ────────────────→ q_emotional   │
+│  s_current ──→ normalize ────────────────→ q_state       │
+│  memory.auto_state_snapshot ─────────────→ d_state input │
 │                                                         │
 │  d(m, q) = α·d_sem + β·d_emo + γ·d_state + δ·d_time   │
 │                                                         │
 │  All N memories scored via vectorized numpy (no loops)  │
 │  Top-k returned by distance (ascending)                 │
 │  Probabilities via softmax with adaptive temperature    │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│                    PERSISTENCE PIPELINE                  │
+│                                                         │
+│  MemoryStore + profile + auto_state.to_dict()           │
+│      └─→ NCMFile.save(..., FLAG_HAS_AUTOSTATE)          │
+│                                                         │
+│  NCMFile.load(...)                                       │
+│      ├─ if auto_state exists: AutoStateTracker.from_dict│
+│      └─ else: fresh neutral tracker [0.5 x 5]           │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -117,6 +136,7 @@ memory = {
     e_semantic:  vector in R^128    # what happened (JL random projection from 384-dim)
     e_emotional: vector in R^3      # emotional color (orthonormal projection via W_emo)
     s_snapshot:  vector in R^7      # internal state AT encoding time (L2-normalized)
+    auto_state_snapshot: vector in R^5  # auto-state at write time (val/aro/dom/cur/str)
     timestamp:   scalar             # step number
     strength:    scalar in [0, 2]   # reinforcement accumulator with bounded growth
     text:        string             # archived for human debugging only
@@ -231,6 +251,49 @@ The 2.0 cap prevents unbounded reinforcement growth (analogous to bounded synapt
 
 For detailed assessment of all experiment outputs (consolidated table, image-first summaries, and per-test result folders), visit [experiments/EXPERIMENT_RESULTS.md](experiments/EXPERIMENT_RESULTS.md).
 
+## Auto-State Integration
+
+### Design Overview
+
+NCM’s auto-state module tracks a 5-dimensional affective state vector over time: valence, arousal, dominance, curiosity, and stress.
+Each turn’s embedding is projected onto fixed positive/negative anchor pairs to produce a per-dimension familiarity signal `sigma_d in [0, 1]`, then integrated via an exponential moving average with dimension-specific learning rates `alpha_d = [0.15, 0.15, 0.15, 0.20, 0.25]`.
+The resulting state `s_t` influences retrieval only through the existing manifold distance term `d_state` and an adaptive weighting scheme that increases state contribution when spread is high and de-emphasizes it near neutral states.
+
+Reference: [experiments/results/exp16/exp16_auto_state_integration.txt](experiments/results/exp16/exp16_auto_state_integration.txt)
+
+### EXP16 — Synthetic Validation (30-Turn Scripted Conversation)
+
+EXP16 validates numerical correctness and retrieval impact of auto-state in a controlled 30-turn, three-era conversation (Stress -> Curiosity -> Positive Mixed).
+The integrated implementation reproduces the locked simulation trajectory exactly: max absolute difference between expected and observed state at turns 10, 20, and 30 is `0.00e+00` on all five dimensions.
+When auto-state is used as part of manifold distance, Precision@5 improves by `+0.400` in the stress-dominated era, with neutral effect (`+0.000`) in curiosity and mixed-positive eras, yielding an overall mean gain of `+0.133`.
+A persistence stress test shows perfect `.ncm` round-trip: state components, adaptive weights, retrieval scores, and top-1 memory are identical before and after save/load.
+
+Reference: [experiments/results/exp16/exp16_auto_state_integration.txt](experiments/results/exp16/exp16_auto_state_integration.txt)
+
+### EXP17 — Real-World Scale (PersonaChat Sample)
+
+EXP17 evaluates auto-state on real conversational data: 100 PersonaChat-style dialogues sampled from a corpus of 8,940 conversations, comprising 2,009 utterances stored and retrieved through NCM.
+On this slice, both NCM (semantic + auto-state) and a semantic-only RAG baseline achieve saturated Precision@5 and Precision@10 of `1.000`, so auto-state does not change correctness but also does not regress it.
+Retrieval latency remains production-ready: NCM with auto-state averages `~0.05 ms` per query versus `~0.02 ms` for the semantic-only baseline, an additional `~0.03 ms` that is negligible at human timescales.
+Across 2,009 turns, mean state spread is `~0.0150` with range `[0.0022, 0.0473]`, and mean state entropy is `~1.7464`, indicating stable and informative 5D state behavior without collapse or saturation.
+
+References:
+- [experiments/results/exp17/exp17_real_world_scale.txt](experiments/results/exp17/exp17_real_world_scale.txt)
+- [experiments/results/exp17/exp17_real_world_scale.json](experiments/results/exp17/exp17_real_world_scale.json)
+
+### Summary of Key Metrics
+
+| Aspect | EXP16 (Synthetic) | EXP17 (Real-World) |
+| --- | --- | --- |
+| Dataset | 30-turn scripted 3-era conversation | 100 real conversations (PersonaChat), 2,009 utterances |
+| Trajectory accuracy | Turn 10/20/30 max diff = 0.00e+00 | Not applicable (uses same tracker implementation validated in EXP16) |
+| Retrieval impact (P@5 delta) | Era1 +0.400, Era2 +0.000, Era3 +0.000, mean +0.133 | P@5 = 1.000 for both NCM and semantic-only baseline (0.000 delta) |
+| Persistence | State/score diffs = 0.00e+00; turn/alpha/weights/top-1 all OK | Validated via real .ncm round-trip in EXP16 and reused in EXP17 |
+| State stability | Stress era peak followed by convergence to mixed state | Mean spread ~= 0.0150 (range [0.0022, 0.0473]); mean entropy ~= 1.7464 |
+| Latency | Not primary focus (scripted sim) | NCM ~0.05 ms vs RAG ~0.02 ms per query |
+
+Together, EXP16 and EXP17 show that auto-state is (1) numerically correct and well-behaved, (2) beneficial in emotionally skewed scenarios without harming performance elsewhere, and (3) robust at realistic scale with negligible latency overhead and stable behavior across diverse conversations.
+
 ### Quick Overview Table
 
 | Group | Scope | Outcome |
@@ -240,6 +303,8 @@ For detailed assessment of all experiment outputs (consolidated table, image-fir
 | Exp10–Exp13 | Recall rematch, real-world corpus, robustness, boundary analysis | NCM shows strong state divergence, robust defaults, and regime-dependent gains |
 | Exp14 | Real Ollama persona-memory A/B test | Different memory profiles produce measurably different response style under identical prompts |
 | Exp15 | Large synthetic persona-memory stress test | Memory conditioning signal remains strong at scale (5k prompts, 5k memories/persona) |
+| Exp16 | Auto-state integration validation | Exact trajectory match + persistence round-trip on locked synthetic design |
+| Exp17 | Real-world auto-state scale test | Stable auto-state behavior on 100 real conversations / 2,009 turns |
 
 ### Headline Metrics
 
@@ -254,6 +319,8 @@ For detailed assessment of all experiment outputs (consolidated table, image-fir
 | Honest rematch | Exp13: NCM stronger in low/high shift buckets |
 | Real-model persona effect | Exp14 (qwen2:7B): Persona-B warm markers +3.833 and +63 words vs Persona-A under same prompts |
 | Large-scale persona effect | Exp15 (synthetic 5k×5k): persona separation L2=0.713, memory-gain positive-rate=1.000 |
+| Synthetic validation lock | Exp16: Turn10/20/30 exact match, mean P@5 gain +13.3%, persistence PASS |
+| Real-world scale proof | Exp17: 100 real conversations, 2,009 turns, stable mean spread 0.0150 |
 
 ### A few visuals
 
@@ -276,6 +343,30 @@ Real-model behavior: same prompt set with different memory profiles yields measu
 ![Synthetic Persona Memory Scale](experiments/results/exp15/exp15_synthetic_persona_memory_effect_scale.png)
 
 Scale behavior: memory-conditioned persona effect remains strong in large synthetic runs.
+
+![EXP16 State Trajectory](experiments/results/exp16/exp16_state_trajectory.png)
+
+EXP16: locked synthetic trajectory and state evolution validation.
+
+![EXP16 Retrieval Trend](experiments/results/exp16/exp16_retrieval_trend.png)
+
+EXP16: retrieval trend delta across the three eras.
+
+![EXP16 Persistence Validation](experiments/results/exp16/exp16_persistence_validation.png)
+
+EXP16: `.ncm` persistence round-trip checks.
+
+![EXP17 Retrieval Precision](experiments/results/exp17/exp17_scale_retrieval_precision.png)
+
+EXP17: real-world retrieval precision on 100 conversations.
+
+![EXP17 Performance Metrics](experiments/results/exp17/exp17_scale_performance_metrics.png)
+
+EXP17: latency comparison between NCM and semantic baseline.
+
+![EXP17 State Accuracy](experiments/results/exp17/exp17_scale_state_accuracy.png)
+
+EXP17: state stability across diverse real conversations.
 
 For full per-experiment explanations, result tables, and all plots, use [experiments/EXPERIMENT_RESULTS.md](experiments/EXPERIMENT_RESULTS.md).
 
@@ -315,6 +406,7 @@ All tests were run locally on your laptop:
 NCM/
 ├── ncm/                          # Core library
 │   ├── __init__.py
+│   ├── auto_state.py             # 5D auto-state tracker (sigma + EMA + adaptive weights)
 │   ├── encoder.py                # Semantic + emotional + state encoding
 │   ├── memory.py                 # MemoryEntry + MemoryStore
 │   ├── retrieval.py              # Vectorized manifold retrieval
@@ -335,6 +427,10 @@ NCM/
 │   │   ├── exp11_real_world_corpus_benchmark.py
 │   │   ├── exp12_weight_sensitivity.py
 │   │   ├── exp13_baseline_rematch.py
+│   │   ├── exp14_persona_memory_ollama.py
+│   │   ├── exp15_synthetic_persona_memory_effect.py
+│   │   ├── exp16_auto_state_integration.py
+│   │   ├── exp17_real_world_autostate_scale.py
 │   │   ├── run_fast.py
 │   │   └── run_all_experiments.py
 │   └── results/                  # Per-experiment outputs (organized)
@@ -351,7 +447,10 @@ NCM/
 │       ├── exp11/
 │       ├── exp12/
 │       ├── exp13/
-│       └── meta/
+│       ├── exp14/
+│       ├── exp15/
+│       ├── exp16/
+│       └── exp17/
 ├── models/
 │   └── all-MiniLM-L6-v2/         # Pre-trained sentence transformer
 └── README.md

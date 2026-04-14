@@ -2,6 +2,47 @@
 
 All notable changes to the NCM project are documented here.
 
+## [Auto-State Integration Validation] - 2026-04-14
+
+### Locked design constants
+- Auto-state dimensions are fixed and ordered as `valence`, `arousal`, `dominance`, `curiosity`, `stress`.
+- The locked anchor phrases from Sim 1 are used as the positive/negative references for each dimension.
+- The signal formula is fixed as `sigma_d(e) = (1 + cos(e, pos_d) - cos(e, neg_d)) / 2`, clipped to `[0, 1]`.
+- The alpha vector is fixed as `[0.15, 0.15, 0.15, 0.20, 0.25]` for `[valence, arousal, dominance, curiosity, stress]`.
+- State updates use EMA per dimension: `s_t[d] = (1 - alpha_d) * s_{t-1}[d] + alpha_d * sigma_d(e_t)`.
+- The initial state is fixed at `s_0 = [0.5, 0.5, 0.5, 0.5, 0.5]`.
+- Adaptive weighting is spread-based: `spread = max(s_current) - min(s_current)`, `w_state = 0.3 + 0.4 * spread` clamped to `[0.3, 0.7]`, and `w_sem = 1.0 - w_state`.
+- Auto-state only produces the current state vector and these weights; the manifold distance / retrieval formula itself does not change.
+
+### Design overview captured in docs
+- Added a dedicated Auto-State Integration section in [README.md](README.md) documenting the fixed 5D state design, sigma projection rule, EMA update, adaptive weighting, and unchanged manifold retrieval structure.
+- Added explicit metric summary table in README for EXP16 (synthetic validation) and EXP17 (real-world scale).
+
+### Implementation and validation
+- Updated `experiments/python/exp16_auto_state_integration.py` to generate the exp16 validation outputs and plots; this contributed exact trajectory checks, retrieval-trend charts, and `.ncm` persistence validation for the locked design spec.
+- Added `experiments/python/exp17_real_world_autostate_scale.py`; this contributed real-data proof by running the same auto-state logic on `experiments/data/real_world_corpus/train.jsonl` and measuring retrieval quality, latency, and state stability at scale.
+- Expanded `experiments/EXPERIMENT_RESULTS.md` so the consolidated experiment table now includes exp16 and exp17, with their results, interpretation, and visual appendix.
+
+### Documentation updates
+- Updated [README.md](README.md) to surface EXP16 and EXP17 as the latest proof points for the locked auto-state spec, including their headline metrics and plots.
+- Updated [experiments/EXPERIMENT_RESULTS.md](experiments/EXPERIMENT_RESULTS.md) with the new validation and real-world scale sections, plus the new figure links.
+
+### Validation performed
+- Ran exp16 against the locked synthetic 30-turn sequence and confirmed Turn 10/20/30 state checkpoints, retrieval-trend deltas, and persistence round-trip values matched the recorded JSON outputs.
+- Ran exp17 on 100 real conversations from the corpus and confirmed the stored turn count, retrieval metrics, state spread, and generated plots were produced successfully.
+- Verified the expected outputs were written to `experiments/results/exp16` and `experiments/results/exp17`.
+
+### Key experiment outcomes
+- EXP16 (synthetic):
+  - Turn10/20/30 trajectory max diff = `0.00e+00`
+  - P@5 delta by era: `+0.400`, `+0.000`, `+0.000` (mean `+0.133`)
+  - Persistence: `max_state_diff=0.00e+00`, `max_score_diff=0.00e+00`, turn/alpha/weights/top-1 all OK
+- EXP17 (real-world):
+  - Dataset slice: 100 conversations, 2,009 stored utterances (from corpus of 8,940)
+  - Precision: NCM and semantic baseline both `P@5=1.000`, `P@10=1.000` (no regression)
+  - Latency: NCM `~0.05ms` vs baseline `~0.02ms` (delta `~0.03ms`)
+  - State stability: mean spread `~0.0150`, range `[0.0022, 0.0473]`, mean entropy `~1.7464`
+
 ## [Storage + Gate Update] - 2026-04-11
 
 ### Write gate behavior

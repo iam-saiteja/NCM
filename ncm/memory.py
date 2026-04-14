@@ -10,6 +10,7 @@ from typing import Optional, List
 
 import numpy as np
 
+from ncm.auto_state import AutoStateTracker
 from ncm.exceptions import (
     DimensionMismatchError,
     MemoryNotFoundError,
@@ -38,6 +39,7 @@ class MemoryEntry:
     text: str = ""
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     tags: list = field(default_factory=list)
+    auto_state_snapshot: Optional[np.ndarray] = None
 
     def to_dict(self) -> dict:
         return {
@@ -49,6 +51,11 @@ class MemoryEntry:
             "strength": float(self.strength),
             "text": self.text,
             "tags": self.tags,
+            "auto_state_snapshot": (
+                self.auto_state_snapshot.tolist()
+                if self.auto_state_snapshot is not None
+                else None
+            ),
         }
 
     @classmethod
@@ -62,6 +69,11 @@ class MemoryEntry:
             strength=float(d["strength"]),
             text=d.get("text", ""),
             tags=d.get("tags", []),
+            auto_state_snapshot=(
+                np.array(d["auto_state_snapshot"], dtype=np.float32)
+                if d.get("auto_state_snapshot") is not None
+                else None
+            ),
         )
 
 
@@ -83,14 +95,24 @@ class MemoryStore:
         self.profile = profile or MemoryProfile()
         self._memories: dict = {}
         self.step: int = 0
+        self.auto_state = AutoStateTracker()
         # Vectorized cache for fast retrieval
         self._sem_cache = None
         self._emo_cache = None
         self._state_cache = None
+        self._auto_state_cache = None
         self._ts_cache = None
         self._str_cache = None
         self._id_order = []
         self._cache_dirty = True
+
+    @staticmethod
+    def _normalize_state(state: np.ndarray) -> np.ndarray:
+        v = np.asarray(state, dtype=np.float32)
+        norm = float(np.linalg.norm(v))
+        if norm < 1e-8:
+            return v.copy()
+        return (v / norm).astype(np.float32)
 
     def _invalidate_cache(self):
         self._cache_dirty = True
@@ -103,6 +125,7 @@ class MemoryStore:
             self._sem_cache = np.zeros((0, self.profile.semantic_dim), dtype=np.float32)
             self._emo_cache = np.zeros((0, self.profile.emotional_dim), dtype=np.float32)
             self._state_cache = np.zeros((0, self.profile.state_dim), dtype=np.float32)
+            self._auto_state_cache = np.zeros((0, 5), dtype=np.float32)
             self._ts_cache = np.zeros(0, dtype=np.int64)
             self._str_cache = np.zeros(0, dtype=np.float32)
             self._id_order = []
@@ -114,11 +137,17 @@ class MemoryStore:
         self._sem_cache = np.array([m.e_semantic for m in mems], dtype=np.float32)
         self._emo_cache = np.array([m.e_emotional for m in mems], dtype=np.float32)
         self._state_cache = np.array([m.s_snapshot for m in mems], dtype=np.float32)
+        self._auto_state_cache = np.array([
+            self._normalize_state(m.auto_state_snapshot)
+            if m.auto_state_snapshot is not None
+            else self._normalize_state(np.asarray(m.s_snapshot[:5], dtype=np.float32))
+            for m in mems
+        ], dtype=np.float32)
         self._ts_cache = np.array([m.timestamp for m in mems], dtype=np.int64)
         self._str_cache = np.array([m.strength for m in mems], dtype=np.float32)
         self._cache_dirty = False
 
-    def add(self, memory: MemoryEntry, gate_check: bool = False) -> MemoryEntry:
+    def add(self, memory: MemoryEntry, gate_check: bool = False, update_auto_state: bool = True) -> MemoryEntry:
         """
         Add a memory to the store.
         
@@ -157,6 +186,13 @@ class MemoryStore:
 
         if len(self._memories) >= self.profile.max_size:
             self._evict_weakest()
+
+        if update_auto_state:
+            text_for_state = memory.text if isinstance(memory.text, str) and memory.text.strip() else f"memory-{memory.id}"
+            auto_state = self.auto_state.update(text_for_state)
+            memory.auto_state_snapshot = auto_state.astype(np.float32).copy()
+        elif memory.auto_state_snapshot is None:
+            memory.auto_state_snapshot = self.auto_state.get_current_state().astype(np.float32).copy()
 
         self._memories[memory.id] = memory
         self._invalidate_cache()

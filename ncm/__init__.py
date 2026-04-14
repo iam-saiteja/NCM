@@ -21,6 +21,7 @@ Quick start:
 __version__ = "1.1.0"
 
 from ncm.encoder import SentenceEncoder
+from ncm.auto_state import AutoStateTracker
 from ncm.memory import MemoryEntry, MemoryStore
 from ncm.profile import MemoryProfile, RetrievalWeights
 from ncm.retrieval import (
@@ -47,6 +48,7 @@ from ncm.exceptions import (
 __all__ = [
     # Core
     "SentenceEncoder",
+    "AutoStateTracker",
     "MemoryEntry",
     "MemoryStore",
     "MemoryProfile",
