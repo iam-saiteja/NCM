@@ -24,34 +24,32 @@ python ollama_ncm_qwen2/chat_with_ncm.py
 
 You can also set an initial state at startup:
 
-python ollama_ncm_qwen2/chat_with_ncm.py --state 0.6,0.4,0.7,0.3,0.5,0.2,0.8
+python ollama_ncm_qwen2/chat_with_ncm.py --state 0.6,0.4,0.7,0.3,0.5
 
 Then chat in the terminal.
 
 ## Commands
 
 - `/exit` or `/quit` to stop
-- `/state a,b,c,d,e,f,g` to set the 7D state vector used for retrieval/write
-- `/showstate` to print current state
+- `/state val,aro,dom,cur,str` to set the 5D auto-state used for retrieval/write
+- `/showstate` to print current state and adaptive weights (`w_state`, `w_sem`)
 
-## State vector guide (7D)
+## State vector guide (5D auto-state)
 
-The state vector is a normalized control signal used by NCM for state-conditioned retrieval.
-Values are in `[0, 1]` for 7 dimensions.
+The auto-state vector is a normalized control signal used by NCM for state-conditioned retrieval.
+Values are in `[0, 1]` for 5 fixed dimensions:
 
-The base system treats these as abstract latent dimensions. For practical use, map them to your own app semantics (example):
-
-1. formality
-2. emotional intensity
-3. confidence
-4. urgency
-5. empathy
-6. curiosity
-7. task focus
+1. valence
+2. arousal
+3. dominance
+4. curiosity
+5. stress
 
 Why this matters:
-- If all values stay at `0.5`, early memories are encoded under nearly identical state conditions.
-- Changing state over time increases separation in state space, making state-conditioned retrieval much more informative.
+- Auto-state is normally updated automatically from each message by the tracker.
+- `/state ...` is a real-time override for testing controlled state scenarios.
+- If all values stay near `0.5`, early memories are encoded under similar state conditions.
+- Changing state over time increases separation in state space, making state-conditioned retrieval more informative.
 
 ## Notes
 
@@ -60,3 +58,4 @@ Why this matters:
 - Write-time novelty gating is active in chat storage (`gate_check=True`) to reduce near-duplicate memory writes.
 - New stores are initialized with a tighter write threshold (`write_threshold=0.25`) for chat usage.
 - Existing `.ncm` files keep their saved profile values (including thresholds), enabling stable behavior across restarts.
+- Retrieval state comes from `store.auto_state.get_current_state()` and per-memory `auto_state_snapshot` fields.

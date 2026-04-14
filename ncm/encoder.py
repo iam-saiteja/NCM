@@ -10,7 +10,7 @@ FIXES from v1:
   2. Emotional encoding now returns BOTH the projected vector AND exposes
      encode_emotional() so retrieval can compare projected-to-projected.
      
-  3. Added encode_state_snapshot() for proper state normalization.
+  3. Added encode_state() for proper state normalization.
 
 NEW MATH:
   Information-theoretic encoding gate:

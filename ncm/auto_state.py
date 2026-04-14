@@ -46,8 +46,12 @@ _ANCHOR_VECS = None
 def _get_model() -> SentenceTransformer:
     global _MODEL
     if _MODEL is None:
-        local_path = os.path.join("models", "all-MiniLM-L6-v2")
-        _MODEL = SentenceTransformer(local_path if os.path.exists(local_path) else "all-MiniLM-L6-v2")
+        repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        local_path = os.path.join(repo_root, "models", "all-MiniLM-L6-v2")
+        if os.path.exists(local_path):
+            _MODEL = SentenceTransformer(local_path, local_files_only=True)
+        else:
+            _MODEL = SentenceTransformer("all-MiniLM-L6-v2")
     return _MODEL
 
 

@@ -26,10 +26,18 @@ CONSOLIDATE_SIMILARITY_THRESHOLD = 0.95
 
 def parse_state_csv(value: str) -> np.ndarray:
     parts = [p.strip() for p in value.split(",") if p.strip()]
-    if len(parts) != 7:
-        raise ValueError("State must contain exactly 7 comma-separated values.")
+    if len(parts) != 5:
+        raise ValueError("State must contain exactly 5 comma-separated values (valence,arousal,dominance,curiosity,stress).")
     arr = np.array([float(x) for x in parts], dtype=np.float32)
     return np.clip(arr, 0.0, 1.0)
+
+
+def state5_to_state7(state5: np.ndarray) -> np.ndarray:
+    """Map 5D auto-state to encoder's 7D interface with neutral padding."""
+    s5 = np.asarray(state5, dtype=np.float32)
+    if s5.shape != (5,):
+        raise ValueError(f"Expected 5D state, got shape {s5.shape}")
+    return np.pad(s5, (0, 2), mode="constant", constant_values=0.5).astype(np.float32)
 
 
 def ollama_chat(messages: List[dict], model: str, temperature: float = 0.2) -> str:
@@ -55,9 +63,8 @@ class LocalNCMOllamaChat:
         self.model_name = model_name
         self.encoder = SentenceEncoder(model_name="all-MiniLM-L6-v2", model_dir=os.path.join(REPO_ROOT, "models"))
         self.store = self._load_store()
-        # Default neutral state is useful as a bootstrap, but users should set this
-        # to meaningful values for stronger state-conditioned behavior.
-        self.current_state = initial_state.astype(np.float32)
+        # Runtime override for real-time testing starts tracker at provided 5D state.
+        self.store.auto_state.state = initial_state.astype(np.float32)
 
     def _load_store(self) -> MemoryStore:
         if os.path.exists(NCM_PATH):
@@ -74,10 +81,12 @@ class LocalNCMOllamaChat:
             return
         self.store.consolidate(similarity_threshold=CONSOLIDATE_SIMILARITY_THRESHOLD)
 
-    def _add_memory(self, role: str, text: str, state: np.ndarray) -> None:
+    def _add_memory(self, role: str, text: str) -> None:
+        state5 = self.store.auto_state.get_current_state()
+        state7 = state5_to_state7(state5)
         semantic = self.encoder.encode(text)
-        emotional = self.encoder.encode_emotional(state)
-        snapshot = self.encoder.encode_state(state)
+        emotional = self.encoder.encode_emotional(state7)
+        snapshot = self.encoder.encode_state(state7)
 
         mem = MemoryEntry(
             e_semantic=semantic,
@@ -91,14 +100,16 @@ class LocalNCMOllamaChat:
         self.store.step += 1
         self._maybe_consolidate()
 
-    def _retrieve_context(self, user_text: str, state: np.ndarray, top_k: int = 4) -> str:
+    def _retrieve_context(self, user_text: str, top_k: int = 4) -> str:
         memories = self.store.get_all_safe()
         if not memories:
             return ""
 
+        state5 = self.store.auto_state.get_current_state()
+        state7 = state5_to_state7(state5)
         query_sem = self.encoder.encode(user_text)
-        query_emo = self.encoder.encode_emotional(state)
-        state_norm = self.encoder.encode_state(state)
+        query_emo = self.encoder.encode_emotional(state7)
+        state_norm = self.encoder.encode_state(state7)
 
         results = retrieve_top_k_fast(
             query_semantic=query_sem,
@@ -118,10 +129,10 @@ class LocalNCMOllamaChat:
         return "\n".join(lines)
 
     def set_state_from_csv(self, value: str) -> None:
-        self.current_state = parse_state_csv(value)
+        self.store.auto_state.state = parse_state_csv(value).astype(np.float32)
 
     def ask(self, user_text: str) -> str:
-        context = self._retrieve_context(user_text, self.current_state, top_k=4)
+        context = self._retrieve_context(user_text, top_k=4)
 
         system_prompt = (
             "You are a helpful assistant. "
@@ -144,8 +155,8 @@ class LocalNCMOllamaChat:
 
         answer = ollama_chat(messages=messages, model=self.model_name)
 
-        self._add_memory("user", user_text, self.current_state)
-        self._add_memory("assistant", answer, self.current_state)
+        self._add_memory("user", user_text)
+        self._add_memory("assistant", answer)
         self._save_store()
 
         return answer
@@ -160,8 +171,8 @@ def main() -> None:
     )
     parser.add_argument(
         "--state",
-        default="0.5,0.5,0.5,0.5,0.5,0.5,0.5",
-        help="Initial 7D state vector as comma-separated values in [0,1]",
+        default="0.5,0.5,0.5,0.5,0.5",
+        help="Initial 5D auto-state as valence,arousal,dominance,curiosity,stress in [0,1]",
     )
     args = parser.parse_args()
 
@@ -173,7 +184,7 @@ def main() -> None:
     print("Local NCM + Ollama chat")
     print(f"Model: {args.model}")
     print(f"Memory file: {NCM_PATH}")
-    print("Commands: /exit, /quit, /state a,b,c,d,e,f,g, /showstate")
+    print("Commands: /exit, /quit, /state val,aro,dom,cur,str, /showstate")
 
     app = LocalNCMOllamaChat(model_name=args.model, initial_state=initial_state)
 
@@ -190,7 +201,10 @@ def main() -> None:
             print("Bye.")
             break
         if user_text.lower() == "/showstate":
-            print("State:", ", ".join(f"{x:.2f}" for x in app.current_state))
+            s = app.store.auto_state.get_current_state()
+            w_state, w_sem = app.store.auto_state.get_adaptive_weights()
+            print("State:", ", ".join(f"{x:.2f}" for x in s))
+            print(f"Weights: w_state={w_state:.3f}, w_sem={w_sem:.3f}")
             continue
         if user_text.lower().startswith("/state "):
             try:

@@ -26,6 +26,7 @@ All notable changes to the NCM project are documented here.
 ### Documentation updates
 - Updated [README.md](README.md) to surface EXP16 and EXP17 as the latest proof points for the locked auto-state spec, including their headline metrics and plots.
 - Updated [experiments/EXPERIMENT_RESULTS.md](experiments/EXPERIMENT_RESULTS.md) with the new validation and real-world scale sections, plus the new figure links.
+- Synchronized the README architecture section with the current integrated code path (write/retrieval/persistence now explicitly document `AutoStateTracker`, `auto_state_snapshot`, and `FLAG_HAS_AUTOSTATE`).
 
 ### Validation performed
 - Ran exp16 against the locked synthetic 30-turn sequence and confirmed Turn 10/20/30 state checkpoints, retrieval-trend deltas, and persistence round-trip values matched the recorded JSON outputs.

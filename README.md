@@ -10,9 +10,9 @@ Latest validation added:
 - **Exp16**: exact synthetic trajectory match, persistence round-trip, and retrieval trend preservation.
 - **Exp17**: real-world corpus validation on 100 conversations / 2,009 stored turns with stable state evolution.
 
-NCM is a memory storage and retrieval architecture where memories are encoded as multi-field geometric objects in a composite retrieval space. The system retrieves not just what is textually similar, but what is **cognitively resonant** — matching meaning, emotional context, internal state at encoding time, and recency simultaneously.
+NCM is a memory storage and retrieval architecture where memories are encoded as multi-field geometric objects in a composite retrieval space. Core stored fields include `e_semantic`, `e_emotional`, `s_snapshot`, `auto_state_snapshot`, `timestamp`, and `strength`. The system retrieves not just what is textually similar, but what is **cognitively resonant** — matching meaning, emotional context, internal state at encoding time, and recency simultaneously.
 
-**The core novel contribution**: `s_snapshot` — storing a copy of the system's internal state vector at memory encoding time and using it as an independent retrieval dimension. This enables state-conditioned episodic retrieval, where the same query produces different results depending on the system's current internal state. No existing RAG, DNC, or attention-based memory system implements this.
+**Core retrieval contribution**: `s_snapshot` as an explicit retrieval dimension, now complemented by integrated `auto_state_snapshot` from `AutoStateTracker`. Together they enable state-conditioned episodic retrieval where the same semantic query can return different memories under different internal states, while preserving the existing manifold retrieval API.
 
 ## 🚀 Latest: 50-100x Performance Optimization (2026-04-10)
 
@@ -62,7 +62,7 @@ python experiments/python/exp13_baseline_rematch.py --max-chunks 50 --query-stri
 ## Features
 
 - Tensor-based episodic memory representation
-- Multi-field encoding (`e_semantic`, `e_emotional`, `s_snapshot`, time, strength)
+- Multi-field encoding (`e_semantic`, `e_emotional`, `s_snapshot`, `auto_state_snapshot`, time, strength)
 - State-conditioned retrieval behavior
 - Vectorized top-k retrieval with cached and uncached paths
 - Adaptive softmax retrieval probabilities
@@ -133,17 +133,19 @@ python experiments/python/exp13_baseline_rematch.py --max-chunks 50 --query-stri
 
 ```python
 memory = {
+    id: str,                      # UUID
     e_semantic:  vector in R^128    # what happened (JL random projection from 384-dim)
     e_emotional: vector in R^3      # emotional color (orthonormal projection via W_emo)
-    s_snapshot:  vector in R^7      # internal state AT encoding time (L2-normalized)
-    auto_state_snapshot: vector in R^5  # auto-state at write time (val/aro/dom/cur/str)
+    s_snapshot:  vector in R^7      # encoder state snapshot (legacy/compat retrieval field)
+    auto_state_snapshot: vector in R^5  # integrated auto-state at write time (val/aro/dom/cur/str)
     timestamp:   scalar             # step number
     strength:    scalar in [0, 2]   # reinforcement accumulator with bounded growth
-    text:        string             # archived for human debugging only
+    text:        string             # archived content (used for chat context and debugging)
+    tags:        list[str]          # optional labels for scoped retrieval/filtering
 }
 ```
 
-Text is non-operational **during retrieval**. The system operates entirely on the geometric tensor structure.
+Distance scoring is geometric (semantic/emotional/state/temporal). `text` is not used in distance math, but may be used by applications (e.g., chat context rendering).
 
 ---
 
@@ -202,7 +204,7 @@ time_distance = 1 - exp(-λ · Δt)
 ```
 d(m, q) = α·(1 - cos(e_sem_m, e_sem_q))           # semantic
         + β·||e_emo_m - e_emo_q|| / 2.0             # emotional (projected vs projected)
-        + γ·||s_snap_m - s_current|| / √2            # state (positive orthant)
+        + γ·||s_auto_m - s_current_auto|| / √2        # state (auto-state snapshot)
         + δ·(1 - exp(-λ·Δt))                         # temporal
 
 Constraint: α + β + γ + δ = 1
@@ -210,6 +212,8 @@ Default:    α=0.4, β=0.2, γ=0.3, δ=0.1
 ```
 
 All four components are normalized to [0, 1]. A **Dirichlet regularization** penalty prevents any single dimension from dominating:
+
+In integrated mode, `s_auto_m` comes from per-memory `auto_state_snapshot` and `s_current_auto` comes from `store.auto_state.get_current_state()`. If a legacy memory lacks `auto_state_snapshot`, retrieval falls back to a compatible normalized state view.
 
 ```
 L_balance = Σ(w_i - 0.25)²
@@ -464,28 +468,36 @@ NCM/
 from ncm.encoder import SentenceEncoder
 from ncm.memory import MemoryEntry, MemoryStore
 from ncm.retrieval import retrieve_top_k
+import numpy as np
 
 # Initialize
 encoder = SentenceEncoder()
 store = MemoryStore()
 
+# Optionally set current 5D auto-state (valence, arousal, dominance, curiosity, stress)
+store.auto_state.state = np.array([0.7, 0.8, 0.2, 0.8, 0.3], dtype=np.float32)
+
+# For encoder interfaces that expect 7D, pad 5D auto-state with neutral tail values
+state5 = store.auto_state.get_current_state()
+state7 = np.pad(state5, (0, 2), mode="constant", constant_values=0.5)
+
 # Encode and store a memory
-state = [0.7, 0.8, 0.2, 0.8, 0.3, 0.7, 0.2]  # internal state
 e_sem = encoder.encode("colleague took credit for my work")
-e_emo = encoder.encode_emotional(state)
-s_snap = encoder.encode_state(state)
+e_emo = encoder.encode_emotional(state7)
+s_snap = encoder.encode_state(state7)
 
 memory = MemoryEntry(
     e_semantic=e_sem, e_emotional=e_emo, s_snapshot=s_snap,
     timestamp=0, text="colleague took credit for my work"
 )
-store.add(memory)
+store.add(memory, update_auto_state=True)  # writes auto_state_snapshot automatically
 
 # Retrieve with state-conditioned query
-query_state = [0.9, 0.1, 0.9, 0.2, 0.8, 0.2, 0.9]  # stressed state
+store.auto_state.state = np.array([0.9, 0.1, 0.9, 0.2, 0.8], dtype=np.float32)
+query_state7 = np.pad(store.auto_state.get_current_state(), (0, 2), mode="constant", constant_values=0.5)
 q_sem = encoder.encode("someone betrayed my trust")
-q_emo = encoder.encode_emotional(query_state)
-q_state = encoder.encode_state(query_state)
+q_emo = encoder.encode_emotional(query_state7)
+q_state = encoder.encode_state(query_state7)  # kept for API compatibility
 
 results = retrieve_top_k(q_sem, q_emo, store, q_state, current_step=100, k=3)
 for distance, probability, mem in results:
@@ -510,7 +522,7 @@ for distance, probability, mem in results:
 This is **Invention 1 of 3** in the TES project stack. NCM is architecturally independent and constitutes a standalone research contribution. Three core claims are independently testable:
 
 1. **State-conditioned retrieval** produces measurably different behavioral trajectories than semantic-only retrieval ✅ (Experiment 3: **Jaccard ≈ 0.714**)
-2. **Four-dimensional retrieval** maintains competitive category precision while enabling state-conditioned retrieval ✅ (Experiment 1)
+2. **Four-component retrieval** maintains competitive category precision while enabling state-conditioned retrieval ✅ (Experiment 1)
 3. **Full manifold novelty detection** remains non-zero at large scale where semantic novelty collapses ✅ (Experiment 2 AG News: semantic ≈ 0 at 100k, full ≈ 0.119)
 
 **New in Experiment 10**: Recall@k across multiple internal states (LongMemEval-style benchmark). Tests whether NCM achieves state-dependent recall patterns while maintaining competitive recall scores vs semantic-only and SBERT baselines.

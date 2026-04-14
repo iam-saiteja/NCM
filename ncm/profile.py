@@ -11,7 +11,7 @@ from ncm.exceptions import ProfileError
 @dataclass
 class RetrievalWeights:
     """
-    Learnable weights for four-dimensional retrieval.
+    Learnable weights for four-component retrieval.
     Must sum to 1.0. Supports Dirichlet regularization.
     
     Math justification:

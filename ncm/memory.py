@@ -1,7 +1,8 @@
 """
 NCM - Memory storage for episodic experiences.
 
-Each memory is a geometric object in the four-dimensional retrieval space.
+Each memory is a multi-field geometric object covering semantic, emotional,
+state, temporal, and strength dimensions.
 """
 
 import uuid
@@ -24,12 +25,13 @@ class MemoryEntry:
     """
     A single episodic memory as a geometric object.
     
-    Fields define position in the four-dimensional retrieval space:
+    Fields define position in the multi-component retrieval space:
       e_semantic:  semantic embedding (what happened)
       e_emotional: emotional projection via W_emo (how it felt)
       s_snapshot:  L2-normalized state copy (who you were)
       timestamp:   step number (when it happened)
       strength:    reinforcement accumulator with bounded growth
+      auto_state_snapshot: 5D auto-state at write time
     """
     e_semantic: np.ndarray
     e_emotional: np.ndarray
