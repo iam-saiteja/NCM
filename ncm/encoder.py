@@ -25,7 +25,6 @@ import os
 import numpy as np
 
 from ncm.exceptions import (
-    EncoderNotInitializedError,
     InvalidStateVectorError,
 )
 
