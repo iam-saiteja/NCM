@@ -1,0 +1,50 @@
+{
+  "calm_happy_vs_stressed_angry": {
+    "semantic_jaccard": 0.0,
+    "manifold_jaccard": 0.7321,
+    "manifold_jaccard_std": 0.0536,
+    "improvement": 0.7321,
+    "state_a_match_rate": 0.2,
+    "state_b_match_rate": 0.2
+  },
+  "excited_curious_vs_sad_withdrawn": {
+    "semantic_jaccard": 0.0,
+    "manifold_jaccard": 0.5595,
+    "manifold_jaccard_std": 0.0519,
+    "improvement": 0.5595,
+    "state_a_match_rate": 0.2,
+    "state_b_match_rate": 0.2
+  },
+  "confident_vs_fearful": {
+    "semantic_jaccard": 0.0,
+    "manifold_jaccard": 0.75,
+    "manifold_jaccard_std": 0.0,
+    "improvement": 0.75,
+    "state_a_match_rate": 0.2,
+    "state_b_match_rate": 0.2
+  },
+  "neutral_vs_exhausted": {
+    "semantic_jaccard": 0.0,
+    "manifold_jaccard": 0.3,
+    "manifold_jaccard_std": 0.1,
+    "improvement": 0.3,
+    "state_a_match_rate": 0.2,
+    "state_b_match_rate": 0.2
+  },
+  "calm_happy_vs_fearful": {
+    "semantic_jaccard": 0.0,
+    "manifold_jaccard": 0.75,
+    "manifold_jaccard_std": 0.0,
+    "improvement": 0.75,
+    "state_a_match_rate": 0.2,
+    "state_b_match_rate": 0.2
+  },
+  "excited_curious_vs_exhausted": {
+    "semantic_jaccard": 0.0,
+    "manifold_jaccard": 0.7321,
+    "manifold_jaccard_std": 0.0536,
+    "improvement": 0.7321,
+    "state_a_match_rate": 0.2,
+    "state_b_match_rate": 0.2
+  }
+}
