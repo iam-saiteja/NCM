@@ -252,9 +252,17 @@ class MemoryStore:
         self._invalidate_cache()
 
     def decay_all(self) -> None:
-        for memory in self._memories.values():
-            memory.strength *= 0.999
-        self._invalidate_cache()
+        if not self._memories:
+            return
+
+        self._rebuild_cache()
+        self._str_cache *= 0.999
+
+        # Efficient write-back from vectorized array to objects
+        for m, s in zip(self._memories.values(), self._str_cache.tolist()):
+            m.strength = s
+
+        # No need to invalidate cache since _str_cache and _memories are perfectly in sync
 
     def filter_by_tag(self, tag: str) -> List[MemoryEntry]:
         return [m for m in self._memories.values() if tag in m.tags]
