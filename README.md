@@ -541,6 +541,48 @@ for distance, probability, mem in results:
 
 ---
 
+
+### Advanced Capabilities
+
+Below are examples of advanced NCM capabilities listed above:
+
+```python
+from ncm.encoder import SentenceEncoder
+from ncm.memory import MemoryStore
+from ncm.persistence import NCMFile
+from ncm.retrieval import retrieval_entropy
+
+# 1. Device Policy & GPU-Required Mode
+# Ensures the encoder runs on GPU, raising an error if unavailable
+encoder = SentenceEncoder(device="cuda", require_gpu=True)
+
+# 2. Tag-Aware Memory Views & Explicit Removal
+store = MemoryStore()
+# ... store memories with tags ...
+# Filter memories by tag
+work_memories = store.filter_by_tag("work")
+# Remove a specific memory by ID
+if work_memories:
+    store.remove(work_memories[0].id)
+
+# 3. Custom Profile Metadata
+store.profile.set_custom("user_id", "user_12345")
+store.profile.set_custom("mode", "analytical")
+user = store.profile.get_custom("user_id")
+
+# 4. Entropy-Style Recall Confidence
+# Higher entropy means diffuse retrieval (uncertainty). Lower entropy means focused retrieval.
+import numpy as np
+distances = np.array([0.1, 0.8, 0.9]) # example distances from retrieve_top_k
+entropy = retrieval_entropy(distances)
+
+# 5. Compressed & FP16 Persistence
+# Saves memory store with compression and FP16 vector precision for disk efficiency
+NCMFile.save(store, "my_memory.ncm", compress=True, fp16=True)
+```
+
+---
+
 ## Dependencies
 
 - Python 3.8+
