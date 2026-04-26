@@ -59,13 +59,15 @@ def ollama_chat(messages: List[dict], model: str, temperature: float = 0.2) -> s
 
 
 class LocalNCMOllamaChat:
-    def __init__(self, model_name: str, initial_state: np.ndarray) -> None:
+    def __init__(self, model_name: str, initial_state: np.ndarray, force_initial_state: bool = False) -> None:
         self.model_name = model_name
         self.encoder = SentenceEncoder(model_name="all-MiniLM-L6-v2", model_dir=os.path.join(REPO_ROOT, "models"))
-        self.store = self._load_store()
+        self.store, self.loaded_existing_store = self._load_store()
         self._configure_live_profile()
-        # Runtime override for real-time testing starts tracker at provided 5D state.
-        self.store.auto_state.state = initial_state.astype(np.float32)
+        # Preserve persisted state by default; only apply initial state for new stores
+        # or when caller explicitly forces an override.
+        if force_initial_state or not self.loaded_existing_store:
+            self.store.auto_state.state = initial_state.astype(np.float32)
 
     def _configure_live_profile(self) -> None:
         """Apply sensible CADP defaults for real-time local testing."""
@@ -76,10 +78,10 @@ class LocalNCMOllamaChat:
         self.store.profile.set_custom("contradiction_requires_marker", True)
         self.store.profile.set_custom("write_conflict_trace", True)
 
-    def _load_store(self) -> MemoryStore:
+    def _load_store(self) -> tuple[MemoryStore, bool]:
         if os.path.exists(NCM_PATH):
-            return NCMFile.load(NCM_PATH)
-        return MemoryStore(profile=MemoryProfile(write_threshold=0.25))
+            return NCMFile.load(NCM_PATH), True
+        return MemoryStore(profile=MemoryProfile(write_threshold=0.25)), False
 
     def _save_store(self) -> None:
         NCMFile.save(self.store, NCM_PATH, compress=True)
@@ -184,6 +186,11 @@ def main() -> None:
         default="0.5,0.5,0.5,0.5,0.5",
         help="Initial 5D auto-state as valence,arousal,dominance,curiosity,stress in [0,1]",
     )
+    parser.add_argument(
+        "--force-initial-state",
+        action="store_true",
+        help="Override persisted auto-state with --state even when memory_store.ncm already exists",
+    )
     args = parser.parse_args()
 
     try:
@@ -196,7 +203,11 @@ def main() -> None:
     print(f"Memory file: {NCM_PATH}")
     print("Commands: /exit, /quit, /state val,aro,dom,cur,str, /showstate")
 
-    app = LocalNCMOllamaChat(model_name=args.model, initial_state=initial_state)
+    app = LocalNCMOllamaChat(
+        model_name=args.model,
+        initial_state=initial_state,
+        force_initial_state=args.force_initial_state,
+    )
 
     while True:
         try:

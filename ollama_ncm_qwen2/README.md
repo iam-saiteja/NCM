@@ -27,6 +27,11 @@ You can also set an initial state at startup:
 
 python ollama_ncm_qwen2/chat_with_ncm.py --state 0.6,0.4,0.7,0.3,0.5
 
+By default, if `memory_store.ncm` already exists, the app keeps the persisted auto-state.
+Use this when you want to force reset/override on startup:
+
+python ollama_ncm_qwen2/chat_with_ncm.py --state 0.5,0.5,0.5,0.5,0.5 --force-initial-state
+
 Then chat in the terminal.
 
 ## Commands
@@ -59,6 +64,7 @@ Why this matters:
 - Write-time novelty gating is active in chat storage (`gate_check=True`) to reduce near-duplicate memory writes.
 - New stores are initialized with a tighter write threshold (`write_threshold=0.25`) for chat usage.
 - Existing `.ncm` files keep their saved profile values (including thresholds), enabling stable behavior across restarts.
+- Existing `.ncm` files also keep the last auto-state by default; startup `--state` is applied only for new stores unless `--force-initial-state` is passed.
 - Retrieval state comes from `store.auto_state.get_current_state()` and per-memory `auto_state_snapshot` fields.
 - Contradiction-aware retrieval is enabled internally for correction handling; no extra runtime command is required.
 - Contradiction metadata (`contradicted_by`, `is_conflict_trace`) is persisted in `.ncm` and reused across restarts.
