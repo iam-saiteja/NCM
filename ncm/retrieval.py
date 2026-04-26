@@ -57,6 +57,9 @@ def vectorized_manifold_distance(
     decay_rate: float = 0.001,
     strength_array: np.ndarray = None,  # (N,) memory strengths for strength-weighted retrieval
     strength_boost: float = 0.1,        # how much strength reduces distance
+    contradiction_array: np.ndarray = None,  # (N,) 1 if contradicted else 0
+    contradiction_weight: float = 0.0,       # lambda for contradiction penalty
+    contradiction_gate: float = 1.0,         # query-intent gate in [0, 1]
     use_fast_temporal: bool = False,    # opt-in approximation for temporal term
 ) -> np.ndarray:
     """
@@ -70,9 +73,11 @@ def vectorized_manifold_distance(
     
     Returns (N,) array of distances in [0, 1].
     
-    Math:
-      d_raw(m, q) = α·d_sem + β·d_emo + γ·d_state + δ·d_time
-      d(m, q)     = d_raw · (1 - strength_boost · (strength - 1))
+        Math:
+            d_raw(m, q) = α·d_sem + β·d_emo + γ·d_state + δ·d_time
+            d_contra    = λ·I[contradicted]·gate
+            d(m, q)     = (1-λ)·d_raw + d_contra
+            d_final     = d(m, q) · (1 - strength_boost · (strength - 1))
       
       Strength modulation:
         strength=1.0 (default) -> no change
@@ -92,6 +97,9 @@ def vectorized_manifold_distance(
         return np.array([], dtype=np.float32)
 
     alpha, beta, gamma, delta = weights.as_tuple()
+    lambda_contra = float(np.clip(contradiction_weight, 0.0, 1.0))
+    gate = float(np.clip(contradiction_gate, 0.0, 1.0))
+    base_scale = 1.0 - lambda_contra
 
     # OPTIMIZATION: Pre-allocate output
     total = np.zeros(N, dtype=np.float32)
@@ -100,19 +108,19 @@ def vectorized_manifold_distance(
     if alpha > 1e-8:
         sem_sims = sem_matrix @ query_semantic  # (N,)
         d_sem = np.clip(1.0 - sem_sims, 0.0, 1.0)
-        total += alpha * d_sem
+        total += base_scale * alpha * d_sem
 
     # Emotional: Euclidean between PROJECTED vectors
     if beta > 1e-8:
         emo_diff = emo_matrix - query_emotional[np.newaxis, :]  # (N, k)
         d_emo = np.clip(np.linalg.norm(emo_diff, axis=1) / EMO_NORM, 0.0, 1.0)
-        total += beta * d_emo
+        total += base_scale * beta * d_emo
 
     # State: Euclidean between L2-normalized state vectors
     if gamma > 1e-8:
         state_diff = state_matrix - s_current[np.newaxis, :]  # (N, n)
         d_state = np.clip(np.linalg.norm(state_diff, axis=1) / STATE_NORM, 0.0, 1.0)
-        total += gamma * d_state
+        total += base_scale * gamma * d_state
 
     # Temporal: exact exponential by default; optional fast approximation is opt-in.
     if delta > 1e-8:
@@ -124,7 +132,12 @@ def vectorized_manifold_distance(
         else:
             # Exact temporal term (default): preserves baseline math behavior.
             d_time = np.clip(1.0 - np.exp(-decay_rate * delta_t), 0.0, 1.0)
-        total += delta * d_time
+        total += base_scale * delta * d_time
+
+    # Contradiction penalty: push contradicted memories down unless query gate disables it
+    if contradiction_array is not None and lambda_contra > 1e-8 and gate > 1e-8:
+        d_contra = np.clip(contradiction_array, 0.0, 1.0) * (lambda_contra * gate)
+        total += d_contra
 
     # Strength modulation: reinforced memories are easier to recall
     if strength_array is not None and strength_boost > 1e-8:
@@ -272,12 +285,21 @@ def retrieve_top_k(
 
     weights = store.profile.retrieval_weights
     decay_rate = store.profile.decay_rate
+    contra_enabled = bool(store.profile.get_custom("enable_contradiction_awareness", False))
+    contra_lambda = float(store.profile.get_custom("contradiction_penalty", 0.0)) if contra_enabled else 0.0
+    contra_gate = float(store.profile.get_custom("contradiction_query_gate", 1.0)) if contra_enabled else 1.0
+    contra_array = np.array([
+        1.0 if m.contradicted_by is not None else 0.0 for m in candidates
+    ], dtype=np.float32) if contra_enabled else None
 
     distances = vectorized_manifold_distance(
         sem_matrix, emo_matrix, state_matrix, ts_array,
         query_semantic, query_emotional, s_current_for_distance,
         current_step, weights, decay_rate,
         strength_array=str_array,
+        contradiction_array=contra_array,
+        contradiction_weight=contra_lambda,
+        contradiction_gate=contra_gate,
         use_fast_temporal=use_fast_temporal,
     )
 
@@ -347,12 +369,19 @@ def retrieve_top_k_fast(
     weights = store.profile.retrieval_weights
     decay_rate = store.profile.decay_rate
     str_array = store._str_cache if use_strength else None
+    contra_enabled = bool(store.profile.get_custom("enable_contradiction_awareness", False))
+    contra_lambda = float(store.profile.get_custom("contradiction_penalty", 0.0)) if contra_enabled else 0.0
+    contra_gate = float(store.profile.get_custom("contradiction_query_gate", 1.0)) if contra_enabled else 1.0
+    contra_array = store._contra_cache if contra_enabled else None
 
     distances = vectorized_manifold_distance(
         store._sem_cache, store._emo_cache, store._auto_state_cache, store._ts_cache,
         query_semantic, query_emotional, s_current_for_distance,
         current_step, weights, decay_rate,
         strength_array=str_array,
+        contradiction_array=contra_array,
+        contradiction_weight=contra_lambda,
+        contradiction_gate=contra_gate,
         use_fast_temporal=use_fast_temporal,
     )
 

@@ -915,6 +915,9 @@ if __name__ == "__main__":
         "exp11_real_world_corpus_benchmark.py",
         "exp12_weight_sensitivity.py",
         "exp13_baseline_rematch.py",
+        "exp16_auto_state_integration.py",
+        "exp17_real_world_autostate_scale.py",
+        "exp18_contradiction_aware_retrieval.py",
     ]
     for script_name in extra_experiments:
         script_path = os.path.join(os.path.dirname(__file__), script_name)

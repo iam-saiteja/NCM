@@ -24,6 +24,10 @@ results/bench_*.ncm
 # Local utility (developer-local)
 ollama_ncm_qwen2/hidden_vector.py
 
+venv/
 
+# Ignore full paper workspace (manuscripts, figures, tooling)
+paper/
 venv/
 paper/
+.pytest_cache/

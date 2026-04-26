@@ -1,0 +1,11 @@
+EXP18: Contradiction-Aware Distance Penalty (CADP) Validation
+=================================================================
+
+Single correction (new beats old): baseline=0.080, CADP=1.000
+Chain correction latest@1: baseline=0.000, CADP=1.000
+Conflict trace top-3 rate: 1.000
+Non-contradiction top-1 unchanged ratio: 1.000
+Latency avg (ms): baseline=7.6246, CADP=7.0478, delta=-0.5768
+Persistence pass: True
+
+Verdict: PASS

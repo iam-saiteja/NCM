@@ -1,0 +1,41 @@
+{
+  "single_correction": {
+    "trials": 50,
+    "baseline_new_beats_old_rate": 0.08,
+    "cadp_new_beats_old_rate": 1.0,
+    "absolute_gain": 0.92
+  },
+  "chain_corrections": {
+    "trials": 40,
+    "baseline_latest_top1_rate": 0.0,
+    "cadp_latest_top1_rate": 1.0,
+    "absolute_gain": 1.0
+  },
+  "conflict_trace": {
+    "trials": 40,
+    "trace_top3_rate": 1.0
+  },
+  "non_contradiction_regression": {
+    "queries": 5,
+    "top1_unchanged": 5,
+    "top1_unchanged_ratio": 1.0
+  },
+  "latency": {
+    "queries": 80,
+    "baseline_avg_latency_ms": 7.6246,
+    "cadp_avg_latency_ms": 7.0478,
+    "latency_delta_ms": -0.5768
+  },
+  "persistence": {
+    "before_links": 1,
+    "after_links": 1,
+    "before_conflict_traces": 1,
+    "after_conflict_traces": 1,
+    "pass": true
+  },
+  "verdict": "PASS",
+  "plots": {
+    "exp18_rank_accuracy": "experiments/results/exp18/exp18_rank_accuracy.png",
+    "exp18_latency_regression": "experiments/results/exp18/exp18_latency_regression.png"
+  }
+}

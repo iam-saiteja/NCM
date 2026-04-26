@@ -5,6 +5,7 @@ This folder provides a small local chat app that:
 - calls your local Ollama model (default `qwen2:7B`, configurable)
 - retrieves memory context from NCM before each response
 - stores the memory file (`memory_store.ncm`) in this same folder
+- enables contradiction-aware retrieval (CADP) by default for real-time correction testing
 
 ## Run
 
@@ -59,3 +60,5 @@ Why this matters:
 - New stores are initialized with a tighter write threshold (`write_threshold=0.25`) for chat usage.
 - Existing `.ncm` files keep their saved profile values (including thresholds), enabling stable behavior across restarts.
 - Retrieval state comes from `store.auto_state.get_current_state()` and per-memory `auto_state_snapshot` fields.
+- Contradiction-aware retrieval is enabled internally for correction handling; no extra runtime command is required.
+- Contradiction metadata (`contradicted_by`, `is_conflict_trace`) is persisted in `.ncm` and reused across restarts.

@@ -21,6 +21,7 @@ FLAG_COMPRESSED = 0b00000001
 FLAG_HAS_PROFILE = 0b00000010
 FLAG_FP16 = 0b00000100
 FLAG_HAS_AUTOSTATE = 0b00001000
+FLAG_HAS_CONTRADICTION = 0b00010000
 
 
 class NCMFile:
@@ -43,6 +44,7 @@ class NCMFile:
             if fp16:
                 flags |= FLAG_FP16
             flags |= FLAG_HAS_AUTOSTATE
+            flags |= FLAG_HAS_CONTRADICTION
 
             memories = store.get_all_safe()
             buf.write(NCM_MAGIC)
@@ -74,6 +76,7 @@ class NCMFile:
                     state_dim,
                     fp16=fp16,
                     has_autostate=True,
+                    has_contradiction=True,
                 )
 
             mem_data = mem_buf.getvalue()
@@ -109,6 +112,7 @@ class NCMFile:
             has_profile = bool(flags & FLAG_HAS_PROFILE)
             fp16 = bool(flags & FLAG_FP16)
             has_autostate = bool(flags & FLAG_HAS_AUTOSTATE)
+            has_contradiction = bool(flags & FLAG_HAS_CONTRADICTION)
 
             step = struct.unpack('>Q', buf.read(8))[0]
             memory_count = struct.unpack('>I', buf.read(4))[0]
@@ -150,8 +154,9 @@ class NCMFile:
                     state_dim,
                     fp16=fp16,
                     has_autostate=has_autostate,
+                    has_contradiction=has_contradiction,
                 )
-                store.add(memory, update_auto_state=False)
+                store.add(memory, update_auto_state=False, contradiction_check=False)
 
             return store
         except CorruptFileError:
@@ -160,7 +165,16 @@ class NCMFile:
             raise PersistenceError('load', str(e))
 
     @staticmethod
-    def _write_memory(buf, memory, sem_dim, emo_dim, state_dim, fp16: bool = False, has_autostate: bool = False):
+    def _write_memory(
+        buf,
+        memory,
+        sem_dim,
+        emo_dim,
+        state_dim,
+        fp16: bool = False,
+        has_autostate: bool = False,
+        has_contradiction: bool = False,
+    ):
         """OPTIMIZATION: Efficient memory serialization with pre-packed vectors."""
         id_bytes = memory.id.encode('utf-8')
         buf.write(struct.pack('>H', len(id_bytes)))
@@ -202,8 +216,25 @@ class NCMFile:
             buf.write(struct.pack('>B', len(tag_bytes)))
             buf.write(tag_bytes)
 
+        if has_contradiction:
+            has_link = 1 if memory.contradicted_by else 0
+            buf.write(struct.pack('>B', has_link))
+            if has_link:
+                link_bytes = memory.contradicted_by.encode('utf-8')[:65535]
+                buf.write(struct.pack('>H', len(link_bytes)))
+                buf.write(link_bytes)
+            buf.write(struct.pack('>B', 1 if memory.is_conflict_trace else 0))
+
     @staticmethod
-    def _read_memory(buf, sem_dim, emo_dim, state_dim, fp16: bool = False, has_autostate: bool = False):
+    def _read_memory(
+        buf,
+        sem_dim,
+        emo_dim,
+        state_dim,
+        fp16: bool = False,
+        has_autostate: bool = False,
+        has_contradiction: bool = False,
+    ):
         """OPTIMIZATION: Efficient memory deserialization with direct numpy frombuffer."""
         id_len = struct.unpack('>H', buf.read(2))[0]
         memory_id = buf.read(id_len).decode('utf-8')
@@ -260,8 +291,18 @@ class NCMFile:
             tag_len = struct.unpack('>B', buf.read(1))[0]
             tags.append(buf.read(tag_len).decode('utf-8'))
 
+        contradicted_by = None
+        is_conflict_trace = False
+        if has_contradiction:
+            has_link = struct.unpack('>B', buf.read(1))[0]
+            if has_link:
+                link_len = struct.unpack('>H', buf.read(2))[0]
+                contradicted_by = buf.read(link_len).decode('utf-8')
+            is_conflict_trace = bool(struct.unpack('>B', buf.read(1))[0])
+
         return MemoryEntry(
             id=memory_id, e_semantic=e_semantic, e_emotional=e_emotional,
             s_snapshot=s_snapshot, timestamp=timestamp, strength=strength,
             text=text, tags=tags, auto_state_snapshot=auto_state_snapshot,
+            contradicted_by=contradicted_by, is_conflict_trace=is_conflict_trace,
         )

@@ -63,8 +63,18 @@ class LocalNCMOllamaChat:
         self.model_name = model_name
         self.encoder = SentenceEncoder(model_name="all-MiniLM-L6-v2", model_dir=os.path.join(REPO_ROOT, "models"))
         self.store = self._load_store()
+        self._configure_live_profile()
         # Runtime override for real-time testing starts tracker at provided 5D state.
         self.store.auto_state.state = initial_state.astype(np.float32)
+
+    def _configure_live_profile(self) -> None:
+        """Apply sensible CADP defaults for real-time local testing."""
+        self.store.profile.set_custom("enable_contradiction_awareness", True)
+        self.store.profile.set_custom("contradiction_penalty", 0.20)
+        self.store.profile.set_custom("contradiction_query_gate", 1.0)
+        self.store.profile.set_custom("contradiction_similarity_threshold", 0.82)
+        self.store.profile.set_custom("contradiction_requires_marker", True)
+        self.store.profile.set_custom("write_conflict_trace", True)
 
     def _load_store(self) -> MemoryStore:
         if os.path.exists(NCM_PATH):

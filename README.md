@@ -9,6 +9,7 @@ NCM is now experimentally validated to produce **different response behavior fro
 Latest validation added:
 - **Exp16**: exact synthetic trajectory match, persistence round-trip, and retrieval trend preservation.
 - **Exp17**: real-world corpus validation on 100 conversations / 2,009 stored turns with stable state evolution.
+- **Exp18**: contradiction-aware retrieval validation showing deterministic corrected-fact dominance without deleting history.
 
 NCM is a memory storage and retrieval architecture where memories are encoded as multi-field geometric objects in a composite retrieval space. Core stored fields include `e_semantic`, `e_emotional`, `s_snapshot`, `auto_state_snapshot`, `timestamp`, and `strength`. The system retrieves not just what is textually similar, but what is **cognitively resonant** — matching meaning, emotional context, internal state at encoding time, and recency simultaneously.
 
@@ -63,6 +64,7 @@ python experiments/python/exp13_baseline_rematch.py --max-chunks 50 --query-stri
 
 - Tensor-based episodic memory representation
 - Multi-field encoding (`e_semantic`, `e_emotional`, `s_snapshot`, `auto_state_snapshot`, time, strength)
+- Optional contradiction metadata (`contradicted_by`, `is_conflict_trace`) for correction-aware recall
 - State-conditioned retrieval behavior
 - Vectorized top-k retrieval with cached and uncached paths
 - Adaptive softmax retrieval probabilities
@@ -109,8 +111,9 @@ python experiments/python/exp13_baseline_rematch.py --max-chunks 50 --query-stri
 │  s_current ──→ W_emo · s ────────────────→ q_emotional   │
 │  s_current ──→ normalize ────────────────→ q_state       │
 │  memory.auto_state_snapshot ─────────────→ d_state input │
+│  memory.contradicted_by ────────────────→ d_contra input │
 │                                                         │
-│  d(m, q) = α·d_sem + β·d_emo + γ·d_state + δ·d_time   │
+│  d(m, q) = (1-λc)·(α·d_sem + β·d_emo + γ·d_state + δ·d_time) + λc·d_contra │
 │                                                         │
 │  All N memories scored via vectorized numpy (no loops)  │
 │  Top-k returned by distance (ascending)                 │
@@ -138,6 +141,8 @@ memory = {
     e_emotional: vector in R^3      # emotional color (orthonormal projection via W_emo)
     s_snapshot:  vector in R^7      # encoder state snapshot (legacy/compat retrieval field)
     auto_state_snapshot: vector in R^5  # integrated auto-state at write time (val/aro/dom/cur/str)
+    contradicted_by: optional str      # points to newer correcting memory id
+    is_conflict_trace: bool            # true for [UPDATE] trace memories
     timestamp:   scalar             # step number
     strength:    scalar in [0, 2]   # reinforcement accumulator with bounded growth
     text:        string             # archived content (used for chat context and debugging)
@@ -219,6 +224,20 @@ In integrated mode, `s_auto_m` comes from per-memory `auto_state_snapshot` and `
 L_balance = Σ(w_i - 0.25)²
 ```
 
+### 5.1 Contradiction-Aware Extension (CADP)
+
+When contradiction-aware mode is enabled in `MemoryProfile.custom`, retrieval applies a correction penalty:
+
+```
+d_total(m, q) = (1 - λc)·d_base(m, q) + λc·I[m.contradicted_by != None]·g(q)
+
+Default λc = 0.20
+Default g(q) = 1.0
+```
+
+This preserves old memories in storage while forcing corrected memories to dominate factual recall.
+Write-time contradiction links are created only when the incoming text is correction-marked (e.g., `correction`, `update`, `actually`) and semantically/subject aligned with an older memory.
+
 ### 6. Softmax Retrieval with Adaptive Temperature
 
 ```
@@ -285,6 +304,20 @@ References:
 - [experiments/results/exp17/exp17_real_world_scale.txt](experiments/results/exp17/exp17_real_world_scale.txt)
 - [experiments/results/exp17/exp17_real_world_scale.json](experiments/results/exp17/exp17_real_world_scale.json)
 
+### EXP18 — Contradiction-Aware Retrieval Validation (CADP)
+
+EXP18 evaluates corrected-fact recall under contradiction-aware mode with optional conflict traces.
+On synthetic correction tasks, baseline retrieval frequently returns stale facts first, while CADP consistently promotes the latest corrected memory:
+- Single correction (`A -> B`): baseline `new>old` rate `0.08`, CADP `1.00`.
+- Chain correction (`A -> B -> C`): baseline latest-top1 `0.00`, CADP latest-top1 `1.00`.
+- Conflict traces: trace appears in top-3 for explicit update queries at rate `1.00`.
+- Non-contradiction regression: top-1 unchanged ratio `1.00`.
+- Persistence: contradiction links and conflict-trace flags round-trip through `.ncm` without loss.
+
+References:
+- [experiments/results/exp18/exp18_cadp_validation.txt](experiments/results/exp18/exp18_cadp_validation.txt)
+- [experiments/results/exp18/exp18_cadp_validation.json](experiments/results/exp18/exp18_cadp_validation.json)
+
 ### Summary of Key Metrics
 
 | Aspect | EXP16 (Synthetic) | EXP17 (Real-World) |
@@ -309,6 +342,7 @@ Together, EXP16 and EXP17 show that auto-state is (1) numerically correct and we
 | Exp15 | Large synthetic persona-memory stress test | Memory conditioning signal remains strong at scale (5k prompts, 5k memories/persona) |
 | Exp16 | Auto-state integration validation | Exact trajectory match + persistence round-trip on locked synthetic design |
 | Exp17 | Real-world auto-state scale test | Stable auto-state behavior on 100 real conversations / 2,009 turns |
+| Exp18 | Contradiction-aware retrieval validation | Corrected facts deterministically outrank contradicted facts while preserving history |
 
 ### Headline Metrics
 
@@ -325,6 +359,7 @@ Together, EXP16 and EXP17 show that auto-state is (1) numerically correct and we
 | Large-scale persona effect | Exp15 (synthetic 5k×5k): persona separation L2=0.713, memory-gain positive-rate=1.000 |
 | Synthetic validation lock | Exp16: Turn10/20/30 exact match, mean P@5 gain +13.3%, persistence PASS |
 | Real-world scale proof | Exp17: 100 real conversations, 2,009 turns, stable mean spread 0.0150 |
+| Contradiction resolution | Exp18: single-correction `0.08 -> 1.00`, chain latest-top1 `0.00 -> 1.00`, non-contradiction unchanged `1.00` |
 
 ### A few visuals
 

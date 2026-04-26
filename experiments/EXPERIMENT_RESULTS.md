@@ -29,6 +29,7 @@ This is the full experiment report for NCM.
 | Exp15 | Synthetic persona-memory stress test | Validate memory-conditioning effect at scale | Strong persona separation persists on 5k prompts / 5k memories/persona |
 | Exp16 | Auto-state integration validation | Verify locked design constants and persistence on integrated code | Exact trajectory match, retrieval trend preserved, persistence PASS |
 | Exp17 | Real-world auto-state scale test | Prove auto-state behavior on real conversation data | Stable state evolution on 100 conversations / 2,009 turns |
+| Exp18 | Contradiction-aware retrieval validation | Verify corrected facts outrank contradicted facts without deleting history | Single correction 0.08→1.00, chain latest@1 0.00→1.00, non-contradiction unchanged |
 
 ---
 
@@ -46,6 +47,7 @@ This is the full experiment report for NCM.
 | Synthetic scale check | Exp15 (5k prompts, 5k memories/persona): separation L2≈0.713, memory-gain positive-rate=1.000 |
 | Synthetic validation lock | Exp16: Turn10/20/30 exact match, mean P@5 gain +13.3%, persistence PASS |
 | Real-world scale proof | Exp17: 100 real conversations, 2,009 turns, stable mean spread 0.0150 |
+| Contradiction handling proof | Exp18: corrected-fact dominance enabled via contradiction penalty with persistence-safe links |
 
 ---
 
@@ -437,6 +439,33 @@ Auto-state remains stable on real-world conversational data at scale, with no de
 
 ---
 
+## Experiment 18: Contradiction-Aware Retrieval Validation (CADP)
+
+### What is this experiment?
+Validates contradiction-aware retrieval by creating corrected facts (`old -> new`) and measuring whether retrieval reliably promotes the latest truth.
+
+### Why is it needed?
+Temporal decay alone cannot represent local contradiction. This experiment verifies that contradiction links + penalty solve stale-fact dominance while preserving historical memory.
+
+### Results
+Source: [experiments/results/exp18/exp18_cadp_validation.json](results/exp18/exp18_cadp_validation.json)
+
+- Single correction (`A -> B`) where `new` beats `old`:
+  - baseline: `0.08`
+  - CADP: `1.00`
+- Chain correction (`A -> B -> C`) latest-top1:
+  - baseline: `0.00`
+  - CADP: `1.00`
+- Conflict trace top-3 retrieval rate: `1.00`
+- Non-contradiction regression (top-1 unchanged): `1.00`
+- Persistence round-trip for contradiction metadata: PASS
+- Verdict: PASS
+
+### What does it say?
+CADP fixes the correction-order failure mode without deleting old memories, keeps normal retrieval intact when no contradiction exists, and persists contradiction links/traces safely in `.ncm` files.
+
+---
+
 ## Visual Appendix
 
 ![Category Precision](results/exp1/exp1_category_precision.png)
@@ -471,6 +500,8 @@ Auto-state remains stable on real-world conversational data at scale, with no de
 ![EXP17 Retrieval Precision](results/exp17/exp17_scale_retrieval_precision.png)
 ![EXP17 Performance Metrics](results/exp17/exp17_scale_performance_metrics.png)
 ![EXP17 State Accuracy](results/exp17/exp17_scale_state_accuracy.png)
+![EXP18 Rank Accuracy](results/exp18/exp18_rank_accuracy.png)
+![EXP18 Latency & Regression](results/exp18/exp18_latency_regression.png)
 
 ![NCM Dashboard](results/run_all_experiments/ncm_dashboard.png)
 
@@ -482,5 +513,6 @@ Auto-state remains stable on real-world conversational data at scale, with no de
 - Real corpus benchmark: [experiments/data/real_world_corpus](data/real_world_corpus)
 - EXP16 validation: 30-turn locked synthetic trajectory with persistence round-trip checks
 - EXP17 validation: 100 real conversations and 2,009 stored turns from the real-world corpus
+- EXP18 validation: contradiction-heavy synthetic tasks with correction chains, conflict traces, and metadata persistence checks
 - Metrics used across tracks: Precision@k, Recall@k, MRR, NDCG, MAP, state precision, latency, throughput, footprint
 - Hardware context: Ryzen 7 6800H, RTX 3050 (4GB), 16GB RAM, Windows

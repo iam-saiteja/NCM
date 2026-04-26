@@ -8,6 +8,7 @@ state, temporal, and strength dimensions.
 import uuid
 from dataclasses import dataclass, field
 from typing import Optional, List
+import re
 
 import numpy as np
 
@@ -42,6 +43,8 @@ class MemoryEntry:
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     tags: list = field(default_factory=list)
     auto_state_snapshot: Optional[np.ndarray] = None
+    contradicted_by: Optional[str] = None
+    is_conflict_trace: bool = False
 
     def to_dict(self) -> dict:
         return {
@@ -58,6 +61,8 @@ class MemoryEntry:
                 if self.auto_state_snapshot is not None
                 else None
             ),
+            "contradicted_by": self.contradicted_by,
+            "is_conflict_trace": bool(self.is_conflict_trace),
         }
 
     @classmethod
@@ -76,6 +81,8 @@ class MemoryEntry:
                 if d.get("auto_state_snapshot") is not None
                 else None
             ),
+            contradicted_by=d.get("contradicted_by"),
+            is_conflict_trace=bool(d.get("is_conflict_trace", False)),
         )
 
 
@@ -105,6 +112,7 @@ class MemoryStore:
         self._auto_state_cache = None
         self._ts_cache = None
         self._str_cache = None
+        self._contra_cache = None
         self._id_order = []
         self._cache_dirty = True
 
@@ -119,6 +127,112 @@ class MemoryStore:
     def _invalidate_cache(self):
         self._cache_dirty = True
 
+    def _contra_feature_enabled(self) -> bool:
+        return bool(self.profile.get_custom("enable_contradiction_awareness", False))
+
+    def _contra_similarity_threshold(self) -> float:
+        return float(self.profile.get_custom("contradiction_similarity_threshold", 0.85))
+
+    def _write_conflict_trace_enabled(self) -> bool:
+        return bool(self.profile.get_custom("write_conflict_trace", False))
+
+    def _requires_correction_marker(self) -> bool:
+        return bool(self.profile.get_custom("contradiction_requires_marker", True))
+
+    @staticmethod
+    def _extract_subject(text: str) -> Optional[str]:
+        if not isinstance(text, str):
+            return None
+        patterns = [
+            r"\bmy\s+([a-z0-9][a-z0-9_\-\s]{1,40}?)\s+is\b",
+            r"\bthe\s+([a-z0-9][a-z0-9_\-\s]{1,40}?)\s+is\b",
+            r"\b([a-z0-9][a-z0-9_\-\s]{1,40}?)\s+is\b",
+        ]
+        cleaned = " ".join(text.lower().split())
+        for p in patterns:
+            m = re.search(p, cleaned)
+            if m:
+                return m.group(1).strip()
+        return None
+
+    def _is_correction_pair(self, old_text: str, new_text: str, sim: float) -> bool:
+        if not isinstance(old_text, str) or not isinstance(new_text, str):
+            return False
+
+        new_l = new_text.lower()
+        old_l = old_text.lower()
+
+        if self._requires_correction_marker():
+            markers = ["correction", "update", "actually", "instead", "now", "revised"]
+            if not any(m in new_l for m in markers):
+                return False
+
+        if old_l == new_l:
+            return False
+
+        old_subject = self._extract_subject(old_l)
+        new_subject = self._extract_subject(new_l)
+        threshold = self._contra_similarity_threshold()
+
+        # Subject-aligned correction statements can be trusted with lower semantic threshold.
+        if old_subject and new_subject and old_subject == new_subject:
+            return sim >= min(threshold, 0.55)
+
+        if sim < threshold:
+            return False
+
+        if old_subject and new_subject and old_subject != new_subject:
+            return False
+
+        return True
+
+    def _make_conflict_trace(self, old_memory: MemoryEntry, new_memory: MemoryEntry) -> MemoryEntry:
+        trace_text = (
+            f"[UPDATE] Was: '{old_memory.text}' -> Now: '{new_memory.text}'"
+        )
+        return MemoryEntry(
+            e_semantic=new_memory.e_semantic.copy(),
+            e_emotional=new_memory.e_emotional.copy(),
+            s_snapshot=new_memory.s_snapshot.copy(),
+            timestamp=new_memory.timestamp,
+            text=trace_text,
+            tags=list(set(list(new_memory.tags) + ["conflict_trace"])),
+            auto_state_snapshot=(
+                new_memory.auto_state_snapshot.copy()
+                if new_memory.auto_state_snapshot is not None
+                else None
+            ),
+            is_conflict_trace=True,
+        )
+
+    def _apply_contradiction_links(self, new_memory: MemoryEntry) -> None:
+        if not self._contra_feature_enabled() or not self._memories:
+            return
+
+        matched_old_memories: list[MemoryEntry] = []
+
+        for old_mem in self._memories.values():
+            if old_mem.id == new_memory.id:
+                continue
+            if old_mem.timestamp >= new_memory.timestamp:
+                continue
+            if old_mem.is_conflict_trace:
+                continue
+
+            sim = float(np.dot(old_mem.e_semantic, new_memory.e_semantic))
+            if not self._is_correction_pair(old_mem.text, new_memory.text, sim):
+                continue
+
+            old_mem.contradicted_by = new_memory.id
+            matched_old_memories.append(old_mem)
+
+        if self._write_conflict_trace_enabled():
+            for old_mem in matched_old_memories:
+                trace = self._make_conflict_trace(old_mem, new_memory)
+                if len(self._memories) >= self.profile.max_size:
+                    self._evict_weakest()
+                self._memories[trace.id] = trace
+
     def _rebuild_cache(self):
         """Build numpy arrays for vectorized retrieval."""
         if not self._cache_dirty:
@@ -130,6 +244,7 @@ class MemoryStore:
             self._auto_state_cache = np.zeros((0, 5), dtype=np.float32)
             self._ts_cache = np.zeros(0, dtype=np.int64)
             self._str_cache = np.zeros(0, dtype=np.float32)
+            self._contra_cache = np.zeros(0, dtype=np.float32)
             self._id_order = []
             self._cache_dirty = False
             return
@@ -147,9 +262,18 @@ class MemoryStore:
         ], dtype=np.float32)
         self._ts_cache = np.array([m.timestamp for m in mems], dtype=np.int64)
         self._str_cache = np.array([m.strength for m in mems], dtype=np.float32)
+        self._contra_cache = np.array([
+            1.0 if m.contradicted_by is not None else 0.0 for m in mems
+        ], dtype=np.float32)
         self._cache_dirty = False
 
-    def add(self, memory: MemoryEntry, gate_check: bool = False, update_auto_state: bool = True) -> MemoryEntry:
+    def add(
+        self,
+        memory: MemoryEntry,
+        gate_check: bool = False,
+        update_auto_state: bool = True,
+        contradiction_check: bool = True,
+    ) -> MemoryEntry:
         """
         Add a memory to the store.
         
@@ -195,6 +319,9 @@ class MemoryStore:
             memory.auto_state_snapshot = auto_state.astype(np.float32).copy()
         elif memory.auto_state_snapshot is None:
             memory.auto_state_snapshot = self.auto_state.get_current_state().astype(np.float32).copy()
+
+        if contradiction_check:
+            self._apply_contradiction_links(memory)
 
         self._memories[memory.id] = memory
         self._invalidate_cache()

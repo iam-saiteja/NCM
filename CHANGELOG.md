@@ -2,6 +2,47 @@
 
 All notable changes to the NCM project are documented here.
 
+## [Contradiction-Aware Retrieval (CADP)] - 2026-04-26
+
+### Core retrieval update
+- Added contradiction-aware distance extension in [ncm/retrieval.py](ncm/retrieval.py):
+  - `d_total = (1-λc)·d_base + λc·d_contra`
+  - `d_contra = I[m.contradicted_by != None]·g(q)`
+- New retrieval-time knobs are profile-driven (`MemoryProfile.custom`):
+  - `enable_contradiction_awareness`
+  - `contradiction_penalty` (default used in EXP18: `0.20`)
+  - `contradiction_query_gate`
+
+### Memory schema and write-time linking
+- Extended [ncm/memory.py](ncm/memory.py) `MemoryEntry` with:
+  - `contradicted_by` (points to newer correcting memory)
+  - `is_conflict_trace` (marks `[UPDATE]` configural traces)
+- Added write-time contradiction linking in `MemoryStore.add(...)`:
+  - correction-marker aware detection (`correction`, `update`, `actually`, etc.)
+  - same-subject matching with semantic thresholding
+  - multi-step chain handling (`A -> B -> C`) by linking all matched older memories
+- Added optional conflict-trace writes (`write_conflict_trace`) as configural memory representation.
+
+### Persistence format updates
+- Added contradiction metadata persistence in [ncm/persistence.py](ncm/persistence.py) using new flag `FLAG_HAS_CONTRADICTION`.
+- `.ncm` round-trip now preserves `contradicted_by` and `is_conflict_trace`.
+- Backward compatibility retained for files without contradiction flag.
+
+### Experiments and validation
+- Added [experiments/python/exp18_contradiction_aware_retrieval.py](experiments/python/exp18_contradiction_aware_retrieval.py).
+- EXP18 result snapshot:
+  - Single correction (`A -> B`) new>old: baseline `0.08` vs CADP `1.00`
+  - Chain correction latest@1: baseline `0.00` vs CADP `1.00`
+  - Conflict trace top-3 rate: `1.00`
+  - Non-contradiction top-1 unchanged ratio: `1.00`
+  - Persistence check: PASS
+- Added EXP18 outputs under `experiments/results/exp18` (JSON, TXT, 2 plots).
+
+### Documentation updates
+- Updated [README.md](README.md) with CADP formula, contradiction fields, and EXP18 summary.
+- Updated [experiments/EXPERIMENT_RESULTS.md](experiments/EXPERIMENT_RESULTS.md) with EXP18 overview + detailed interpretation.
+- Updated [experiments/python/run_all_experiments.py](experiments/python/run_all_experiments.py) to include exp16/17/18 in standalone sweep.
+
 ## [Auto-State Integration Validation] - 2026-04-14
 
 ### Locked design constants
