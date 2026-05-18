@@ -187,7 +187,7 @@ Constraint: W_emo · W_emo^T = I_k  (orthonormal)
 
 W_emo ∈ R^(3×7) is initialized via QR decomposition of a random matrix. Orthonormality prevents subspace collapse — without it, two state variables could map to the same emotional direction, destroying geometric independence.
 
-**Verified**: `||W_emo · W_emo^T - I|| = 2.1 × 10⁻⁷`
+**Note**: `W_emo` is constructed via QR decomposition and is numerically orthonormal up to floating-point precision.
 
 ### 4. Temporal Encoding (Ebbinghaus Decay)
 
@@ -231,8 +231,9 @@ When contradiction-aware mode is enabled in `MemoryProfile.custom`, retrieval ap
 ```
 d_total(m, q) = (1 - λc)·d_base(m, q) + λc·I[m.contradicted_by != None]·g(q)
 
-Default λc = 0.20
-Default g(q) = 1.0
+The contradiction penalty and query gate are configurable via `MemoryProfile.custom` (for example
+`contradiction_penalty` and `contradiction_query_gate`). By default contradiction handling is
+disabled (penalty = 0.0) unless explicitly enabled in the profile.
 ```
 
 This preserves old memories in storage while forcing corrected memories to dominate factual recall.
