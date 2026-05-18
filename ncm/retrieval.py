@@ -128,6 +128,9 @@ def vectorized_manifold_distance(
         if use_fast_temporal:
             # Opt-in approximation: exp(-x) ≈ 1 / (1 + x)
             # Faster but introduces approximation error in the temporal component.
+            # Use when large-scale speed is critical and small temporal error is acceptable.
+            # This is intentionally opt-in (default = False) so callers must opt into the
+            # approximation when they accept the tradeoff.
             d_time = np.clip(1.0 - 1.0 / (1.0 + decay_rate * delta_t), 0.0, 1.0)
         else:
             # Exact temporal term (default): preserves baseline math behavior.
@@ -145,6 +148,13 @@ def vectorized_manifold_distance(
         # modulator = 1 - boost * (strength - 1) -> range [1+boost, 1-boost]
         modulator = 1.0 - strength_boost * (strength_array - 1.0)
         # OPTIMIZATION: Use in-place clip
+        # Rationale: bound the modulator to avoid excessive amplification or
+        # suppression of distances due to outlier strength values. The chosen
+        # bounds [0.5, 1.5] ensure reinforced memories are up to 50% easier to
+        # recall and decayed memories up to 50% harder, while preventing
+        # numerical instability or dominance of the strength term over the
+        # multi-dimensional manifold distance. This is an intentional, tunable
+        # implementation detail (see `README.md` and adjust via code if needed).
         np.clip(modulator, 0.5, 1.5, out=modulator)
         total *= modulator
 

@@ -128,6 +128,11 @@ class MemoryStore:
         self._cache_dirty = True
 
     def _contra_feature_enabled(self) -> bool:
+        # Contradiction/CADP defaults (conservative):
+        # - enable_contradiction_awareness: False (disabled by default)
+        # - contradiction_requires_marker: True (corrections must include markers like "correction" by default)
+        # - contradiction_similarity_threshold: 0.85 (semantic similarity threshold)
+        # These keys are configurable via `MemoryProfile.set_custom()`.
         return bool(self.profile.get_custom("enable_contradiction_awareness", False))
 
     def _contra_similarity_threshold(self) -> float:

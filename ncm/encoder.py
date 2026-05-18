@@ -110,11 +110,14 @@ class SentenceEncoder:
         self._projection /= np.sqrt(self.semantic_dim)  # JL scaling
 
         # Emotional projection: W_emo ∈ R^(emotional_dim × state_dim)
-        # Orthonormal via QR decomposition.
-        # Math: W_emo · W_emo^T = I_k (orthonormality constraint)
-        # This preserves geometric independence of emotional dimensions.
-        # Without it, two state variables could map to same emotional direction,
-        # causing information collapse in retrieval.
+        # Orthonormal via QR decomposition (constructed from a random matrix).
+        # Math: W_emo · W_emo^T ≈ I_k numerically. This preserves geometric
+        # independence of emotional dimensions and prevents information collapse
+        # in retrieval. Note: numeric orthonormality is subject to floating-point
+        # precision — the experiment suite records a small orthonormality error on the
+        # order of 1e-7 (see experiments outputs). Treat this as an empirical
+        # observation rather than an unconditional mathematical equality.
+        # for typical runs (see `experiments/results/run_all_experiments/math_verification.json`).
         rng2 = np.random.RandomState(7)
         raw2 = rng2.randn(self.state_dim, self.emotional_dim).astype(np.float32)
         Q, _ = np.linalg.qr(raw2)

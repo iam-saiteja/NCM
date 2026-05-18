@@ -10,7 +10,7 @@ All notable changes to the NCM project are documented here.
   - `d_contra = I[m.contradicted_by != None]·g(q)`
 - New retrieval-time knobs are profile-driven (`MemoryProfile.custom`):
   - `enable_contradiction_awareness`
-  - `contradiction_penalty` (default used in EXP18: `0.20`)
+  - `contradiction_penalty` (value used in EXP18: `0.20` as an experimental setting; the `MemoryProfile` default is `0.0` and CADP is opt-in)
   - `contradiction_query_gate`
 
 ### Memory schema and write-time linking
@@ -291,7 +291,7 @@ All notable changes to the NCM project are documented here.
 ### Core Features
 - **Multi-field Memory Encoding**
   - Semantic embedding (via SentenceTransformer)
-  - Emotional projection (via W_emo orthonormal matrix)
+  - Emotional projection (via W_emo orthonormal matrix; constructed via QR — numerical orthonormality observed empirically, see experiment outputs)
   - State snapshot (L2-normalized current state)
   - Temporal encoding (exponential decay)
   - Strength dynamics (Hebbian with bounded growth)
