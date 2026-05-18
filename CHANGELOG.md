@@ -262,7 +262,7 @@ All notable changes to the NCM project are documented here.
 
 ### Results
 - **Exp10**: State divergence NCM (0.127) >> baseline (0.000) ✓
-- **Exp11**: NCM NDCG@10 (0.605) > emotional (0.587) ✓
+- **Exp13**: NCM NDCG@10 (0.605) > emotional (0.587) ✓
 - **Exp12**: Default weights rank 1st/7, spread 0.3% ✓
 - **Exp13**: NCM wins at extremes, emotional competitive in middle ✓
 
