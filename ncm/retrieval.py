@@ -490,3 +490,96 @@ def retrieve_semantic_emotional(
 
     indices = np.argsort(distances)[:k]
     return [(float(distances[idx]), candidates[idx]) for idx in indices]
+
+# ───────────────────────────────────────────
+# MULTI-HOP SPREADING ACTIVATION RETRIEVAL
+# ───────────────────────────────────────────
+
+def retrieve_multi_hop(
+    query_semantic: np.ndarray,
+    store: MemoryStore,
+    k: int = 3,
+    max_hops: int = 2,
+    gamma: float = 0.8,
+    similarity_threshold: float = 0.5,
+) -> list:
+    """Retrieve memories using multi‑hop spreading activation.
+
+    The method starts from the direct semantic similarity of the query to all
+    memories, then repeatedly spreads activation through a learned transition
+    matrix built from pairwise semantic similarities. This enables reasoning
+    over chains such as "A is B, B is C, therefore A is C" without constructing an
+    explicit graph.
+    """
+    # Gather all candidates
+    candidates = store.get_all_safe()
+    if not candidates:
+        return []
+
+    # Semantic matrix (N x d)
+    sem_matrix = np.array([m.e_semantic for m in candidates], dtype=np.float32)
+
+    # Initial activation (similarity scores)
+    init_sim = sem_matrix @ query_semantic  # (N,)
+    activation = init_sim.copy()
+    total_activation = activation.copy()
+
+    # Build transition matrix from pairwise semantic similarity (cosine similarity)
+    T = sem_matrix @ sem_matrix.T  # (N, N)
+    mask = T > similarity_threshold
+    T = T * mask
+    row_sums = T.sum(axis=1, keepdims=True)
+    row_sums[row_sums == 0] = 1.0
+    T = T / row_sums
+
+    # Propagate activation for a limited number of hops
+    for _ in range(max_hops):
+        activation = T @ activation
+        total_activation += gamma * activation
+
+    # Convert activation to distance‑like score (higher activation = lower distance)
+    distances = 1.0 - total_activation / np.max(total_activation)
+
+    # Return top‑k memories
+    indices = np.argsort(distances)[:k]
+    return [(float(distances[idx]), candidates[idx]) for idx in indices]
+
+
+def retrieve_multi_hop_auto(
+        query_semantic: np.ndarray,
+        store: MemoryStore,
+        k: int = 3,
+        base_max_hops: int = 2,
+        base_gamma: float = 0.8,
+        similarity_threshold: float = 0.5,
+    ) -> list:
+    """Automatic multi‑hop retrieval.
+
+    Computes the retrieval entropy of the initial semantic similarity scores and
+    adjusts the number of activation hops and the decay factor (`gamma`) based on
+    this entropy. Higher entropy (more uncertain query) results in more hops and
+    a lower decay factor, encouraging broader spreading activation.
+    """
+    # Gather semantic matrix for all candidates
+    candidates = store.get_all_safe()
+    if not candidates:
+        return []
+    sem_matrix = np.array([m.e_semantic for m in candidates], dtype=np.float32)
+    # Initial distances (1 - cosine similarity)
+    init_sim = sem_matrix @ query_semantic
+    distances = 1.0 - init_sim
+    # Compute entropy
+    entropy = retrieval_entropy(distances)
+    # Heuristic adjustment
+    max_hops = int(np.clip(base_max_hops + entropy, 1, 10))
+    # Reduce gamma as entropy grows (more diffusion)
+    gamma = float(np.clip(base_gamma * (1.0 - entropy / 5.0), 0.1, 0.9))
+    # Delegate to core multi‑hop function
+    return retrieve_multi_hop(
+        query_semantic,
+        store,
+        k=k,
+        max_hops=max_hops,
+        gamma=gamma,
+        similarity_threshold=similarity_threshold,
+    )
