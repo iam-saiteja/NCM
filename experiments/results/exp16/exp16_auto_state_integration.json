@@ -1,5 +1,6 @@
 {
   "experiment": "exp16_auto_state_integration",
+  "encoder_backend": "sentence-transformers",
   "design_constants": {
     "dimensions": [
       "valence",
@@ -28,6 +29,7 @@
     "turn10_max_abs_diff": 0.0,
     "turn20_max_abs_diff": 0.0,
     "turn30_max_abs_diff": 0.0,
+    "tolerance": 1e-05,
     "pass": true,
     "turn10": [
       0.4068922996520996,
@@ -363,48 +365,115 @@
       }
     ]
   },
-  "retrieval_trend": {
-    "combined": {
-      "Era1": {
-        "p5": 1.0,
-        "p10": 0.7
+  "era_retrieval": {
+    "label_provenance": "HAND_AUTHORED: era membership is defined by the position of each turn in a script written for this experiment, not by any corpus annotation",
+    "leave_one_out": {
+      "arms": {
+        "semantic_only": {
+          "p5": 0.72,
+          "p10": 0.6067,
+          "p5_by_era": {
+            "Era1": 0.72,
+            "Era2": 0.54,
+            "Era3": 0.9
+          },
+          "n_queries": 30
+        },
+        "ncm_inferred": {
+          "p5": 0.72,
+          "p10": 0.6233,
+          "p5_by_era": {
+            "Era1": 0.64,
+            "Era2": 0.58,
+            "Era3": 0.94
+          },
+          "n_queries": 30
+        },
+        "ncm_oracle": {
+          "p5": 0.7733,
+          "p10": 0.6833,
+          "p5_by_era": {
+            "Era1": 0.78,
+            "Era2": 0.6,
+            "Era3": 0.94
+          },
+          "n_queries": 30
+        }
       },
-      "Era2": {
-        "p5": 0.6,
-        "p10": 0.6
-      },
-      "Era3": {
-        "p5": 1.0,
-        "p10": 0.8
-      }
+      "random_guess_p5": 0.3103,
+      "p5_delta_inferred_minus_semantic": 0.0,
+      "p5_delta_oracle_minus_inferred": 0.0533
     },
-    "semantic_baseline": {
-      "Era1": {
-        "p5": 0.6,
-        "p10": 0.6
+    "era_probes": {
+      "n_queries": 3,
+      "queries": {
+        "Era1": "I am having a really hard time with everything right now",
+        "Era2": "I want to learn and understand something new and interesting",
+        "Era3": "I feel great and everything is going really well"
       },
-      "Era2": {
-        "p5": 0.6,
-        "p10": 0.5
+      "per_era": {
+        "semantic_only": {
+          "Era1": {
+            "p5": 0.6,
+            "p10": 0.6
+          },
+          "Era2": {
+            "p5": 0.6,
+            "p10": 0.5
+          },
+          "Era3": {
+            "p5": 1.0,
+            "p10": 0.7
+          }
+        },
+        "ncm_inferred": {
+          "Era1": {
+            "p5": 0.4,
+            "p10": 0.5
+          },
+          "Era2": {
+            "p5": 0.6,
+            "p10": 0.5
+          },
+          "Era3": {
+            "p5": 1.0,
+            "p10": 0.8
+          }
+        },
+        "ncm_oracle": {
+          "Era1": {
+            "p5": 0.8,
+            "p10": 0.7
+          },
+          "Era2": {
+            "p5": 0.6,
+            "p10": 0.6
+          },
+          "Era3": {
+            "p5": 1.0,
+            "p10": 0.8
+          }
+        }
       },
-      "Era3": {
-        "p5": 1.0,
-        "p10": 0.7
-      }
+      "mean_p5": {
+        "semantic_only": 0.7333,
+        "ncm_inferred": 0.6667,
+        "ncm_oracle": 0.8
+      },
+      "p5_delta_inferred_minus_semantic": -0.0666
     },
-    "p5_delta_vs_baseline": {
-      "Era1": 0.4,
-      "Era2": 0.0,
-      "Era3": 0.0
-    },
-    "trend_mean_p5_gain": 0.133
+    "oracle_disclosure": "ncm_oracle sets the query state to the target era's end state, which is derived from the target era's own turns. It leaks the relevance label and is an upper bound, not a system result."
   },
   "persistence_check": {
+    "memories_stored": 20,
+    "k_compared": 10,
     "max_state_diff": 0.0,
-    "max_score_diff": 0.0,
+    "max_retrieval_distance_diff": 0.0,
     "turn_ok": true,
     "alpha_ok": true,
     "weights_ok": true,
+    "count_ok": true,
+    "ranking_identical": true,
     "top1_ok": true,
     "pass": true,
     "s_pre": [
@@ -413,7 +482,9 @@
       0.5087717771530151,
       0.5142603516578674,
       0.5078938007354736
-    ]
+    ],
+    "retrieval_path": "ncm.retrieval.retrieve_top_k_fast"
   },
-  "verdict": "PASS"
+  "verdict": "PASS",
+  "verdict_scope": "trajectory_check and persistence_check only; era_retrieval reports magnitudes and is not gated"
 }

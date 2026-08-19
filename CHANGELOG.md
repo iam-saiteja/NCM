@@ -2,6 +2,47 @@
 
 All notable changes to the NCM project are documented here.
 
+## [Soundness Audit Remediation] - 2026-08-20
+
+A pre-submission audit of every published number found several claims that the
+code does not support. They are corrected here. Retracted numbers are marked in
+place rather than deleted, so the provenance of anything previously published
+stays auditable.
+
+### EXP16 rewritten: the auto-state retrieval gain was an oracle leak
+
+- `experiments/python/exp16_auto_state_integration.py` is rewritten.
+- **Retracted: "P@5 improves by `+0.400` in the stress era, mean gain `+0.133`".**
+  The old check set the query's 5-dimensional state to `states_at_era_end[era]`,
+  the exact tracker state produced by the target era's own ten turns. Since the
+  composite distance rewards state proximity, this handed the target era a state
+  signal derived from the relevance label, so the check could not fail. It also
+  ran only three queries, one per era, and scored them with a bespoke 0.5/0.5
+  scorer rather than the shipped retrieval functions.
+- The era check now runs three named arms through the shipped
+  `retrieve_semantic_only` and `retrieve_top_k_fast`, scored leave-one-out over
+  all 30 turns with the held-out memory excluded from its own results:
+  - `semantic_only` P@5 `0.7200`, P@10 `0.6067`
+  - `ncm_inferred`, state inferred from the query text alone: P@5 `0.7200`, P@10 `0.6233`
+  - `ncm_oracle`, state taken from the target era and **labelled as leaking**: P@5 `0.7733`, P@10 `0.6833`
+  - Random guess P@5 is `0.3103` (9 same-era peers among 29 candidates).
+  - `ncm_inferred` minus `semantic_only` P@5 is **`+0.0000`**. On the three
+    original hand-authored era probes `ncm_inferred` is `0.0666` *worse* than
+    semantic-only. The oracle ceiling is `+0.0533`.
+- Era membership is now disclosed as a hand-authored label in the JSON, the text
+  output, the figure subtitle and the docs. It comes from a turn's position in a
+  script written for this experiment, not from any corpus annotation.
+- The script aborts instead of reporting numbers if the encoder falls back to the
+  hash backend, and records `encoder_backend` in its output.
+- The verdict is now explicitly scoped to trajectory determinism and persistence.
+  Era retrieval reports magnitudes and is not a pass/fail gate.
+- Unchanged and still exact: trajectory max-abs-diff `0.00e+00` at turns 10, 20
+  and 30, and a `.ncm` round trip with `max_state_diff` and
+  `max_retrieval_distance_diff` both `0.00e+00` over a 20-memory store, with the
+  full top-10 ranking identical before and after save/load. The persistence check
+  now goes through `retrieve_top_k_fast` rather than a local scorer.
+- Corrected in `README.md`, `experiments/EXPERIMENT_RESULTS.md` and this file.
+
 ## [Contradiction-Aware Retrieval (CADP)] - 2026-04-26
 
 ### Core retrieval update
@@ -77,7 +118,7 @@ All notable changes to the NCM project are documented here.
 ### Key experiment outcomes
 - EXP16 (synthetic):
   - Turn10/20/30 trajectory max diff = `0.00e+00`
-  - P@5 delta by era: `+0.400`, `+0.000`, `+0.000` (mean `+0.133`)
+  - P@5 delta by era: `+0.400`, `+0.000`, `+0.000` (mean `+0.133`) **[RETRACTED 2026-08-20: this check set the query state to the target era's own end state, which is derived from the relevance label. Re-measured with the state inferred from the query text, the gain is `+0.0000`. See the 2026-08-20 entry.]**
   - Persistence: `max_state_diff=0.00e+00`, `max_score_diff=0.00e+00`, turn/alpha/weights/top-1 all OK
 - EXP17 (real-world):
   - Dataset slice: 100 conversations, 2,009 stored utterances (from corpus of 8,940)

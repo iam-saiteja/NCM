@@ -27,7 +27,7 @@ This is the full experiment report for NCM.
 | Exp13 | Honest baseline rematch | Find boundary conditions | NCM better at low/high-shift regimes |
 | Exp14 | Real Ollama persona-memory A/B | Test real-model style shift from memory context | Different memory profiles produce measurable response-style deltas |
 | Exp15 | Synthetic persona-memory stress test | Validate memory-conditioning effect at scale | Strong persona separation persists on 5k prompts / 5k memories/persona |
-| Exp16 | Auto-state integration validation | Verify locked design constants and persistence on integrated code | Exact trajectory match, retrieval trend preserved, persistence PASS |
+| Exp16 | Auto-state integration validation | Verify locked design constants and persistence on integrated code | Exact trajectory match and exact persistence round-trip; no retrieval gain over semantic-only (+0.0000 P@5) |
 | Exp17 | Real-world auto-state scale test | Prove auto-state behavior on real conversation data | Stable state evolution on 100 conversations / 2,009 turns |
 | Exp18 | Contradiction-aware retrieval validation | Verify corrected facts outrank contradicted facts without deleting history | Single correction 0.08→1.00, chain latest@1 0.00→1.00, non-contradiction unchanged |
 
@@ -45,7 +45,7 @@ This is the full experiment report for NCM.
 | Practical runtime | Exp4 cached path supports real-time-friendly latency |
 | Real-model persona shift | Exp14 (qwen2:7B): Persona-B warm markers +3.833 and +63 words under identical prompts |
 | Synthetic scale check | Exp15 (5k prompts, 5k memories/persona): separation L2≈0.713, memory-gain positive-rate=1.000 |
-| Synthetic validation lock | Exp16: Turn10/20/30 exact match, mean P@5 gain +13.3%, persistence PASS |
+| Synthetic validation lock | Exp16: Turn10/20/30 exact match and exact `.ncm` round-trip. Leave-one-out P@5 0.7200 for both semantic-only and inferred-state NCM, so `+0.0000` gain; label-leaking oracle 0.7733 |
 | Real-world scale proof | Exp17: 100 real conversations, 2,009 turns, stable mean spread 0.0150 |
 | Contradiction handling proof | Exp18: corrected-fact dominance enabled via contradiction penalty with persistence-safe links |
 
@@ -491,22 +491,47 @@ At scale, the memory-conditioned response shift remains strong, separable, and a
 ## Experiment 16: Auto-State Integration Validation
 
 ### What is this experiment?
-Checks the integrated auto-state tracker against the locked synthetic design specification.
+Three independent checks on the integrated auto-state tracker: trajectory determinism against pinned constants, era retrieval precision, and `.ncm` persistence.
 
 ### Why is it needed?
-To prove the implementation matches the design exactly and survives persistence round-trips.
+To prove the implementation matches the design exactly, survives persistence round-trips, and to measure whether the state channel actually changes retrieval quality.
+
+### Correction to the previous version of this section
+The previous version reported "Retrieval trend: mean P@5 gain = +0.133" and concluded that auto-state "keeps retrieval behavior consistent". Both are withdrawn. The retrieval check set the query's 5-dimensional state to `states_at_era_end[era]`, that is, to the exact tracker state produced by the target era's own ten turns. Because the composite distance rewards state proximity, this handed the target era a perfectly aligned state signal derived from the relevance label itself, so the check could not fail. It also ran only three queries, one per era, and scored them with a bespoke 0.5/0.5 scorer rather than the shipped retrieval functions.
+
+### Setup
+- Corpus: 30 turns of a hand-authored script, written in three blocks of ten. Turns 1-10 express stress, 11-20 curiosity, 21-30 positive affect. **Era membership is a hand-authored label**, defined by position in a script written for this experiment, not by any corpus annotation.
+- Writes go through the shipped `MemoryStore.add(..., update_auto_state=True)`.
+- Retrieval goes through `ncm.retrieval.retrieve_semantic_only` and `ncm.retrieval.retrieve_top_k_fast`. No bespoke scorer.
+- Scoring: leave-one-out over all 30 turns, plus the 3 original hand-authored era probes. The held-out memory is excluded from its own result list.
+- Encoder: `all-MiniLM-L6-v2`, backend `sentence-transformers`. The script aborts rather than reporting numbers if the encoder falls back to the hash encoder.
 
 ### Results
 Source: [experiments/results/exp16/exp16_auto_state_integration.json](results/exp16/exp16_auto_state_integration.json)
 
-- Dataset: 30-turn synthetic conversation across 3 eras
-- Trajectory checkpoints: Turn 10 / 20 / 30 max-abs-diff = 0.00e+00
-- Retrieval trend: mean P@5 gain = +0.133
-- Persistence: max_state_diff = 0.00e+00, max_score_diff = 0.00e+00
-- Verdict: PASS
+**Check 1, trajectory determinism: PASS.** Max absolute difference against the pinned constants at turns 10, 20 and 30 is `0.00e+00` on all five dimensions, tolerance `1e-05`. This is a regression guard on the update rule. It is not an accuracy claim: the constants were produced by the same code.
+
+**Check 2, era retrieval.** Leave-one-out over all 30 turns, random guess P@5 = `0.3103` (9 same-era peers among 29 candidates):
+
+| Arm | P@5 | P@10 | Era1 P@5 | Era2 P@5 | Era3 P@5 |
+|---|---|---|---|---|---|
+| `semantic_only` | 0.7200 | 0.6067 | 0.720 | 0.540 | 0.900 |
+| `ncm_inferred` (state from query text alone) | 0.7200 | 0.6233 | 0.640 | 0.580 | 0.940 |
+| `ncm_oracle` (state from target era, LABEL LEAK) | 0.7733 | 0.6833 | 0.780 | 0.600 | 0.940 |
+
+- `ncm_inferred` minus `semantic_only` P@5: **+0.0000**
+- `ncm_oracle` minus `ncm_inferred` P@5: +0.0533
+
+On the three original hand-authored era probes, mean P@5 is `semantic_only` 0.7333, `ncm_inferred` 0.6667, `ncm_oracle` 0.8000, so `ncm_inferred` is **0.0666 worse** than the baseline there.
+
+The `ncm_oracle` arm is retained only as an upper bound and is labelled as leaking in the JSON, the text output and the figure. It sets the query state to the target era's end state, which is produced by the target era's own turns, so it bounds what a perfectly informed state signal could contribute. It is not a system result.
+
+**Check 3, persistence: PASS.** Over a 20-memory store, `max_state_diff` = `0.00e+00` and `max_retrieval_distance_diff` = `0.00e+00`. Turn counter, alpha vector, adaptive weights and memory count all survive, and the full top-10 ranking through `retrieve_top_k_fast` is identical before and after save/load, including top-1.
+
+**Verdict: PASS, scoped to checks 1 and 3.** Era retrieval reports magnitudes and is not a pass/fail gate.
 
 ### What does it say?
-Auto-state integration exactly reproduces the intended state trajectory, keeps retrieval behavior consistent, and round-trips cleanly through `.ncm` persistence.
+The auto-state implementation is numerically exact and persists exactly. It does not improve retrieval on this script. With the query state inferred from the query text alone, which is the only deployable condition, the composite manifold scores identically to semantic similarity alone (0.7200 P@5) and loses on the era probes. The previously reported +0.133 gain came from the oracle leak. The oracle ceiling of +0.0533 shows that even a perfectly informed state signal would add little here, which is consistent with a 30-turn corpus in which semantic content and era are almost perfectly correlated by construction.
 
 ---
 
@@ -603,7 +628,7 @@ regenerated figures live alongside the JSON they were built from, in
 ![Synthetic Persona Style Clusters](results/exp15/exp15_synthetic_persona_memory_effect_clusters.png)
 ![Synthetic Persona Scale Curve](results/exp15/exp15_synthetic_persona_memory_effect_scale.png)
 ![EXP16 State Trajectory](results/exp16/exp16_state_trajectory.png)
-![EXP16 Retrieval Trend](results/exp16/exp16_retrieval_trend.png)
+![EXP16 Era Retrieval](results/exp16/exp16_retrieval_trend.png)
 ![EXP16 Persistence Validation](results/exp16/exp16_persistence_validation.png)
 ![EXP17 Retrieval Precision](results/exp17/exp17_scale_retrieval_precision.png)
 ![EXP17 Performance Metrics](results/exp17/exp17_scale_performance_metrics.png)
@@ -619,7 +644,7 @@ regenerated figures live alongside the JSON they were built from, in
 
 - Synthetic benchmark: ~1,200 memories with semantic categories and state archetypes
 - Real corpus benchmark: [experiments/data/real_world_corpus](data/real_world_corpus)
-- EXP16 validation: 30-turn locked synthetic trajectory with persistence round-trip checks
+- EXP16 validation: 30-turn hand-authored synthetic trajectory with persistence round-trip checks and leave-one-out era retrieval
 - EXP17 validation: 100 real conversations and 2,009 stored turns from the real-world corpus
 - EXP18 validation: contradiction-heavy synthetic tasks with correction chains, conflict traces, and metadata persistence checks
 - Metrics used across tracks: Precision@k, Recall@k, MRR, NDCG, MAP, state precision, latency, throughput, footprint

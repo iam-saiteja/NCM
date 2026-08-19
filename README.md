@@ -7,7 +7,7 @@ NCM is now experimentally validated to produce **different response behavior fro
 - **Exp15 (large synthetic)**: stable persona-separation signal at scale (5k prompts, 5k memories/persona).
 
 Latest validation added:
-- **Exp16**: exact synthetic trajectory match, persistence round-trip, and retrieval trend preservation.
+- **Exp16**: exact synthetic trajectory match and exact `.ncm` persistence round-trip. On its 30-turn script the composite manifold shows no retrieval gain over semantic similarity when the query state is inferred from the query text alone (`+0.0000` P@5).
 - **Exp17**: real-world corpus validation on 100 conversations / 2,009 stored turns with stable state evolution.
 - **Exp18**: contradiction-aware retrieval validation showing deterministic corrected-fact dominance without deleting history.
 
@@ -391,10 +391,23 @@ Reference: [experiments/results/exp16/exp16_auto_state_integration.txt](experime
 
 ### EXP16 — Synthetic Validation (30-Turn Scripted Conversation)
 
-EXP16 validates numerical correctness and retrieval impact of auto-state in a controlled 30-turn, three-era conversation (Stress -> Curiosity -> Positive Mixed).
-The integrated implementation reproduces the locked simulation trajectory exactly: max absolute difference between expected and observed state at turns 10, 20, and 30 is `0.00e+00` on all five dimensions.
-When auto-state is used as part of manifold distance, Precision@5 improves by `+0.400` in the stress-dominated era, with neutral effect (`+0.000`) in curiosity and mixed-positive eras, yielding an overall mean gain of `+0.133`.
-A persistence stress test shows perfect `.ncm` round-trip: state components, adaptive weights, retrieval scores, and top-1 memory are identical before and after save/load.
+EXP16 runs three independent checks on a hand-authored 30-turn script written in three blocks of ten turns (stress, curiosity, positive affect). Era membership is a hand-authored label, not a corpus annotation.
+
+**Trajectory determinism (passes).** The integrated implementation reproduces the pinned simulation trajectory exactly: max absolute difference between expected and observed state at turns 10, 20, and 30 is `0.00e+00` on all five dimensions. This is a regression guard on the update rule, not an accuracy claim.
+
+**Persistence (passes).** The `.ncm` round trip is exact: `max_state_diff` and `max_retrieval_distance_diff` are both `0.00e+00`, turn counter, alpha, adaptive weights and memory count all survive, and the full top-10 ranking through `retrieve_top_k_fast` is identical before and after save/load.
+
+**Era retrieval: auto-state gives no measurable gain here.** An earlier version of this check reported "P@5 improves by +0.400 in the stress era, mean gain +0.133". That number is retracted. It was produced by setting the query's state to the target era's own end state, which is derived from the relevance label, so the check could not fail; it also ran only three queries and scored them with a bespoke scorer instead of the shipped retrieval path.
+
+The check now runs leave-one-out over all 30 turns through the shipped retrieval functions, in three arms:
+
+| Arm | P@5 | P@10 | Era1 | Era2 | Era3 |
+|---|---|---|---|---|---|
+| Semantic only | 0.7200 | 0.6067 | 0.720 | 0.540 | 0.900 |
+| NCM, state inferred from the query text alone | 0.7200 | 0.6233 | 0.640 | 0.580 | 0.940 |
+| NCM oracle, state set from the target era (LABEL LEAK, upper bound only) | 0.7733 | 0.6833 | 0.780 | 0.600 | 0.940 |
+
+Random guess P@5 is `0.3103` (9 same-era peers among 29 candidates). In the deployable condition the composite manifold scores `0.7200`, **identical to semantic similarity alone**: the state channel contributes `+0.0000` on this script. On the three original hand-authored era probes it is `-0.0666` worse than the baseline. The oracle arm reaches `+0.0533` over the deployable arm, which bounds what a perfectly informed state signal could add here and is not a system result.
 
 Reference: [experiments/results/exp16/exp16_auto_state_integration.txt](experiments/results/exp16/exp16_auto_state_integration.txt)
 
@@ -429,12 +442,12 @@ References:
 | --- | --- | --- |
 | Dataset | 30-turn scripted 3-era conversation | 100 real conversations (PersonaChat), 2,009 utterances |
 | Trajectory accuracy | Turn 10/20/30 max diff = 0.00e+00 | Not applicable (uses same tracker implementation validated in EXP16) |
-| Retrieval impact (P@5 delta) | Era1 +0.400, Era2 +0.000, Era3 +0.000, mean +0.133 | P@5 = 1.000 for both NCM and semantic-only baseline (0.000 delta) |
-| Persistence | State/score diffs = 0.00e+00; turn/alpha/weights/top-1 all OK | Validated via real .ncm round-trip in EXP16 and reused in EXP17 |
+| Retrieval impact (P@5 delta) | Era labels hand-authored. State inferred from query text: `+0.0000` vs semantic-only (0.7200 both). Label-leaking oracle: `+0.0533`. | P@5 = 1.000 for both NCM and semantic-only baseline (0.000 delta) |
+| Persistence | State diff, retrieval distance diff = 0.00e+00; turn/alpha/weights/count and full top-10 ranking all identical | Validated via real .ncm round-trip in EXP16 and reused in EXP17 |
 | State stability | Stress era peak followed by convergence to mixed state | Mean spread ~= 0.0150 (range [0.0022, 0.0473]); mean entropy ~= 1.7464 |
 | Latency | Not primary focus (scripted sim) | NCM ~0.05 ms vs RAG ~0.02 ms per query |
 
-Together, EXP16 and EXP17 show that auto-state is (1) numerically correct and well-behaved, (2) beneficial in emotionally skewed scenarios without harming performance elsewhere, and (3) robust at realistic scale with negligible latency overhead and stable behavior across diverse conversations.
+EXP16 establishes that auto-state is numerically correct and survives persistence exactly. It does **not** establish a retrieval benefit: on its 30-turn script the composite manifold with a deployably inferred state matches semantic similarity exactly (0.7200 P@5 both) and loses on the three era probes. EXP17 covers realistic scale and latency.
 
 ### Quick Overview Table
 
@@ -445,7 +458,7 @@ Together, EXP16 and EXP17 show that auto-state is (1) numerically correct and we
 | Exp10–Exp13 | Recall rematch, real-world corpus, robustness, boundary analysis | NCM shows strong state divergence, robust defaults, and regime-dependent gains |
 | Exp14 | Real Ollama persona-memory A/B test | Different memory profiles produce measurably different response style under identical prompts |
 | Exp15 | Large synthetic persona-memory stress test | Memory conditioning signal remains strong at scale (5k prompts, 5k memories/persona) |
-| Exp16 | Auto-state integration validation | Exact trajectory match + persistence round-trip on locked synthetic design |
+| Exp16 | Auto-state integration validation | Exact trajectory match and exact persistence round-trip; no retrieval gain from auto-state on this script |
 | Exp17 | Real-world auto-state scale test | Stable auto-state behavior on 100 real conversations / 2,009 turns |
 | Exp18 | Contradiction-aware retrieval validation | Corrected facts deterministically outrank contradicted facts while preserving history |
 
@@ -462,7 +475,7 @@ Together, EXP16 and EXP17 show that auto-state is (1) numerically correct and we
 | Honest rematch | Exp13: NCM stronger in low/high shift buckets |
 | Real-model persona effect | Exp14 (qwen2:7B): Persona-B warm markers +3.833 and +63 words vs Persona-A under same prompts |
 | Large-scale persona effect | Exp15 (synthetic 5k×5k): persona separation L2=0.713, memory-gain positive-rate=1.000 |
-| Synthetic validation lock | Exp16: Turn10/20/30 exact match, mean P@5 gain +13.3%, persistence PASS |
+| Synthetic validation lock | Exp16: Turn10/20/30 exact match, persistence exact, P@5 gain from auto-state `+0.0000` when state is inferred from the query |
 | Real-world scale proof | Exp17: 100 real conversations, 2,009 turns, stable mean spread 0.0150 |
 | Contradiction resolution | Exp18: single-correction `0.08 -> 1.00`, chain latest-top1 `0.00 -> 1.00`, non-contradiction unchanged `1.00` |
 

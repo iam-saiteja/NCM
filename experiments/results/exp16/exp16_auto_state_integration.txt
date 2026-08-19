@@ -1,20 +1,50 @@
 EXP16: Auto-State Integration Validation
 ========================================
 
-Verdict: PASS
+Verdict: PASS  (scope: trajectory and persistence only)
+Encoder backend: sentence-transformers
 
-Trajectory checkpoint max-abs-diff
-- Turn10: 0.00e+00
-- Turn20: 0.00e+00
-- Turn30: 0.00e+00
+Check 1: trajectory determinism (max abs diff vs pinned constants)
+- Turn 10: 0.00e+00
+- Turn 20: 0.00e+00
+- Turn 30: 0.00e+00
+- Tolerance: 1e-05    Pass: True
 
-Retrieval P@5 trend delta (combined - semantic baseline)
-- Era1: +0.400
-- Era2: +0.000
-- Era3: +0.000
-- Mean gain: +0.133
+Check 2: era retrieval
+Era labels are HAND-AUTHORED: they come from the position of each
+turn in a script written for this experiment.
 
-Persistence
+Leave-one-out over all 30 turns (random guess P@5 = 0.3103):
+  arm                  P@5    P@10   per-era P@5 (Era1, Era2, Era3)
+  semantic_only     0.7200  0.6067   0.720, 0.540, 0.900
+  ncm_inferred      0.7200  0.6233   0.640, 0.580, 0.940
+  ncm_oracle        0.7733  0.6833   0.780, 0.600, 0.940
+
+  ncm_inferred - semantic_only P@5: +0.0000
+  ncm_oracle - ncm_inferred P@5:    +0.0533
+
+Three hand-authored era probes (mean P@5 across the 3 eras):
+  semantic_only   0.7333
+  ncm_inferred    0.6667
+  ncm_oracle      0.8000
+  ncm_inferred - semantic_only: -0.0666
+
+ncm_oracle sets the query state to the target era's end state, which
+is produced by the target era's own turns. It leaks the relevance
+label and bounds what the state channel could contribute. It is not
+a system result.
+
+Check 3: persistence (.ncm round trip)
+- Memories stored: 20, k compared: 10
 - max_state_diff: 0.00e+00
-- max_score_diff: 0.00e+00
-- turn_ok/alpha_ok/weights_ok/top1_ok: True/True/True/True
+- max_retrieval_distance_diff: 0.00e+00
+- turn/alpha/weights/count: True/True/True/True
+- ranking identical: True, top-1 identical: True
+- Retrieval path: ncm.retrieval.retrieve_top_k_fast
+- Pass: True
+
+Reading of check 2
+With the query state inferred from the query text alone, the
+composite distance does NOT beat semantic similarity alone on this
+script. The earlier positive result depended on the query state
+being set from the target era itself.
