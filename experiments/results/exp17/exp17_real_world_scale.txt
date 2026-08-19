@@ -1,28 +1,70 @@
-EXP17: Auto-State Integration at Scale — Real-World Validation
-================================================================
+EXP17: Same-Session Episodic Retrieval on Multi-Session Chat
+===========================================================
 
-Verdict: PASS
+Task: retrieve turns sharing the held-out query turn's session_id.
+Relevance comes from the corpus session_id field, not from any
+label authored for this experiment.
 
-Dataset Summary
-- Conversations tested: 100
-- Total dialogue turns stored: 2009
-- Avg turns per conversation: 20.1
+Seed: 20260819    Encoder backend: sentence-transformers
+Timer: time.perf_counter
 
-Retrieval Benchmarks (Precision@K)
-- NCM P@5:  1.000  | RAG P@5:  1.000  | Improvement: +0.000
-- NCM P@10: 1.000 | RAG P@10: 1.000 | Improvement: +0.000
+Dataset
+- Conversations loaded: 100
+- Conversations benchmarked: 65
+- Skipped, fewer than 2 sessions: 35
+- Skipped, no session with at least 3 stored turns: 0
+- Queries evaluated: 228
+- Turns stored in total: 2628
+- Mean store size: 40.4
+- Mean turns per benchmarked conversation: 40.4
+- Mean relevant turns per query: 11.53
+- Random-guess P@5: 0.2851  (mean over queries of n_relevant / store_size; independent of k)
 
-Latency (milliseconds)
-- NCM avg: 0.05ms
-- RAG avg: 0.02ms
-- Difference: +0.03ms
+Results
+arm                  P@5    P@10    R@10   NDCG@10     MRR   med ms   p95 ms
+----------------------------------------------------------------------------
+semantic_only     0.4640  0.4053  0.3576    0.4518  0.7786    0.087    0.139
+recency_only      0.2851  0.2851  0.2625    0.2866  0.2861    0.011    0.027
+ncm_inferred      0.4561  0.4088  0.3600    0.4529  0.7714    0.289    0.498
+ncm_oracle        0.4886  0.4215  0.3713    0.4690  0.7902    0.239    0.409
 
-State Stability (across 400 turns from 20 diverse conversations)
-- Total samples: 366
-- Mean spread: 0.0150 (±0.0075)
-- Spread range: [0.0022, 0.0473]
+ncm_oracle leaks the session label into the query state. It bounds
+what the state channel could contribute and is not a system result.
+
+Latency caveat
+These are not a latency benchmark. Mean store size is only
+40.4 memories, so every arm is far below a millisecond and
+fixed per-call overhead dominates. The two paths also differ in
+cache treatment: retrieve_top_k_fast reads a cache warmed once per
+conversation, while retrieve_semantic_only rebuilds its own (n, 128)
+matrix on every call. Exp4 is the latency measurement; read these
+figures only as evidence that the composite path stays sub-millisecond
+at this scale.
+
+Why recency_only scores the same at k=5 and k=10
+Sessions are contiguous blocks of turns, so the most recent turns
+nearly always sit inside one session. The recency window holds
+1.026 distinct sessions on average, and
+0.2763 of queries have a window drawn
+entirely from the target session. Such a query scores 1.0 at both k
+and every other query scores 0.0, which is why the two columns agree.
+It is a property of the corpus layout, not a scoring error.
+
+Deltas
+- ncm_inferred_minus_semantic_p5: -0.0079
+- ncm_inferred_minus_semantic_ndcg10: +0.0011
+- ncm_inferred_minus_recency_p5: +0.1710
+- ncm_oracle_minus_ncm_inferred_p5: +0.0325
+- Highest P@5 arm: ncm_oracle
+
+Auto-state dispersion
+- Turns consumed: 366 from 20 conversations
+- Mean per-turn std-dev across the 5 dimensions: 0.0150 (sd 0.0075)
+- Std-dev range: [0.0022, 0.0473]
+- Mean max-min range: 0.0423
 - Mean entropy: 1.7464
 
-Conclusion
-Auto-state integration successfully scales to real-world conversational data.
-State stability maintained across diverse conversation types.
+Reading of the result
+NCM does not beat the semantic-only baseline on P@5 under the
+deployable condition where the query state is inferred from the
+query text. The composite distance does not help on this task.

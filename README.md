@@ -8,7 +8,7 @@ NCM is now experimentally validated to produce **different response behavior fro
 
 Latest validation added:
 - **Exp16**: exact synthetic trajectory match and exact `.ncm` persistence round-trip. On its 30-turn script the composite manifold shows no retrieval gain over semantic similarity when the query state is inferred from the query text alone (`+0.0000` P@5).
-- **Exp17**: real-world corpus validation on 100 conversations / 2,009 stored turns with stable state evolution.
+- **Exp17**: same-session episodic retrieval on 8,939-record Multi-Session Chat style corpus. On 228 queries over 2,628 stored turns the composite manifold does not beat semantic similarity alone (`0.4561` vs `0.4640` P@5), though both beat a recency control by `+0.1710`.
 - **Exp18**: contradiction-aware retrieval validation showing deterministic corrected-fact dominance without deleting history.
 
 NCM is a memory storage and retrieval architecture where memories are encoded as multi-field geometric objects in a composite retrieval space. Core stored fields include `e_semantic`, `e_emotional`, `s_snapshot`, `auto_state_snapshot`, `timestamp`, and `strength`. The system retrieves not just what is textually similar, but what is **cognitively resonant** — matching meaning, emotional context, internal state at encoding time, and recency simultaneously.
@@ -411,12 +411,26 @@ Random guess P@5 is `0.3103` (9 same-era peers among 29 candidates). In the depl
 
 Reference: [experiments/results/exp16/exp16_auto_state_integration.txt](experiments/results/exp16/exp16_auto_state_integration.txt)
 
-### EXP17 — Real-World Scale (PersonaChat Sample)
+### EXP17 — Same-Session Episodic Retrieval on Multi-Session Chat
 
-EXP17 evaluates auto-state on real conversational data: 100 PersonaChat-style dialogues sampled from a corpus of 8,940 conversations, comprising 2,009 utterances stored and retrieved through NCM.
-On this slice, both NCM (semantic + auto-state) and a semantic-only RAG baseline achieve saturated Precision@5 and Precision@10 of `1.000`, so auto-state does not change correctness but also does not regress it.
-Retrieval latency remains production-ready: NCM with auto-state averages `~0.05 ms` per query versus `~0.02 ms` for the semantic-only baseline, an additional `~0.03 ms` that is negligible at human timescales.
-Across 2,009 turns, mean state spread is `~0.0150` with range `[0.0022, 0.0473]`, and mean state entropy is `~1.7464`, indicating stable and informative 5D state behavior without collapse or saturation.
+EXP17 asks whether the composite manifold retrieves turns from the same conversational session as a held-out query turn. Relevance comes from the `session_id` field that ships with the corpus, so the label was not authored for this experiment. The corpus is `experiments/data/real_world_corpus/train.jsonl`, which holds 8,939 Multi-Session Chat style records whose persona sentences are PersonaChat derived. From 100 sampled conversations, 65 had at least two sessions and were benchmarked, giving 228 queries over 2,628 stored turns with a mean store size of 40.4 and a mean of 11.53 relevant turns per query. Random-guess Precision@5 is `0.2851`.
+
+| Arm | P@5 | P@10 | R@10 | NDCG@10 | MRR |
+| --- | --- | --- | --- | --- | --- |
+| `semantic_only` | **0.4640** | 0.4053 | 0.3576 | 0.4518 | 0.7786 |
+| `ncm_inferred` (deployable) | 0.4561 | 0.4088 | 0.3600 | 0.4529 | 0.7714 |
+| `ncm_oracle` (label leak, not a system result) | 0.4886 | 0.4215 | 0.3713 | 0.4690 | 0.7902 |
+| `recency_only` (temporal control) | 0.2851 | 0.2851 | 0.2625 | 0.2866 | 0.2861 |
+
+In the deployable condition, where the 5-dim auto-state is inferred from the query text alone, the composite manifold scores `-0.0079` P@5 against semantic similarity alone and `+0.0011` NDCG@10, so it does not improve same-session retrieval on this corpus. The label-leaking oracle arm reaches `+0.0325` P@5 over the deployable arm, which bounds what a perfectly informed state signal could contribute here. Both NCM arms beat the recency control by `+0.1710` P@5, so the composite distance is doing more than preferring recently written turns.
+
+This retracts the previously published claim that NCM and a semantic-only baseline both reach saturated Precision@5 and Precision@10 of `1.000`. That result was an artifact: precision was computed as `len(top_5_list) / 5.0`, which is identically `1.0` for any store holding at least five memories, for every arm. The previous latency claim of `~0.05 ms` for NCM versus `~0.02 ms` for the baseline is also withdrawn, because it was produced with `time.time()`, whose resolution on Windows is around 15 ms and therefore coarser than the operation being timed.
+
+Observed median latency is `0.0871 ms` for `semantic_only` and `0.2888 ms` for `ncm_inferred`. These figures are not a latency benchmark: mean store size is only 40.4 memories, so fixed per-call overhead dominates, and the two paths differ in cache treatment because `retrieve_top_k_fast` reads a cache warmed once per conversation while `retrieve_semantic_only` rebuilds its own `(n, 128)` matrix on every call. Exp4 is the latency measurement.
+
+The `recency_only` arm scores identically at k=5 and k=10 because sessions are contiguous blocks of turns. Its retrieval window holds `1.026` distinct sessions on average, and `0.2763` of queries have a window drawn entirely from the target session, so a query either wins the whole window or loses it. That is a property of the corpus layout and not a scoring error.
+
+Auto-state dispersion was measured on 366 turns drawn from 20 conversations. Mean per-turn standard deviation across the 5 dimensions is `0.0150` with a standard deviation of `0.0075`, a range of `[0.0022, 0.0473]`, a mean max-min range of `0.0423`, and mean entropy `1.7464`. The state neither collapses nor saturates, but the dispersion is small in absolute terms, which is consistent with the retrieval result above.
 
 References:
 - [experiments/results/exp17/exp17_real_world_scale.txt](experiments/results/exp17/exp17_real_world_scale.txt)
@@ -440,14 +454,14 @@ References:
 
 | Aspect | EXP16 (Synthetic) | EXP17 (Real-World) |
 | --- | --- | --- |
-| Dataset | 30-turn scripted 3-era conversation | 100 real conversations (PersonaChat), 2,009 utterances |
+| Dataset | 30-turn scripted 3-era conversation | Multi-Session Chat corpus of 8,939 records; 100 conversations sampled, 65 benchmarked, 228 queries over 2,628 stored turns |
 | Trajectory accuracy | Turn 10/20/30 max diff = 0.00e+00 | Not applicable (uses same tracker implementation validated in EXP16) |
-| Retrieval impact (P@5 delta) | Era labels hand-authored. State inferred from query text: `+0.0000` vs semantic-only (0.7200 both). Label-leaking oracle: `+0.0533`. | P@5 = 1.000 for both NCM and semantic-only baseline (0.000 delta) |
-| Persistence | State diff, retrieval distance diff = 0.00e+00; turn/alpha/weights/count and full top-10 ranking all identical | Validated via real .ncm round-trip in EXP16 and reused in EXP17 |
-| State stability | Stress era peak followed by convergence to mixed state | Mean spread ~= 0.0150 (range [0.0022, 0.0473]); mean entropy ~= 1.7464 |
-| Latency | Not primary focus (scripted sim) | NCM ~0.05 ms vs RAG ~0.02 ms per query |
+| Retrieval impact (P@5 delta) | Era labels hand-authored. State inferred from query text: `+0.0000` vs semantic-only (0.7200 both). Label-leaking oracle: `+0.0533`. | Session labels come from the corpus. State inferred from query text: `-0.0079` vs semantic-only (0.4561 vs 0.4640). Label-leaking oracle: `+0.0325`. Recency control: `+0.1710` below both. |
+| Persistence | State diff, retrieval distance diff = 0.00e+00; turn/alpha/weights/count and full top-10 ranking all identical | Not tested here. Persistence is validated in EXP16 only. |
+| State stability | Stress era peak followed by convergence to mixed state | Mean spread `0.0150` (sd `0.0075`, range [0.0022, 0.0473]); mean entropy `1.7464`, measured on 366 turns from 20 conversations |
+| Latency | Not measured | Median `0.2888 ms` NCM vs `0.0871 ms` semantic-only, at mean store size 40.4 where per-call overhead dominates. Not a latency benchmark; see Exp4. |
 
-EXP16 establishes that auto-state is numerically correct and survives persistence exactly. It does **not** establish a retrieval benefit: on its 30-turn script the composite manifold with a deployably inferred state matches semantic similarity exactly (0.7200 P@5 both) and loses on the three era probes. EXP17 covers realistic scale and latency.
+EXP16 establishes that auto-state is numerically correct and survives persistence exactly. It does **not** establish a retrieval benefit: on its 30-turn script the composite manifold with a deployably inferred state matches semantic similarity exactly (0.7200 P@5 both) and loses on the three era probes. EXP17 tests the same question on a corpus whose labels it did not author, and finds the composite manifold `0.0079` P@5 below semantic similarity alone. Neither experiment supports a retrieval gain from the state channel in the deployable condition.
 
 ### Quick Overview Table
 
@@ -459,7 +473,7 @@ EXP16 establishes that auto-state is numerically correct and survives persistenc
 | Exp14 | Real Ollama persona-memory A/B test | Different memory profiles produce measurably different response style under identical prompts |
 | Exp15 | Large synthetic persona-memory stress test | Memory conditioning signal remains strong at scale (5k prompts, 5k memories/persona) |
 | Exp16 | Auto-state integration validation | Exact trajectory match and exact persistence round-trip; no retrieval gain from auto-state on this script |
-| Exp17 | Real-world auto-state scale test | Stable auto-state behavior on 100 real conversations / 2,009 turns |
+| Exp17 | Same-session episodic retrieval on Multi-Session Chat | Composite manifold does not beat semantic-only (`0.4561` vs `0.4640` P@5); both beat a recency control by `+0.1710` |
 | Exp18 | Contradiction-aware retrieval validation | Corrected facts deterministically outrank contradicted facts while preserving history |
 
 ### Headline Metrics
@@ -476,7 +490,7 @@ EXP16 establishes that auto-state is numerically correct and survives persistenc
 | Real-model persona effect | Exp14 (qwen2:7B): Persona-B warm markers +3.833 and +63 words vs Persona-A under same prompts |
 | Large-scale persona effect | Exp15 (synthetic 5k×5k): persona separation L2=0.713, memory-gain positive-rate=1.000 |
 | Synthetic validation lock | Exp16: Turn10/20/30 exact match, persistence exact, P@5 gain from auto-state `+0.0000` when state is inferred from the query |
-| Real-world scale proof | Exp17: 100 real conversations, 2,009 turns, stable mean spread 0.0150 |
+| Real-corpus episodic retrieval | Exp17: 228 queries over 2,628 turns, corpus session labels. Composite manifold `0.4561` P@5 vs semantic-only `0.4640`, recency control `0.2851`, random guess `0.2851` |
 | Contradiction resolution | Exp18: single-correction `0.08 -> 1.00`, chain latest-top1 `0.00 -> 1.00`, non-contradiction unchanged `1.00` |
 
 ### A few visuals
@@ -515,15 +529,15 @@ EXP16: `.ncm` persistence round-trip checks.
 
 ![EXP17 Retrieval Precision](experiments/results/exp17/exp17_scale_retrieval_precision.png)
 
-EXP17: real-world retrieval precision on 100 conversations.
+EXP17: same-session retrieval precision over 228 queries, with the random-guess line at `0.2851`. The `ncm_oracle` bar leaks the session label and is an upper bound, not a system result.
 
 ![EXP17 Performance Metrics](experiments/results/exp17/exp17_scale_performance_metrics.png)
 
-EXP17: latency comparison between NCM and semantic baseline.
+EXP17: per-arm latency at mean store size 40.4, where fixed per-call overhead dominates. Not a latency benchmark; Exp4 is.
 
 ![EXP17 State Accuracy](experiments/results/exp17/exp17_scale_state_accuracy.png)
 
-EXP17: state stability across diverse real conversations.
+EXP17: auto-state dispersion over 366 turns from 20 conversations.
 
 For full per-experiment explanations, result tables, and all plots, use [experiments/EXPERIMENT_RESULTS.md](experiments/EXPERIMENT_RESULTS.md).
 

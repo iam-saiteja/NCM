@@ -43,6 +43,64 @@ stays auditable.
   now goes through `retrieve_top_k_fast` rather than a local scorer.
 - Corrected in `README.md`, `experiments/EXPERIMENT_RESULTS.md` and this file.
 
+### EXP17 rewritten: the perfect-precision result measured list length, not relevance
+
+- `experiments/python/exp17_real_world_autostate_scale.py` is rewritten.
+- **Retracted: "NCM and semantic baseline both `P@5=1.000`, `P@10=1.000`".**
+  Precision was computed as `len(top_5_list) / 5.0`. That expression is
+  identically `1.0` for any store holding at least five memories, for every arm,
+  because it counts how many results came back and never checks whether any of
+  them is relevant. No relevance label was consulted at all.
+- **Retracted: "NCM `~0.05ms` vs baseline `~0.02ms`".** Both were taken with
+  `time.time()`, whose resolution on Windows is about 15 ms, so the timer was
+  three orders of magnitude coarser than the interval it reported.
+- **Retracted: the corpus description "PersonaChat-style, 8,940 conversations".**
+  `experiments/data/real_world_corpus/train.jsonl` holds 8,939 records in
+  Multi-Session Chat form, one record per multi-session conversation with a
+  `session_id` on each session. Only the persona sentences are PersonaChat
+  derived.
+- The benchmark now uses the corpus `session_id` as the relevance label, which is
+  supplied by the data and not authored for this experiment. A held-out turn is
+  the query and the other turns of its session are the relevant set, scored
+  leave-one-out with the held-out turn excluded from its own results. Over 228
+  queries from 65 conversations and 2,628 stored turns, at k=5:
+  - `semantic_only` `0.4640`
+  - `recency_only` `0.2851`
+  - `ncm_inferred`, state inferred from the query text alone: `0.4561`
+  - `ncm_oracle`, state taken from the target session and **labelled as
+    leaking**: `0.4886`
+  - Random guess is `0.2851`, the mean over queries of the relevant fraction of
+    each query's store.
+  - `ncm_inferred` minus `semantic_only` P@5 is **`-0.0079`**, NDCG@10 is
+    `+0.0011`. `ncm_inferred` minus `recency_only` P@5 is `+0.1710`. The oracle
+    ceiling over `ncm_inferred` is `+0.0325`.
+- Recall@10, NDCG@10 and MRR are reported alongside precision, and timing moved
+  to `time.perf_counter` with median and p95 per arm. The latency columns are
+  disclosed as not being a benchmark: mean store size is 40.4 memories, so fixed
+  per-call overhead dominates, and the two code paths differ in cache treatment.
+  Experiment 4 is the latency measurement.
+- The vectorized cache is warmed before any timing. Without that, the first
+  NCM arm to run paid the whole cache rebuild for the first query of every
+  conversation while the second arm, doing identical work, read it warm. That
+  made two arms look like they had different costs when only cache state
+  differed.
+- The random-guess baseline is now the mean over queries of `n_relevant / |store|`.
+  It was previously `mean(relevant_counts) / mean(store_sizes)`, which divided a
+  mean over queries by a mean over conversations, so the two samples had
+  different lengths and the ratio was not an expectation over anything. The
+  corrected value is unchanged at `0.2851`.
+- Why `recency_only` scores the same at k=5 and k=10 is now recorded with the
+  two diagnostics that explain it: the recency window holds `1.026` distinct
+  sessions on average, and `0.2763` of queries have a window drawn entirely from
+  the target session. Such a query scores 1.0 at both k and every other scores
+  0.0. This is corpus layout, not a scoring error.
+- The script aborts instead of reporting numbers if the encoder falls back to the
+  hash backend, and records `encoder_backend` and the seed in its output.
+- Unchanged and still reproduced: auto-state dispersion over 366 turns from 20
+  conversations, mean per-turn standard deviation `0.0150` (sd `0.0075`), range
+  `[0.0022, 0.0473]`, mean max-min range `0.0423`, mean entropy `1.7464`.
+- Corrected in `README.md`, `experiments/EXPERIMENT_RESULTS.md` and this file.
+
 ## [Contradiction-Aware Retrieval (CADP)] - 2026-04-26
 
 ### Core retrieval update
@@ -112,7 +170,7 @@ stays auditable.
 
 ### Validation performed
 - Ran exp16 against the locked synthetic 30-turn sequence and confirmed Turn 10/20/30 state checkpoints, retrieval-trend deltas, and persistence round-trip values matched the recorded JSON outputs.
-- Ran exp17 on 100 real conversations from the corpus and confirmed the stored turn count, retrieval metrics, state spread, and generated plots were produced successfully.
+- Ran exp17 on 100 real conversations from the corpus and confirmed the stored turn count, retrieval metrics, state spread, and generated plots were produced successfully. **[RETRACTED 2026-08-20: the retrieval metrics this run confirmed could not fail, so confirming them established nothing. See the 2026-08-20 entry.]**
 - Verified the expected outputs were written to `experiments/results/exp16` and `experiments/results/exp17`.
 
 ### Key experiment outcomes
@@ -121,9 +179,9 @@ stays auditable.
   - P@5 delta by era: `+0.400`, `+0.000`, `+0.000` (mean `+0.133`) **[RETRACTED 2026-08-20: this check set the query state to the target era's own end state, which is derived from the relevance label. Re-measured with the state inferred from the query text, the gain is `+0.0000`. See the 2026-08-20 entry.]**
   - Persistence: `max_state_diff=0.00e+00`, `max_score_diff=0.00e+00`, turn/alpha/weights/top-1 all OK
 - EXP17 (real-world):
-  - Dataset slice: 100 conversations, 2,009 stored utterances (from corpus of 8,940)
-  - Precision: NCM and semantic baseline both `P@5=1.000`, `P@10=1.000` (no regression)
-  - Latency: NCM `~0.05ms` vs baseline `~0.02ms` (delta `~0.03ms`)
+  - Dataset slice: 100 conversations, 2,009 stored utterances (from corpus of 8,940) **[RETRACTED 2026-08-20: the corpus holds 8,939 records, not 8,940. The rewritten benchmark samples 100 conversations, keeps the 65 that have at least two sessions, and stores 2,628 turns. See the 2026-08-20 entry.]**
+  - Precision: NCM and semantic baseline both `P@5=1.000`, `P@10=1.000` (no regression) **[RETRACTED 2026-08-20: precision was computed as `len(top_5_list) / 5.0`, which is identically `1.0` for any store of five or more memories and never consults a relevance label. Re-measured against the corpus `session_id` label, P@5 is `0.4640` for semantic-only and `0.4561` for inferred-state NCM. See the 2026-08-20 entry.]**
+  - Latency: NCM `~0.05ms` vs baseline `~0.02ms` (delta `~0.03ms`) **[RETRACTED 2026-08-20: both figures came from `time.time()`, whose Windows resolution of about 15 ms is coarser than the interval reported. See the 2026-08-20 entry.]**
   - State stability: mean spread `~0.0150`, range `[0.0022, 0.0473]`, mean entropy `~1.7464`
 
 ## [Storage + Gate Update] - 2026-04-11

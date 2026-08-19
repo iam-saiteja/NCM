@@ -1,28 +1,102 @@
 {
-  "experiment": "exp17_real_world_autostate_scale",
+  "experiment": "exp17_same_session_episodic_retrieval",
+  "config": {
+    "seed": 20260819,
+    "corpus": "experiments/data/real_world_corpus/train.jsonl",
+    "encoder_backend": "sentence-transformers",
+    "max_conversations": 100,
+    "min_sessions_per_conversation": 2,
+    "min_stored_turns_in_target_session": 3,
+    "k_values": [
+      5,
+      10
+    ],
+    "relevance_definition": "a stored turn is relevant iff it shares the held-out query turn's session_id",
+    "retrieval_paths": {
+      "semantic_only": "ncm.retrieval.retrieve_semantic_only",
+      "recency_only": "sort by MemoryEntry.timestamp descending",
+      "ncm_inferred": "ncm.retrieval.retrieve_top_k_fast, auto-state inferred from the query text alone",
+      "ncm_oracle": "ncm.retrieval.retrieve_top_k_fast, auto-state set to the target session's mean stored auto-state (LABEL LEAK, upper bound only)"
+    },
+    "timer": "time.perf_counter"
+  },
   "dataset": {
-    "source": "experiments/data/real_world_corpus/train.jsonl",
-    "conversations_tested": 100,
-    "total_dialogue_turns_stored": 2009,
-    "avg_turns_per_conversation": 20.1
+    "conversations_loaded": 100,
+    "conversations_benchmarked": 65,
+    "conversations_skipped_too_few_sessions": 35,
+    "conversations_skipped_no_eligible_session": 0,
+    "queries_evaluated": 228,
+    "total_turns_stored": 2628,
+    "avg_turns_per_benchmarked_conversation": 40.4,
+    "avg_relevant_per_query": 11.53,
+    "avg_store_size": 40.4,
+    "random_guess_precision_at_5": 0.2851,
+    "random_guess_definition": "mean over queries of n_relevant / store_size; independent of k",
+    "recency_window_mean_distinct_sessions": 1.026,
+    "recency_window_fraction_entirely_target_session": 0.2763
   },
-  "retrieval_benchmarks": {
-    "ncm_avg_p5": 1.0,
-    "ncm_avg_p10": 1.0,
-    "rag_avg_p5": 1.0,
-    "rag_avg_p10": 1.0,
-    "p5_improvement": 0.0,
-    "p10_improvement": 0.0,
-    "ncm_avg_latency_ms": 0.05,
-    "rag_avg_latency_ms": 0.02
+  "arms": {
+    "semantic_only": {
+      "p@5": 0.464,
+      "p@10": 0.4053,
+      "r@5": 0.2047,
+      "r@10": 0.3576,
+      "ndcg@10": 0.4518,
+      "mrr": 0.7786,
+      "latency_ms_median": 0.0871,
+      "latency_ms_p95": 0.1387,
+      "latency_ms_mean": 0.0933
+    },
+    "recency_only": {
+      "p@5": 0.2851,
+      "p@10": 0.2851,
+      "r@5": 0.1317,
+      "r@10": 0.2625,
+      "ndcg@10": 0.2866,
+      "mrr": 0.2861,
+      "latency_ms_median": 0.011,
+      "latency_ms_p95": 0.0272,
+      "latency_ms_mean": 0.0139
+    },
+    "ncm_inferred": {
+      "p@5": 0.4561,
+      "p@10": 0.4088,
+      "r@5": 0.2014,
+      "r@10": 0.36,
+      "ndcg@10": 0.4529,
+      "mrr": 0.7714,
+      "latency_ms_median": 0.2888,
+      "latency_ms_p95": 0.4976,
+      "latency_ms_mean": 0.3165
+    },
+    "ncm_oracle": {
+      "p@5": 0.4886,
+      "p@10": 0.4215,
+      "r@5": 0.217,
+      "r@10": 0.3713,
+      "ndcg@10": 0.469,
+      "mrr": 0.7902,
+      "latency_ms_median": 0.2393,
+      "latency_ms_p95": 0.4094,
+      "latency_ms_mean": 0.2675
+    }
   },
-  "state_stability": {
+  "deltas": {
+    "ncm_inferred_minus_semantic_p5": -0.0079,
+    "ncm_inferred_minus_semantic_ndcg10": 0.0011,
+    "ncm_inferred_minus_recency_p5": 0.171,
+    "ncm_oracle_minus_ncm_inferred_p5": 0.0325
+  },
+  "best_arm_by_p5": "ncm_oracle",
+  "state_dispersion": {
+    "conversations_used": 20,
+    "turns_consumed": 366,
     "total_samples": 366,
     "mean_spread": 0.015,
-    "mean_entropy": 1.7464,
-    "max_spread": 0.0473,
+    "std_spread": 0.0075,
     "min_spread": 0.0022,
-    "std_spread": 0.0075
-  },
-  "verdict": "PASS"
+    "max_spread": 0.0473,
+    "mean_range": 0.0423,
+    "mean_entropy": 1.7464
+  }
 }

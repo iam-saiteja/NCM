@@ -28,7 +28,7 @@ This is the full experiment report for NCM.
 | Exp14 | Real Ollama persona-memory A/B | Test real-model style shift from memory context | Different memory profiles produce measurable response-style deltas |
 | Exp15 | Synthetic persona-memory stress test | Validate memory-conditioning effect at scale | Strong persona separation persists on 5k prompts / 5k memories/persona |
 | Exp16 | Auto-state integration validation | Verify locked design constants and persistence on integrated code | Exact trajectory match and exact persistence round-trip; no retrieval gain over semantic-only (+0.0000 P@5) |
-| Exp17 | Real-world auto-state scale test | Prove auto-state behavior on real conversation data | Stable state evolution on 100 conversations / 2,009 turns |
+| Exp17 | Same-session episodic retrieval on Multi-Session Chat | Test the composite manifold against a relevance label supplied by the corpus | Inferred-state NCM 0.4561 P@5 vs semantic-only 0.4640, so `-0.0079`; both clear the recency control by `+0.1710` |
 | Exp18 | Contradiction-aware retrieval validation | Verify corrected facts outrank contradicted facts without deleting history | Single correction 0.08→1.00, chain latest@1 0.00→1.00, non-contradiction unchanged |
 
 ---
@@ -46,7 +46,7 @@ This is the full experiment report for NCM.
 | Real-model persona shift | Exp14 (qwen2:7B): Persona-B warm markers +3.833 and +63 words under identical prompts |
 | Synthetic scale check | Exp15 (5k prompts, 5k memories/persona): separation L2≈0.713, memory-gain positive-rate=1.000 |
 | Synthetic validation lock | Exp16: Turn10/20/30 exact match and exact `.ncm` round-trip. Leave-one-out P@5 0.7200 for both semantic-only and inferred-state NCM, so `+0.0000` gain; label-leaking oracle 0.7733 |
-| Real-world scale proof | Exp17: 100 real conversations, 2,009 turns, stable mean spread 0.0150 |
+| Real-world episodic retrieval | Exp17 (65 conversations, 228 queries, 2,628 turns): P@5 semantic-only 0.4640, inferred-state NCM 0.4561, recency 0.2851, random guess 0.2851; label-leaking oracle 0.4886 |
 | Contradiction handling proof | Exp18: corrected-fact dominance enabled via contradiction penalty with persistence-safe links |
 
 ---
@@ -535,27 +535,47 @@ The auto-state implementation is numerically exact and persists exactly. It does
 
 ---
 
-## Experiment 17: Real-World Auto-State Scale Test
+## Experiment 17: Same-Session Episodic Retrieval on Multi-Session Chat
 
 ### What is this experiment?
-Runs the auto-state system on real conversational data from `experiments/data/real_world_corpus/train.jsonl`.
+Given a held-out dialogue turn as the query, it measures whether the system retrieves the other turns from the same conversational session, out of a store holding every other turn of that multi-session conversation.
 
 ### Why is it needed?
-To prove the implementation holds up on real, diverse, multi-session dialogue instead of only synthetic validation.
+To test the composite manifold against a relevance label that exists in the data rather than one authored for the experiment. Every session in `experiments/data/real_world_corpus/train.jsonl` carries a `session_id`, and turns from one sitting belonging together is exactly the property an episodic memory system should capture. A recency-only arm is included as a control, because sessions are contiguous blocks of turns and session membership is therefore correlated with recency.
 
 ### Results
 Source: [experiments/results/exp17/exp17_real_world_scale.json](results/exp17/exp17_real_world_scale.json)
 
-- Conversations tested: 100
-- Total dialogue turns stored: 2,009
-- Avg turns per conversation: 20.1
-- NCM P@5 / P@10: 1.000 / 1.000
-- RAG P@5 / P@10: 1.000 / 1.000
-- State stability: mean spread = 0.0150, entropy = 1.7464
-- Verdict: PASS
+- Corpus: 8,939 Multi-Session Chat style records, persona sentences PersonaChat derived
+- Sampled 100 conversations, benchmarked 65; 35 skipped for having fewer than 2 sessions
+- Queries evaluated: 228, turns stored: 2,628, mean store size: 40.4
+- Mean relevant turns per query: 11.53; random-guess P@5: 0.2851
+- Seed 20260819, encoder backend sentence-transformers, timer `time.perf_counter`
+
+| arm | P@5 | P@10 | R@10 | NDCG@10 | MRR | med ms | p95 ms |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `semantic_only` | 0.4640 | 0.4053 | 0.3576 | 0.4518 | 0.7786 | 0.0871 | 0.1387 |
+| `recency_only` | 0.2851 | 0.2851 | 0.2625 | 0.2866 | 0.2861 | 0.0110 | 0.0272 |
+| `ncm_inferred` | 0.4561 | 0.4088 | 0.3600 | 0.4529 | 0.7714 | 0.2888 | 0.4976 |
+| `ncm_oracle` | 0.4886 | 0.4215 | 0.3713 | 0.4690 | 0.7902 | 0.2393 | 0.4094 |
+
+- `ncm_inferred` minus `semantic_only`: P@5 `-0.0079`, NDCG@10 `+0.0011`
+- `ncm_inferred` minus `recency_only`: P@5 `+0.1710`
+- `ncm_oracle` minus `ncm_inferred`: P@5 `+0.0325`
+- Auto-state dispersion, measured on 366 turns from 20 conversations: mean per-turn std-dev `0.0150` (sd `0.0075`), range `[0.0022, 0.0473]`, mean max-min range `0.0423`, mean entropy `1.7464`
+
+`ncm_oracle` sets the query state to the target session's mean stored auto-state. That is derived from the relevance label, so the arm bounds what the state channel could contribute and is not a system result.
 
 ### What does it say?
-Auto-state remains stable on real-world conversational data at scale, with no degradation in retrieval quality and only negligible latency overhead.
+The composite manifold does not improve same-session retrieval over semantic similarity alone when the query state is inferred from the query text, which is the only condition available at deployment. It is `0.0079` P@5 below the baseline. Both NCM arms clear the recency control by `+0.1710` P@5, so the composite distance is doing more than preferring recently written turns, and all three retrieval arms clear random guess. The state channel specifically is what fails to add signal, consistent with EXP16.
+
+### Retraction
+This replaces a previously published result of `NCM P@5 / P@10: 1.000 / 1.000` and `RAG P@5 / P@10: 1.000 / 1.000` on 100 conversations and 2,009 turns. Precision in that version was computed as `len(top_5_list) / 5.0`, which is identically `1.0` for any store holding at least five memories, for every arm, so it measured list length and not relevance. The accompanying latency figures of `~0.05 ms` and `~0.02 ms` are withdrawn as well, because they were taken with `time.time()`, whose resolution on Windows is around 15 ms and therefore coarser than the operation being timed.
+
+### Caveats
+- The latency column is not a benchmark. Mean store size is 40.4 memories, so fixed per-call overhead dominates, and the two paths differ in cache treatment: `retrieve_top_k_fast` reads a cache warmed once per conversation, while `retrieve_semantic_only` rebuilds its own `(n, 128)` matrix on every call. Experiment 4 is the latency measurement.
+- `recency_only` scores identically at k=5 and k=10 because its retrieval window holds `1.026` distinct sessions on average, and `0.2763` of queries have a window drawn entirely from the target session. Such a query scores 1.0 at both k and every other scores 0.0. This is corpus layout, not a scoring error.
+- Persistence is not tested here. It is validated in Experiment 16.
 
 ---
 
@@ -645,7 +665,7 @@ regenerated figures live alongside the JSON they were built from, in
 - Synthetic benchmark: ~1,200 memories with semantic categories and state archetypes
 - Real corpus benchmark: [experiments/data/real_world_corpus](data/real_world_corpus)
 - EXP16 validation: 30-turn hand-authored synthetic trajectory with persistence round-trip checks and leave-one-out era retrieval
-- EXP17 validation: 100 real conversations and 2,009 stored turns from the real-world corpus
+- EXP17 validation: 100 conversations sampled from the real-world corpus, 65 benchmarked, 228 leave-one-out queries over 2,628 stored turns, relevance label taken from the corpus `session_id` field
 - EXP18 validation: contradiction-heavy synthetic tasks with correction chains, conflict traces, and metadata persistence checks
 - Metrics used across tracks: Precision@k, Recall@k, MRR, NDCG, MAP, state precision, latency, throughput, footprint
 - Hardware context: Ryzen 7 6800H, RTX 3050 (4GB), 16GB RAM, Windows
