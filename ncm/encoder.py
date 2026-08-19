@@ -22,6 +22,8 @@ NEW MATH:
 """
 
 import os
+import warnings
+
 import numpy as np
 
 from ncm.exceptions import (
@@ -64,6 +66,27 @@ class SentenceEncoder:
         self._projection = None
         self._w_emo = None
         self._initialized = False
+        self._backend_error = None
+
+    @property
+    def backend(self) -> str:
+        """
+        Which encoder actually produced the vectors: "sentence-transformers"
+        or "hash-fallback".
+
+        Experiment scripts should serialize this into their result files so a
+        reader can tell whether reported numbers came from a real semantic
+        encoder or from the meaningless hash fallback. Accessing this property
+        initializes the encoder if it is not already initialized.
+        """
+        self._ensure_initialized()
+        return "hash-fallback" if self._model is None else "sentence-transformers"
+
+    @property
+    def backend_error(self) -> str:
+        """The exception that forced the hash fallback, or None if not used."""
+        self._ensure_initialized()
+        return self._backend_error
 
     def _resolve_device(self) -> str:
         """Resolve runtime device for SentenceTransformer."""
@@ -93,21 +116,44 @@ class SentenceEncoder:
             else:
                 self._model = SentenceTransformer(self.model_name, device=resolved_device)
                 self._model.save(local_path)
-        except Exception:
+        except Exception as exc:
             if self.require_gpu:
                 raise
-            # Fallback: use a deterministic hash-based encoder for testing
+            # Fallback: deterministic hash-based encoder.
+            #
+            # This path carries NO semantic information: it is a SHA-512 digest
+            # reinterpreted as floats. Retrieval still runs and still returns
+            # results, so a silent fallback would make meaningless numbers
+            # indistinguishable from real ones. Any experiment that lands here
+            # must be discarded, so we warn loudly and record the reason in
+            # `backend_error` for result files to serialize.
             self._model = None
+            self._backend_error = f"{type(exc).__name__}: {exc}"
+            warnings.warn(
+                "SentenceEncoder could not load the sentence-transformers model "
+                f"'{self.model_name}' ({self._backend_error}). Falling back to a "
+                "deterministic SHA-512 hash encoder. This fallback preserves NO "
+                "semantic structure; any retrieval quality measured in this state "
+                "is meaningless and must not be reported. Pass require_gpu=True or "
+                "install sentence-transformers to make this a hard error.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
-        # Semantic projection: Johnson-Lindenstrauss random projection
-        # JL Lemma: For any 0 < epsilon < 1 and n points in R^d,
-        # a random projection to k >= 4*ln(n)/(epsilon^2/2 - epsilon^3/3) dimensions
-        # preserves all pairwise distances within factor (1±epsilon).
-        # For n=100k, epsilon=0.1: k_min ≈ 110. We use 128. ✓
+        # Semantic projection: Johnson-Lindenstrauss random projection.
+        #
+        # NOTE ON THE JL BOUND: the classical bound is
+        #   k >= 4*ln(n) / (epsilon^2/2 - epsilon^3/3).
+        # For n=1e5 and epsilon=0.1 this requires k >= 9868, and even as
+        # epsilon -> 1 it requires k >= 277. The 128 dimensions used here
+        # therefore DO NOT satisfy the JL bound at the scales benchmarked, and
+        # `verify_math()` records this as jl_satisfied=False. The projection is
+        # an empirically adequate compression whose distortion is
+        # uncharacterized; it is not a distance-preserving guarantee.
         rng = np.random.RandomState(self.seed)
-        # Scale factor from JL: 1/sqrt(k) normalization
+        # Scale factor 1/sqrt(k), as in the standard JL construction.
         self._projection = rng.randn(384, self.semantic_dim).astype(np.float32)
-        self._projection /= np.sqrt(self.semantic_dim)  # JL scaling
+        self._projection /= np.sqrt(self.semantic_dim)
 
         # Emotional projection: W_emo ∈ R^(emotional_dim × state_dim)
         # Orthonormal via QR decomposition (constructed from a random matrix).
@@ -147,11 +193,34 @@ class SentenceEncoder:
         return (projected / norm).astype(np.float32)
 
     def _deterministic_encode(self, text: str) -> np.ndarray:
-        """Hash-based deterministic encoder for testing."""
+        """
+        Hash-based deterministic encoder, used only when the sentence-transformer
+        model cannot be loaded (see the RuntimeWarning in _ensure_initialized).
+
+        Returns a 384-dimensional L2-normalized vector so that it is shape-
+        compatible with the semantic projection. It carries NO semantic
+        structure: cosine similarity between two such vectors is meaningless.
+        Callers must consult `backend` before reporting any retrieval quality.
+
+        BUGFIX: this previously built the buffer from 6 copies of a SHA-512
+        digest. A digest is 64 bytes, so 6 copies is 384 *bytes*, which is only
+        96 float32 values, not 384. The subsequent matmul against the (384, k)
+        projection therefore raised a dimension-mismatch ValueError on every
+        call, meaning this fallback could never actually execute end to end.
+        We now derive the full 384 floats from a hash-seeded PRNG, which is
+        both correctly shaped and better distributed than reinterpreted digest
+        bytes (raw digest bytes decode to wildly varying float magnitudes,
+        including denormals and NaN/Inf bit patterns).
+        """
         import hashlib
-        h = hashlib.sha512(text.encode()).digest()
-        arr = np.frombuffer(h + h + h + h + h + h, dtype=np.float32)[:384]
-        return arr / (np.linalg.norm(arr) + 1e-8)
+
+        digest = hashlib.sha512(text.encode("utf-8")).digest()
+        # Seed a PRNG from the digest so the mapping stays deterministic.
+        seed = int.from_bytes(digest[:8], "little", signed=False) % (2 ** 32)
+        rng = np.random.RandomState(seed)
+        arr = rng.randn(384).astype(np.float32)
+        norm = np.linalg.norm(arr)
+        return arr / norm if norm > 1e-8 else arr
 
     def encode_emotional(self, state: np.ndarray) -> np.ndarray:
         """
