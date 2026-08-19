@@ -468,7 +468,7 @@ Together, EXP16 and EXP17 show that auto-state is (1) numerically correct and we
 
 ### A few visuals
 
-![State Conditioned Jaccard](experiments/results/exp3/exp3_state_conditioned.png)
+![State Conditioned Jaccard](experiments/results/run_all_experiments/exp3_state_conditioned.png)
 
 State-aware behavior: same query, different internal state → different recalled memories in NCM.
 

@@ -19,9 +19,20 @@ import runpy
 import argparse
 import csv
 import hashlib
+import platform
 import urllib.request
 
 import numpy as np
+
+# This suite prints mathematical symbols (∈, ✓, Δ, ε). On Windows the default
+# console encoding is cp1252, which cannot encode them, so printing raised
+# UnicodeEncodeError partway through verify_math() and aborted the run. Force
+# UTF-8 on stdout/stderr where the stream supports it.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding='utf-8')
+    except (AttributeError, ValueError, OSError):
+        pass
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if ROOT_DIR not in sys.path:
@@ -609,130 +620,251 @@ def experiment_3_state_conditioned():
 def experiment_4_speed_benchmarks():
     """
     Measure store and retrieve throughput at various scales.
-    
-    Metrics:
-      - Encoding throughput (memories/sec)
-      - Store throughput (memories/sec)
-      - Retrieval latency (ms per query) for:
-        * Semantic-only
-        * Full manifold (loop version)
-        * Full manifold (vectorized)
-        * Full manifold (cached/fast)
-      - Persistence: save/load times
+
+    WHAT CHANGED AND WHY. The previous version of this function reported two
+    retrieval columns named "full manifold (loop version)" and "full manifold
+    (vectorized/cached)", timed as retrieve_top_k(...) and
+    retrieve_top_k_fast(...). Those are not two implementations.
+    ncm.retrieval.retrieve_top_k returns retrieve_top_k_fast(...) verbatim
+    whenever tag_filter is None, which is the case here, so both columns
+    executed identical code. The only difference was that the second loop ran
+    after an explicit store._rebuild_cache(), so the first loop additionally
+    paid one cache rebuild amortized over 100 queries. Any speedup ratio
+    derived from those two columns therefore measured a single cache rebuild,
+    not an algorithmic difference. The rebuild cost is now measured once and
+    reported on its own line.
+
+    Two further confounds are now separated rather than bundled:
+
+      1. retrieve_semantic_only rebuilds its (n, 128) candidate matrix from
+         scratch on every call, while retrieve_top_k_fast reads a cache that
+         was built once. Comparing them measures allocation, not retrieval.
+         A prebuilt-matrix semantic baseline is added so the reader can see
+         how much of the gap is matrix construction.
+      2. MemoryStore.add(update_auto_state=True), the default, calls
+         AutoStateTracker.update(text), which runs one uncached
+         sentence-transformer forward pass per memory. The previously reported
+         "store throughput" was therefore dominated by encoding, not by the
+         store operation. Store throughput is now timed with
+         update_auto_state=False, and the auto-state write cost is measured
+         separately at one scale.
+
+    Every retrieval arm records the cache state it ran under.
     """
     print("\n" + "="*70)
     print("EXPERIMENT 4: Speed Benchmarks")
     print("="*70)
-    
+    print("NOTE: retrieve_top_k delegates to retrieve_top_k_fast when tag_filter")
+    print("      is None, so there is no separate loop implementation to time.")
+
     scale_points = [100, 500, 1000, 5000, 10000, 50000, 100000]
     n_queries = 100
+    n_warmup = 10
     k = 5
-    
-    results = {}
-    
+    auto_state_probe_n = 1000
+
+    # Record the machine. Latency numbers are not portable, and an earlier
+    # version of this table reported figures that cannot be reproduced here
+    # (e.g. 21k-24k store writes/sec against ~7k measured now), with no record
+    # of the hardware they came from. Capturing it makes future mismatches
+    # diagnosable instead of ambiguous.
+    machine = {
+        "platform": platform.platform(),
+        "processor": platform.processor(),
+        "python": platform.python_version(),
+        "numpy": np.__version__,
+        "cpu_count": os.cpu_count(),
+        "encoder_backend": encoder.backend,
+        "encoder_device": encoder._resolve_device(),
+    }
+
+    results = {
+        "_meta": {
+            "machine": machine,
+            "n_queries_timed": n_queries,
+            "n_warmup_queries": n_warmup,
+            "k": k,
+            "timer": "time.perf_counter",
+            "store_throughput_excludes_auto_state": True,
+            "retrieve_top_k_delegates_to_fast_path": True,
+            "arm_cache_state": {
+                "semantic_only_shipped": "no cache used; rebuilds its own "
+                                         "(n, 128) matrix on every call",
+                "semantic_only_prebuilt_matrix": "warm; reads store._sem_cache",
+                "manifold_warm_cache": "warm; store._rebuild_cache() called before timing",
+            },
+        }
+    }
+
+    def time_calls(fn, count, warmup):
+        for _ in range(warmup):
+            fn()
+        samples = []
+        for _ in range(count):
+            t0 = time.perf_counter()
+            fn()
+            samples.append((time.perf_counter() - t0) * 1000.0)
+        arr = np.asarray(samples, dtype=np.float64)
+        return {
+            "median_ms": round(float(np.median(arr)), 4),
+            "mean_ms": round(float(arr.mean()), 4),
+            "p95_ms": round(float(np.percentile(arr, 95)), 4),
+        }
+
     for n in scale_points:
         print(f"\n--- Scale: {n} memories ---")
-        
+
         # 1. Encoding speed
         texts = [f"test memory number {i} about various topics" for i in range(min(n, 1000))]
         t0 = time.perf_counter()
         vecs = encoder.encode_batch(texts)
         t_encode = time.perf_counter() - t0
         encode_throughput = len(texts) / t_encode
-        
-        # 2. Store building speed
+
+        # 2. Store building speed, WITHOUT the per-memory auto-state encode.
         profile = MemoryProfile(max_size=n + 100)
         store = MemoryStore(profile=profile)
         rng = np.random.RandomState(42)
-        
+
         states_list = list(STATE_ARCHETYPES.values())
-        
+
         t0 = time.perf_counter()
         for i in range(n):
             state = states_list[i % len(states_list)].copy()
             noise = rng.uniform(-0.05, 0.05, size=state.shape).astype(np.float32)
             state = np.clip(state + noise, 0.0, 1.0)
-            
+
             # Use pre-encoded vectors for speed
             if i < len(vecs):
                 sem = vecs[i]
             else:
                 sem = vecs[i % len(vecs)]
-            
+
             emo = encoder.encode_emotional(state)
             snap = encoder.encode_state(state)
-            
+
             mem = MemoryEntry(
                 e_semantic=sem, e_emotional=emo, s_snapshot=snap,
                 timestamp=i, text=f"memory {i}",
             )
-            store.add(mem)
+            store.add(mem, update_auto_state=False)
         store.step = n
         t_store = time.perf_counter() - t0
         store_throughput = n / t_store
-        
+
         # 3. Retrieval speed
         query_state = STATE_ARCHETYPES["neutral"].copy()
         q_sem = encoder.encode("test query about something")
         q_emo = encoder.encode_emotional(query_state)
         q_state = encoder.encode_state(query_state)
-        
-        # Semantic-only
+
+        # One-time cache rebuild cost, measured on its own from a cold cache.
+        store._invalidate_cache()
         t0 = time.perf_counter()
-        for _ in range(n_queries):
-            retrieve_semantic_only(q_sem, store, k=k)
-        t_sem = (time.perf_counter() - t0) / n_queries * 1000  # ms
-        
-        # Full manifold (standard)
-        t0 = time.perf_counter()
-        for _ in range(n_queries):
-            retrieve_top_k(q_sem, q_emo, store, q_state, store.step, k=k)
-        t_full = (time.perf_counter() - t0) / n_queries * 1000
-        
-        # Full manifold (fast/cached)
-        store._rebuild_cache()  # pre-build cache
-        t0 = time.perf_counter()
-        for _ in range(n_queries):
-            retrieve_top_k_fast(q_sem, q_emo, store, q_state, store.step, k=k)
-        t_fast = (time.perf_counter() - t0) / n_queries * 1000
-        
+        store._rebuild_cache()
+        t_cache_rebuild = (time.perf_counter() - t0) * 1000.0
+
+        # Shipped semantic baseline: rebuilds its candidate matrix per call.
+        t_sem = time_calls(
+            lambda: retrieve_semantic_only(q_sem, store, k=k), n_queries, n_warmup
+        )
+
+        # Fair-work semantic baseline: same arithmetic, prebuilt matrix.
+        # Reads a private cache attribute deliberately, to isolate the cost of
+        # matrix construction from the cost of the similarity search itself.
+        def semantic_prebuilt():
+            sims = store._sem_cache @ q_sem
+            idx = np.argpartition(-sims, min(k, len(sims) - 1))[:k]
+            return idx[np.argsort(-sims[idx])]
+
+        t_sem_cached = time_calls(semantic_prebuilt, n_queries, n_warmup)
+
+        # Full composite distance, warm cache.
+        t_fast = time_calls(
+            lambda: retrieve_top_k_fast(q_sem, q_emo, store, q_state, store.step, k=k),
+            n_queries, n_warmup,
+        )
+
         # 4. Persistence speed
         ncm_path = os.path.join(RESULTS_DIR, f'bench_{n}.ncm')
         t0 = time.perf_counter()
         NCMFile.save(store, ncm_path, compress=True)
         t_save = time.perf_counter() - t0
         file_size = os.path.getsize(ncm_path)
-        
+
         t0 = time.perf_counter()
         _ = NCMFile.load(ncm_path)
         t_load = time.perf_counter() - t0
-        
+
         # Clean up
         os.remove(ncm_path)
-        
+
         results[str(n)] = {
             "encode_throughput_per_sec": round(encode_throughput, 1),
-            "store_throughput_per_sec": round(store_throughput, 1),
-            "retrieval_semantic_ms": round(t_sem, 3),
-            "retrieval_full_manifold_ms": round(t_full, 3),
-            "retrieval_fast_cached_ms": round(t_fast, 3),
+            "store_throughput_per_sec_no_auto_state": round(store_throughput, 1),
+            "cache_rebuild_ms_one_time": round(t_cache_rebuild, 4),
+            "retrieval_semantic_shipped_ms": t_sem,
+            "retrieval_semantic_prebuilt_matrix_ms": t_sem_cached,
+            "retrieval_manifold_warm_cache_ms": t_fast,
+            "manifold_over_semantic_shipped_ratio": (
+                round(t_fast["median_ms"] / t_sem["median_ms"], 3)
+                if t_sem["median_ms"] > 0 else None
+            ),
+            "manifold_over_semantic_prebuilt_ratio": (
+                round(t_fast["median_ms"] / t_sem_cached["median_ms"], 3)
+                if t_sem_cached["median_ms"] > 0 else None
+            ),
             "save_time_sec": round(t_save, 3),
             "load_time_sec": round(t_load, 3),
             "file_size_bytes": file_size,
             "file_size_mb": round(file_size / (1024*1024), 2),
             "bytes_per_memory": round(file_size / n, 1),
         }
-        
+
         print(f"  Encode: {encode_throughput:.0f} texts/sec")
-        print(f"  Store:  {store_throughput:.0f} mems/sec")
-        print(f"  Retrieve (semantic):  {t_sem:.3f} ms/query")
-        print(f"  Retrieve (manifold):  {t_full:.3f} ms/query")
-        print(f"  Retrieve (fast):      {t_fast:.3f} ms/query")
+        print(f"  Store (no auto-state): {store_throughput:.0f} mems/sec")
+        print(f"  Cache rebuild (one time):        {t_cache_rebuild:.3f} ms")
+        print(f"  Retrieve semantic, shipped:      {t_sem['median_ms']:.4f} ms/query (median)")
+        print(f"  Retrieve semantic, prebuilt mat: {t_sem_cached['median_ms']:.4f} ms/query (median)")
+        print(f"  Retrieve manifold, warm cache:   {t_fast['median_ms']:.4f} ms/query (median)")
         print(f"  Save: {t_save:.3f}s  Load: {t_load:.3f}s  Size: {file_size/1024:.0f} KB")
-    
+
+    # 5. Cost of the per-memory auto-state update, measured once.
+    # This is the component the previous store-throughput figure absorbed.
+    probe_store = MemoryStore(profile=MemoryProfile(max_size=auto_state_probe_n + 100))
+    probe_texts = [f"probe memory {i} about a topic" for i in range(auto_state_probe_n)]
+    probe_vecs = encoder.encode_batch(probe_texts)
+    probe_state = STATE_ARCHETYPES["neutral"].copy()
+    probe_emo = encoder.encode_emotional(probe_state)
+    probe_snap = encoder.encode_state(probe_state)
+
+    t0 = time.perf_counter()
+    for i in range(auto_state_probe_n):
+        probe_store.add(
+            MemoryEntry(
+                e_semantic=probe_vecs[i], e_emotional=probe_emo, s_snapshot=probe_snap,
+                timestamp=i, text=probe_texts[i],
+            ),
+            update_auto_state=True,
+        )
+    t_auto = time.perf_counter() - t0
+
+    results["_meta"]["auto_state_write_probe"] = {
+        "n_memories": auto_state_probe_n,
+        "total_sec": round(t_auto, 3),
+        "ms_per_memory": round(t_auto / auto_state_probe_n * 1000.0, 4),
+        "throughput_per_sec": round(auto_state_probe_n / t_auto, 1),
+        "note": "AutoStateTracker.update runs one uncached sentence-transformer "
+                "forward pass per memory. Add this to the no-auto-state store "
+                "cost to get end-to-end write cost with state tracking on.",
+    }
+    print(f"\n  Auto-state write probe ({auto_state_probe_n} memories): "
+          f"{results['_meta']['auto_state_write_probe']['ms_per_memory']:.3f} ms/memory "
+          f"({results['_meta']['auto_state_write_probe']['throughput_per_sec']:.0f}/sec)")
+
     with open(os.path.join(RESULTS_DIR, 'exp4_speed_benchmarks.json'), 'w') as f:
         json.dump(results, f, indent=2)
-    
+
     print("\n[Experiment 4 complete]")
     return results
 
@@ -821,26 +953,39 @@ def verify_math():
     
     # 8. JL lemma check
     # For n=100000, epsilon=0.1: k_min = 4*ln(n)/(eps^2/2 - eps^3/3)
+    #
+    # This check FAILS by design-of-fact: k_min is ~9868 at these parameters
+    # while the semantic space is 128 dimensions. It is reported, not asserted,
+    # because the projection is used as an empirically adequate compression
+    # rather than as a distance-preserving guarantee. The final summary below
+    # must therefore not claim that all checks passed.
     n_points = 100000
     epsilon = 0.1
     k_min = 4 * np.log(n_points) / (epsilon**2 / 2 - epsilon**3 / 3)
     jl_ok = bool(128 >= float(k_min))
     print(f"8. JL lemma minimum dim for n={n_points}, ε={epsilon}: {k_min:.0f}")
-    print(f"   NCM uses: 128 (≥ {k_min:.0f}) {'✓' if jl_ok else '✗'}")
+    print(f"   NCM uses: 128 ({'≥' if jl_ok else '<'} {k_min:.0f}) {'✓' if jl_ok else '✗'}")
+    if not jl_ok:
+        print(f"   NOTE: the JL bound is NOT satisfied (128 < {k_min:.0f}). The 128-dim")
+        print("         semantic projection carries no distance-preservation guarantee")
+        print("         at this scale; treat it as an uncharacterized compression.")
     results["jl_min_dim"] = float(k_min)
     results["jl_satisfied"] = jl_ok
-    
-    # 9. Dirichlet regularization works
+
+    # 9. Weight-balance penalty.
+    # NOTE: RetrievalWeights.dirichlet_kl() returns sum((w_i - 0.25)^2), an L2
+    # penalty toward the uniform weighting. It is not a Kullback-Leibler
+    # divergence and is not a Dirichlet prior; the name is historical.
     w_balanced = RetrievalWeights(0.25, 0.25, 0.25, 0.25)
     w_skewed = RetrievalWeights(0.7, 0.1, 0.1, 0.1)
     kl_balanced = w_balanced.dirichlet_kl()
     kl_skewed = w_skewed.dirichlet_kl()
-    print(f"9. Dirichlet KL (balanced): {kl_balanced:.6f}")
-    print(f"   Dirichlet KL (skewed):   {kl_skewed:.6f}")
+    print(f"9. Weight-balance L2 penalty (balanced): {kl_balanced:.6f}")
+    print(f"   Weight-balance L2 penalty (skewed):   {kl_skewed:.6f}")
     results["dirichlet_balanced"] = float(kl_balanced)
     results["dirichlet_skewed"] = float(kl_skewed)
-    assert kl_balanced < kl_skewed, "Balanced should have lower KL than skewed"
-    
+    assert kl_balanced < kl_skewed, "Balanced should have lower penalty than skewed"
+
     # 10. Temporal decay properties
     from ncm.retrieval import vectorized_manifold_distance
     print("10. Temporal decay curve verification...")
@@ -850,8 +995,35 @@ def verify_math():
         d_t = 1.0 - np.exp(-decay_rate * dt)
         print(f"    Δt={dt}: d_time={d_t:.4f}")
     results["temporal_decay_verified"] = True
-    
-    print("\n✅ ALL MATH CHECKS PASSED")
+
+    # 11. Which encoder actually produced these vectors.
+    # A hash fallback would make every quality number meaningless, so record it.
+    try:
+        results["encoder_backend"] = encoder.backend
+        results["encoder_backend_error"] = encoder.backend_error
+    except AttributeError:
+        results["encoder_backend"] = "unknown"
+        results["encoder_backend_error"] = None
+    print(f"11. Encoder backend: {results['encoder_backend']}")
+
+    # Honest summary: enumerate what failed rather than asserting blanket success.
+    checks = {
+        "w_emo_orthonormal": results["w_emo_orthonormality_error"] < 1e-5,
+        "distance_bounds": results["distance_bounds_verified"],
+        "cosine_bounds": results["cosine_bounds_verified"],
+        "weight_sum": abs(results["weight_sum"] - 1.0) < 1e-4,
+        "jl_bound": results["jl_satisfied"],
+        "temporal_decay": results["temporal_decay_verified"],
+        "encoder_is_real": results["encoder_backend"] == "sentence-transformers",
+    }
+    results["checks"] = checks
+    failed = [name for name, ok in checks.items() if not ok]
+    results["checks_failed"] = failed
+    if failed:
+        print(f"\n⚠️  {len(checks) - len(failed)}/{len(checks)} MATH CHECKS PASSED"
+              f" — FAILED: {', '.join(failed)}")
+    else:
+        print(f"\n✅ ALL {len(checks)} MATH CHECKS PASSED")
     
     with open(os.path.join(RESULTS_DIR, 'math_verification.json'), 'w') as f:
         json.dump(results, f, indent=2)
@@ -904,14 +1076,18 @@ if __name__ == "__main__":
     with open(os.path.join(RESULTS_DIR, 'all_results.json'), 'w') as f:
         json.dump(all_results, f, indent=2, default=str)
 
-    # Run newer standalone experiments
+    # Run newer standalone experiments.
+    #
+    # exp10_retrieval_recall_benchmark.py is deliberately NOT in this list. It
+    # executes no retrieval and emits hand-authored literals, so running it as
+    # part of the suite produced a results file that looked like a measurement
+    # and was cited as one. See that file's docstring.
     extra_experiments = [
         "exp5_memory_systems_comparison.py",
         "exp6_current_memory_systems_vs_ncm.py",
         "exp7_standard_ranking_and_viz.py",
         "exp8_external_systems_vs_ncm.py",
         "exp9_external_systems_speed.py",
-        "exp10_retrieval_recall_benchmark.py",
         "exp11_real_world_corpus_benchmark.py",
         "exp12_weight_sensitivity.py",
         "exp13_baseline_rematch.py",

@@ -1,9 +1,12 @@
 {
+  "provenance": "HAND_AUTHORED_LITERALS",
+  "provenance_note": "Every value in this file was typed by hand to illustrate an expected pattern. No MemoryStore, encoder, or retrieval call was executed to produce any of them. These are not measurements and must not be cited as results. For a real state-conditioning measurement see exp3 in run_all_experiments.py, exp11_real_world_corpus_benchmark.py, or exp12_weight_sensitivity.py.",
+  "is_measurement": false,
   "metadata": {
     "num_memories": 1200,
     "num_queries": 12,
     "num_states": 3,
-    "note": "Synthetic results demonstrating expected NCM state-conditioning advantage"
+    "note": "HAND_AUTHORED_LITERALS. These three counts describe a benchmark that was never run; no code in this file consumes them."
   },
   "systems": {
     "semantic_only": {

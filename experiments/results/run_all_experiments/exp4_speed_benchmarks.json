@@ -1,86 +1,220 @@
 {
+  "_meta": {
+    "machine": {
+      "platform": "Windows-11-10.0.26200-SP0",
+      "processor": "AMD64 Family 25 Model 68 Stepping 1, AuthenticAMD",
+      "python": "3.12.0",
+      "numpy": "1.26.4",
+      "cpu_count": 16,
+      "encoder_backend": "sentence-transformers",
+      "encoder_device": "cuda"
+    },
+    "n_queries_timed": 100,
+    "n_warmup_queries": 10,
+    "k": 5,
+    "timer": "time.perf_counter",
+    "store_throughput_excludes_auto_state": true,
+    "retrieve_top_k_delegates_to_fast_path": true,
+    "arm_cache_state": {
+      "semantic_only_shipped": "no cache used; rebuilds its own (n, 128) matrix on every call",
+      "semantic_only_prebuilt_matrix": "warm; reads store._sem_cache",
+      "manifold_warm_cache": "warm; store._rebuild_cache() called before timing"
+    },
+    "auto_state_write_probe": {
+      "n_memories": 1000,
+      "total_sec": 13.161,
+      "ms_per_memory": 13.1609,
+      "throughput_per_sec": 76.0,
+      "note": "AutoStateTracker.update runs one uncached sentence-transformer forward pass per memory. Add this to the no-auto-state store cost to get end-to-end write cost with state tracking on."
+    }
+  },
   "100": {
-    "encode_throughput_per_sec": 2328.7,
-    "store_throughput_per_sec": 22507.8,
-    "retrieval_semantic_ms": 0.161,
-    "retrieval_full_manifold_ms": 0.237,
-    "retrieval_fast_cached_ms": 0.232,
-    "save_time_sec": 0.007,
-    "load_time_sec": 0.017,
-    "file_size_bytes": 56276,
-    "file_size_mb": 0.05,
-    "bytes_per_memory": 562.8
+    "encode_throughput_per_sec": 200.8,
+    "store_throughput_per_sec_no_auto_state": 8466.9,
+    "cache_rebuild_ms_one_time": 1.422,
+    "retrieval_semantic_shipped_ms": {
+      "median_ms": 0.3845,
+      "mean_ms": 0.3893,
+      "p95_ms": 0.5106
+    },
+    "retrieval_semantic_prebuilt_matrix_ms": {
+      "median_ms": 0.3083,
+      "mean_ms": 0.3296,
+      "p95_ms": 0.4271
+    },
+    "retrieval_manifold_warm_cache_ms": {
+      "median_ms": 0.6684,
+      "mean_ms": 0.7102,
+      "p95_ms": 0.9517
+    },
+    "manifold_over_semantic_shipped_ratio": 1.738,
+    "manifold_over_semantic_prebuilt_ratio": 2.168,
+    "save_time_sec": 0.009,
+    "load_time_sec": 0.037,
+    "file_size_bytes": 30228,
+    "file_size_mb": 0.03,
+    "bytes_per_memory": 302.3
   },
   "500": {
-    "encode_throughput_per_sec": 2373.5,
-    "store_throughput_per_sec": 23799.8,
-    "retrieval_semantic_ms": 0.286,
-    "retrieval_full_manifold_ms": 0.274,
-    "retrieval_fast_cached_ms": 0.257,
-    "save_time_sec": 0.012,
-    "load_time_sec": 0.015,
-    "file_size_bytes": 279976,
-    "file_size_mb": 0.27,
-    "bytes_per_memory": 560.0
+    "encode_throughput_per_sec": 1994.9,
+    "store_throughput_per_sec_no_auto_state": 8488.2,
+    "cache_rebuild_ms_one_time": 6.4871,
+    "retrieval_semantic_shipped_ms": {
+      "median_ms": 0.6017,
+      "mean_ms": 0.6797,
+      "p95_ms": 0.9383
+    },
+    "retrieval_semantic_prebuilt_matrix_ms": {
+      "median_ms": 0.2784,
+      "mean_ms": 0.3002,
+      "p95_ms": 0.3614
+    },
+    "retrieval_manifold_warm_cache_ms": {
+      "median_ms": 0.6777,
+      "mean_ms": 0.7673,
+      "p95_ms": 1.0905
+    },
+    "manifold_over_semantic_shipped_ratio": 1.126,
+    "manifold_over_semantic_prebuilt_ratio": 2.434,
+    "save_time_sec": 0.026,
+    "load_time_sec": 0.028,
+    "file_size_bytes": 149046,
+    "file_size_mb": 0.14,
+    "bytes_per_memory": 298.1
   },
   "1000": {
-    "encode_throughput_per_sec": 6838.4,
-    "store_throughput_per_sec": 24385.8,
-    "retrieval_semantic_ms": 0.436,
-    "retrieval_full_manifold_ms": 0.303,
-    "retrieval_fast_cached_ms": 0.298,
-    "save_time_sec": 0.024,
-    "load_time_sec": 0.016,
-    "file_size_bytes": 559724,
-    "file_size_mb": 0.53,
-    "bytes_per_memory": 559.7
+    "encode_throughput_per_sec": 2458.8,
+    "store_throughput_per_sec_no_auto_state": 8271.1,
+    "cache_rebuild_ms_one_time": 14.9556,
+    "retrieval_semantic_shipped_ms": {
+      "median_ms": 0.9209,
+      "mean_ms": 1.0208,
+      "p95_ms": 1.4144
+    },
+    "retrieval_semantic_prebuilt_matrix_ms": {
+      "median_ms": 0.3113,
+      "mean_ms": 0.3199,
+      "p95_ms": 0.37
+    },
+    "retrieval_manifold_warm_cache_ms": {
+      "median_ms": 0.7921,
+      "mean_ms": 0.8705,
+      "p95_ms": 1.4076
+    },
+    "manifold_over_semantic_shipped_ratio": 0.86,
+    "manifold_over_semantic_prebuilt_ratio": 2.544,
+    "save_time_sec": 0.056,
+    "load_time_sec": 0.045,
+    "file_size_bytes": 297596,
+    "file_size_mb": 0.28,
+    "bytes_per_memory": 297.6
   },
   "5000": {
-    "encode_throughput_per_sec": 6898.9,
-    "store_throughput_per_sec": 23912.9,
-    "retrieval_semantic_ms": 2.162,
-    "retrieval_full_manifold_ms": 0.606,
-    "retrieval_fast_cached_ms": 0.511,
-    "save_time_sec": 0.12,
-    "load_time_sec": 0.047,
-    "file_size_bytes": 2797751,
-    "file_size_mb": 2.67,
-    "bytes_per_memory": 559.6
+    "encode_throughput_per_sec": 4943.7,
+    "store_throughput_per_sec_no_auto_state": 7981.5,
+    "cache_rebuild_ms_one_time": 68.348,
+    "retrieval_semantic_shipped_ms": {
+      "median_ms": 5.2166,
+      "mean_ms": 5.7292,
+      "p95_ms": 8.3559
+    },
+    "retrieval_semantic_prebuilt_matrix_ms": {
+      "median_ms": 0.3677,
+      "mean_ms": 0.3944,
+      "p95_ms": 0.5125
+    },
+    "retrieval_manifold_warm_cache_ms": {
+      "median_ms": 1.7545,
+      "mean_ms": 1.7453,
+      "p95_ms": 2.1821
+    },
+    "manifold_over_semantic_shipped_ratio": 0.336,
+    "manifold_over_semantic_prebuilt_ratio": 4.772,
+    "save_time_sec": 0.25,
+    "load_time_sec": 0.168,
+    "file_size_bytes": 1486218,
+    "file_size_mb": 1.42,
+    "bytes_per_memory": 297.2
   },
   "10000": {
-    "encode_throughput_per_sec": 7880.9,
-    "store_throughput_per_sec": 23781.1,
-    "retrieval_semantic_ms": 4.063,
-    "retrieval_full_manifold_ms": 1.006,
-    "retrieval_fast_cached_ms": 0.819,
-    "save_time_sec": 0.242,
-    "load_time_sec": 0.082,
-    "file_size_bytes": 5595176,
-    "file_size_mb": 5.34,
-    "bytes_per_memory": 559.5
+    "encode_throughput_per_sec": 4420.6,
+    "store_throughput_per_sec_no_auto_state": 8046.3,
+    "cache_rebuild_ms_one_time": 137.0794,
+    "retrieval_semantic_shipped_ms": {
+      "median_ms": 10.214,
+      "mean_ms": 10.6015,
+      "p95_ms": 14.3718
+    },
+    "retrieval_semantic_prebuilt_matrix_ms": {
+      "median_ms": 0.4158,
+      "mean_ms": 0.4387,
+      "p95_ms": 0.528
+    },
+    "retrieval_manifold_warm_cache_ms": {
+      "median_ms": 1.8765,
+      "mean_ms": 2.0186,
+      "p95_ms": 2.7868
+    },
+    "manifold_over_semantic_shipped_ratio": 0.184,
+    "manifold_over_semantic_prebuilt_ratio": 4.513,
+    "save_time_sec": 0.524,
+    "load_time_sec": 0.289,
+    "file_size_bytes": 2971957,
+    "file_size_mb": 2.83,
+    "bytes_per_memory": 297.2
   },
   "50000": {
-    "encode_throughput_per_sec": 4458.4,
-    "store_throughput_per_sec": 21395.8,
-    "retrieval_semantic_ms": 24.59,
-    "retrieval_full_manifold_ms": 5.226,
-    "retrieval_fast_cached_ms": 3.973,
-    "save_time_sec": 1.209,
-    "load_time_sec": 0.517,
-    "file_size_bytes": 27971875,
-    "file_size_mb": 26.68,
-    "bytes_per_memory": 559.4
+    "encode_throughput_per_sec": 4723.6,
+    "store_throughput_per_sec_no_auto_state": 7511.0,
+    "cache_rebuild_ms_one_time": 570.8043,
+    "retrieval_semantic_shipped_ms": {
+      "median_ms": 46.5076,
+      "mean_ms": 50.6428,
+      "p95_ms": 61.5785
+    },
+    "retrieval_semantic_prebuilt_matrix_ms": {
+      "median_ms": 1.5523,
+      "mean_ms": 1.7868,
+      "p95_ms": 3.4415
+    },
+    "retrieval_manifold_warm_cache_ms": {
+      "median_ms": 7.4176,
+      "mean_ms": 7.5319,
+      "p95_ms": 9.5464
+    },
+    "manifold_over_semantic_shipped_ratio": 0.159,
+    "manifold_over_semantic_prebuilt_ratio": 4.778,
+    "save_time_sec": 2.421,
+    "load_time_sec": 1.406,
+    "file_size_bytes": 14854739,
+    "file_size_mb": 14.17,
+    "bytes_per_memory": 297.1
   },
   "100000": {
-    "encode_throughput_per_sec": 2328.1,
-    "store_throughput_per_sec": 22740.5,
-    "retrieval_semantic_ms": 49.346,
-    "retrieval_full_manifold_ms": 10.131,
-    "retrieval_fast_cached_ms": 7.86,
-    "save_time_sec": 2.422,
-    "load_time_sec": 0.957,
-    "file_size_bytes": 55943113,
-    "file_size_mb": 53.35,
-    "bytes_per_memory": 559.4
+    "encode_throughput_per_sec": 962.6,
+    "store_throughput_per_sec_no_auto_state": 7332.2,
+    "cache_rebuild_ms_one_time": 1131.8835,
+    "retrieval_semantic_shipped_ms": {
+      "median_ms": 95.9612,
+      "mean_ms": 95.9688,
+      "p95_ms": 114.5277
+    },
+    "retrieval_semantic_prebuilt_matrix_ms": {
+      "median_ms": 2.6312,
+      "mean_ms": 2.6859,
+      "p95_ms": 3.3684
+    },
+    "retrieval_manifold_warm_cache_ms": {
+      "median_ms": 12.9269,
+      "mean_ms": 13.2063,
+      "p95_ms": 15.7461
+    },
+    "manifold_over_semantic_shipped_ratio": 0.135,
+    "manifold_over_semantic_prebuilt_ratio": 4.913,
+    "save_time_sec": 4.14,
+    "load_time_sec": 2.556,
+    "file_size_bytes": 29709014,
+    "file_size_mb": 28.33,
+    "bytes_per_memory": 297.1
   }
 }

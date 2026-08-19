@@ -15,13 +15,13 @@ This is the full experiment report for NCM.
 | Exp1 | Category vs state precision | Show baseline semantic strength vs NCM state strength | Semantic wins category; NCM wins state precision |
 | Exp2 | Novelty sensitivity at scale | Check if novelty collapses as memory grows | Semantic novelty collapses by 100k; full-manifold remains non-zero |
 | Exp3 | State-conditioned retrieval | Validate core claim (`s_snapshot`) | Same query returns different sets in NCM, not in baseline |
-| Exp4 | Speed scaling | Confirm practical latency | Cached NCM remains practical at larger store sizes |
+| Exp4 | Speed scaling | State the latency cost of composite retrieval | Composite costs 2.2x-4.9x a fair semantic baseline; under 13 ms at 100k |
 | Exp5 | Internal memory comparison | Compare NCM modes and simple baselines | NCM cached gives best quality-latency tradeoff |
 | Exp6 | Current system rematch | Head-to-head with stronger semantic-emotional baseline | NCM remains competitive with stronger state behavior |
 | Exp7 | Standardized ranking | Multi-metric ranking under common scoring | NCM variants stay top-tier across balanced scoring |
 | Exp8 | External systems quality | Compare BM25/TF-IDF/dense/RAG style baselines | NCM ranks strongly when state-awareness matters |
 | Exp9 | External systems speed | Pure latency/QPS benchmark | NCM cached slower than trivial baselines but practical |
-| Exp10 | Recall rematch (synthetic) | Controlled state-divergence benchmark | NCM shows meaningful state-dependent divergence |
+| Exp10 | WITHDRAWN | Was a hand-authored mock-up, not a measurement | No result; numbers were typed by hand, see Experiment 10 section |
 | Exp11 | Real-world corpus benchmark | Validate beyond synthetic data | NCM keeps strongest state-divergence on real data |
 | Exp12 | Weight sensitivity | Test robustness of default weights | Defaults stay near top; no fragile tuning point |
 | Exp13 | Honest baseline rematch | Find boundary conditions | NCM better at low/high-shift regimes |
@@ -97,10 +97,23 @@ To test saturation risk in large stores.
 | 1,000 | 0.503 | 0.356 | Semantic higher |
 | 10,000 | 0.377 | 0.311 | Semantic higher |
 | 50,000 | 0.171 | 0.219 | NCM higher |
-| 100,000 | ~0.000 | 0.119 | NCM higher |
+| 100,000 | 8.94e-09 | 0.119 | NCM higher |
 
 ### What does it say?
-With AG News online data, semantic novelty decreases rapidly with scale and collapses near zero by 100k, while full-manifold novelty remains non-zero.
+With AG News online data, semantic novelty decreases rapidly with scale and
+collapses by 100k, while full-manifold novelty remains non-zero. At 100,000
+memories semantic novelty is 8.94e-09, which is below float32 machine epsilon
+(1.19e-07): the nearest-neighbour cosine similarity has saturated to 1.0 within
+the precision of the representation, so semantic novelty is not merely small but
+numerically indistinguishable from zero.
+
+Two scope limits on this result. First, the composite manifold is *less*
+novelty-sensitive than semantic-only at every scale up to 10,000 (ratios 0.62,
+0.64, 0.71, 0.78, 0.83); it overtakes semantic only between 10,000 and 50,000
+stored memories. The advantage is a large-store effect, not a general one.
+Second, no ratio is reported at 100,000 because the denominator is below machine
+epsilon there; a ratio computed from it (1.3e7) would be a floating-point
+artifact, not a measured advantage.
 
 ---
 
@@ -130,24 +143,83 @@ Baseline is state-blind; NCM retrieval changes with state in a measurable way.
 ## Experiment 4: Speed Benchmarks
 
 ### What is this experiment?
-Measures retrieval latency scaling by memory count.
+Measures write throughput, retrieval latency, cache construction cost, and
+persistence cost as a function of stored memory count.
 
 ### Why is it needed?
-To ensure state-aware retrieval remains practical.
+To state the actual latency cost of composite-distance retrieval relative to a
+semantic-only baseline doing the same amount of work.
 
-### Results
-| Memories | Semantic (ms) | Full Manifold (ms) | NCM Cached (ms) |
-|:---:|:---:|:---:|:---:|
-| 1,000 | 0.436 | 0.303 | 0.298 |
-| 10,000 | 4.063 | 1.006 | 0.819 |
-| 50,000 | 24.590 | 5.226 | 3.973 |
+### Correction to the previous version of this section
+The table previously published here reported three retrieval columns named
+"Semantic", "Full Manifold", and "NCM Cached", with Full Manifold and NCM
+Cached given as different numbers (for example 1.006 ms and 0.819 ms at 10,000
+memories). Those were not two implementations. `ncm.retrieval.retrieve_top_k`
+returns `retrieve_top_k_fast(...)` verbatim whenever `tag_filter` is None,
+which was the case in this benchmark, so both columns ran identical code. The
+only difference was that the second loop was preceded by an explicit
+`store._rebuild_cache()`, so the first loop additionally paid one cache
+rebuild spread over 100 queries. Any speedup ratio taken from those two columns
+measured a single cache rebuild, not an algorithmic difference. The rebuild is
+now timed once, on its own line.
 
-- Store throughput: ~21.4k to ~24.4k memories/sec
-- Encoding throughput: ~2.3k to ~7.9k texts/sec
-- Storage efficiency: ~560 bytes/memory
+The previous store-throughput figure (~21.4k to ~24.4k memories/sec) and
+storage figure (~560 bytes/memory) also do not reproduce on the machine used
+for the current run, which measures 7.3k to 8.5k writes/sec and 297
+bytes/memory. The earlier run recorded no hardware or library versions, so the
+discrepancy cannot be attributed. The current results file records both.
+
+### Setup
+- Source: [experiments/results/run_all_experiments/exp4_speed_benchmarks.json](results/run_all_experiments/exp4_speed_benchmarks.json)
+- Scales: 100, 500, 1,000, 5,000, 10,000, 50,000, 100,000 memories
+- 100 timed queries per arm after 10 warmup queries, k=5, `time.perf_counter`
+- Machine: Windows 11, AMD64 Family 25 Model 68, 16 logical CPUs, Python 3.12.0,
+  NumPy 1.26.4, encoder backend `sentence-transformers` on CUDA
+- Memory content is synthetic (`"test memory number {i} about various topics"`)
+  with state vectors drawn from the eight archetypes plus uniform noise. This
+  experiment measures latency only; no retrieval quality is claimed from it.
+
+### Retrieval latency (median ms per query)
+Three arms, with the cache state each ran under stated explicitly:
+
+| Memories | Semantic, shipped `retrieve_semantic_only` (rebuilds its own matrix per call) | Semantic, prebuilt matrix (fair-work baseline) | Composite manifold, warm cache | Composite / prebuilt semantic | One-time cache rebuild (ms) |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| 100 | 0.3845 | 0.3083 | 0.6684 | 2.17x | 1.42 |
+| 500 | 0.6017 | 0.2784 | 0.6777 | 2.43x | 6.49 |
+| 1,000 | 0.9209 | 0.3113 | 0.7921 | 2.54x | 14.96 |
+| 5,000 | 5.2166 | 0.3677 | 1.7545 | 4.77x | 68.35 |
+| 10,000 | 10.2140 | 0.4158 | 1.8765 | 4.51x | 137.08 |
+| 50,000 | 46.5076 | 1.5523 | 7.4176 | 4.78x | 570.80 |
+| 100,000 | 95.9612 | 2.6312 | 12.9269 | 4.91x | 1131.88 |
+
+### Write and storage cost
+- Store throughput, `update_auto_state=False`: 8,467/sec at 100 memories
+  falling to 7,332/sec at 100,000.
+- Auto-state write cost, measured separately over 1,000 memories: 13.16 ms per
+  memory (76/sec). `MemoryStore.add(update_auto_state=True)`, which is the
+  default, calls `AutoStateTracker.update(text)`, and that runs one uncached
+  sentence-transformer forward pass per memory. End-to-end write cost with
+  state tracking enabled is therefore dominated by this encode, not by the
+  store operation: 76/sec against 7,332/sec is roughly two orders of magnitude.
+  This figure varied from 18.41 to 13.16 ms per memory across two runs on the
+  same machine, so treat it as an order-of-magnitude measurement, not a precise
+  one.
+- Storage: 297 bytes/memory, flat from 500 memories upward (302 bytes at 100).
+- Persistence at 100,000 memories: 5.4 s save, 3.2 s load, 29.0 MB compressed.
 
 ### What does it say?
-Cached NCM is a workable latency-quality mode for production-like use.
+Composite-distance retrieval costs 2.2x to 4.9x a semantic-only search doing
+the same amount of work, with the ratio growing with store size because the
+composite reads four cached arrays where semantic search reads one. Absolute
+latency stays under 13 ms per query at 100,000 memories.
+
+The composite path appears *faster* than the shipped `retrieve_semantic_only`
+above 1,000 memories (0.135x at 100,000). That is not an architectural
+advantage. `retrieve_semantic_only` reconstructs its (n, 128) candidate matrix
+on every call while the composite path reads a cache built once, so the
+comparison measures array allocation. The prebuilt-matrix column is the
+meaningful baseline. No speedup of the composite path over semantic retrieval
+is claimed.
 
 ---
 
@@ -256,24 +328,47 @@ NCM cached is slower than trivial baselines but still practical for interactive 
 
 ---
 
-## Experiment 10: Retrieval Recall Benchmark
+## Experiment 10: WITHDRAWN (hand-authored mock-up, not a measurement)
 
-### What is this experiment?
-Synthetic recall benchmark with state-divergence tracking.
+### Status
+Withdrawn. The numbers previously published in this section are not
+measurements and have been removed. Do not cite them.
 
-### Why is it needed?
-To isolate state effect under controlled conditions.
+### What was previously published here
+Four rows of Recall@5, Recall@10, NDCG@10 and Jaccard-divergence figures for
+`semantic_only`, `semantic_emotional`, `ncm_full` and `ncm_cached`, presented in
+the same format as the live experiments in this document.
 
-### Results
-Source: [experiments/results/exp10/exp10_retrieval_recall.json](results/exp10/exp10_retrieval_recall.json)
+### Why it was withdrawn
+`experiments/python/exp10_retrieval_recall_benchmark.py` does not run an
+experiment. It contains no `MemoryStore`, no encoder call, and no retrieval
+call. Its `run_benchmark()` function assigns a literal Python dictionary of
+numbers that were typed by hand to illustrate an expected pattern, writes them
+to JSON, and plots them. The file's own docstring described this as generating
+"synthetic results demonstrating the benchmark structure and expected NCM
+advantage", but the published table did not say so, and the summary row for
+Exp10 described it only as "synthetic", which understates the problem: these
+are not synthetic data fed through the real pipeline, they are the outputs
+themselves, invented.
 
-- semantic_only: avg R@5=0.428, avg R@10=0.615, avg NDCG@10=0.548, JaccardΔ=0.000
-- semantic_emotional: avg R@5=0.391, avg R@10=0.573, avg NDCG@10=0.512, JaccardΔ=0.001
-- ncm_full: avg R@5=0.388, avg R@10=0.542, avg NDCG@10=0.481, JaccardΔ=0.127
-- ncm_cached: avg R@5=0.382, avg R@10=0.530, avg NDCG@10=0.471, JaccardΔ=0.121
+The values therefore cannot be reproduced, because no computation produces
+them, and cannot be falsified, because they are not claims about how NCM
+behaves. The script additionally printed an interpretation asserting that a
+hand-typed 0.127 "proves that s_snapshot genuinely changes what the system
+recalls", and compared it against another system's measured 96.6% recall. That
+text has been removed from the script.
 
-### What does it say?
-NCM’s key differentiator is state-dependent retrieval behavior, not raw recall maximization.
+### What replaces it
+The state-conditioning question Exp10 was meant to illustrate is measured for
+real, from live retrieval calls, in:
+- Experiment 3 (state-conditioned retrieval, `run_all_experiments.py`)
+- Experiment 11 (real multi-session chat corpus)
+- Experiment 12 (weight sensitivity sweep)
+
+Exp10 is excluded from the suite runner. The script is retained, with a
+`provenance: HAND_AUTHORED_LITERALS` field now written into its JSON output and
+a warning banner on execution, so the provenance of the previously published
+numbers stays auditable.
 
 ---
 
@@ -468,13 +563,26 @@ CADP fixes the correction-order failure mode without deleting old memories, keep
 
 ## Visual Appendix
 
+Figures below are regenerated from the current results files by
+`experiments/python/generate_plots.py`. That script had been unrunnable: every
+one of its four plot functions opened a results filename that no longer exists
+(`exp3_state.json`, `exp2_novelty.json`, `exp4_speed.json`), and two also read
+JSON keys that had been renamed (`semantic_jaccard` to
+`semantic_jaccard_mean`, and a `ratio` key that was removed entirely). It
+therefore raised `FileNotFoundError` on its first call, and the figures
+previously shown here were stale copies dated 2026-04-09 that no longer matched
+the numbers in the tables above. Those stale copies have been removed; the four
+regenerated figures live alongside the JSON they were built from, in
+`results/run_all_experiments/`.
+
 ![Category Precision](results/exp1/exp1_category_precision.png)
 ![State Precision](results/exp1/exp1_state_precision.png)
 ![Precision Bars](results/exp1/exp1_precision_bars.png)
 
-![Novelty Scale](results/exp2/exp2_novelty_scale.png)
-![State Conditioned Jaccard](results/exp3/exp3_state_conditioned.png)
-![Speed Benchmarks](results/exp4/exp4_speed.png)
+![Novelty Scale](results/run_all_experiments/exp2_novelty_scale.png)
+![State Conditioned Jaccard](results/run_all_experiments/exp3_state_conditioned.png)
+![Speed Benchmarks](results/run_all_experiments/exp4_speed.png)
+![Combined Dashboard](results/run_all_experiments/ncm_dashboard.png)
 
 ![Quality Metrics](results/exp7/exp7_quality_metrics.png)
 ![Efficiency Metrics](results/exp7/exp7_efficiency_metrics.png)

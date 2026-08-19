@@ -11,5 +11,19 @@
   "jl_satisfied": false,
   "dirichlet_balanced": 0.0,
   "dirichlet_skewed": 0.26999999999999996,
-  "temporal_decay_verified": true
+  "temporal_decay_verified": true,
+  "encoder_backend": "sentence-transformers",
+  "encoder_backend_error": null,
+  "checks": {
+    "w_emo_orthonormal": true,
+    "distance_bounds": true,
+    "cosine_bounds": true,
+    "weight_sum": true,
+    "jl_bound": false,
+    "temporal_decay": true,
+    "encoder_is_real": true
+  },
+  "checks_failed": [
+    "jl_bound"
+  ]
 }

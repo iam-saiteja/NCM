@@ -1,48 +1,87 @@
 """
-EXP10: Retrieval Recall Benchmark (State-Conditioned vs State-Agnostic)
-========================================================================
+EXP10: Retrieval Recall Mock-up (NOT AN EXPERIMENT, NOT A MEASUREMENT)
+=====================================================================
 
-Measures Recall@k, NDCG@k, MRR on a large query set. 
-Key innovation: tests retrieval across multiple internal states to prove
-that NCM recall CHANGES with state while baselines stay fixed.
+WARNING. This file does not measure anything. It contains no MemoryStore, no
+encoder call, and no retrieval call. `run_benchmark()` assigns a literal Python
+dictionary of numbers that were typed by hand to illustrate an expected
+pattern, writes them to JSON, and plots them. Nothing here is derived from
+running NCM.
 
-Expected results:
-  - Semantic-only: state_delta ≈ 0 (queries return same memories in all states)
-  - NCM: state_delta > 0.1 (query results differ based on internal state)
+Every number this file emits is a HAND_AUTHORED_LITERAL. The numbers cannot be
+reproduced because no computation produces them, and they cannot be falsified
+because they are not claims about a system's behaviour. They must never be
+cited as evidence, compared against baselines, or reported as results.
 
-This version generates synthetic results demonstrating the benchmark structure
-and expected NCM advantage over state-blind baselines.
+The illustration it was written to convey (baseline retrieval is invariant to
+internal state, composite retrieval is not) IS tested for real elsewhere, from
+live retrieval calls:
+  - exp3 in run_all_experiments.py (state-conditioned retrieval)
+  - exp11_real_world_corpus_benchmark.py (real multi-session chat corpus)
+  - exp12_weight_sensitivity.py (weight sweep)
+Cite those instead.
+
+This file is retained only so that the provenance of the previously published
+exp10 numbers stays auditable. It is excluded from the experiment suite runner.
 """
 
 import os
 import json
+import sys
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+# Windows consoles default to cp1252, which cannot encode the check mark this
+# script prints, so the run died with UnicodeEncodeError after writing the JSON
+# but before writing the plot. Force UTF-8 on the streams when reconfigure is
+# available.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8")
+        except (ValueError, OSError):
+            pass
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 RESULT_BUCKET = os.path.splitext(os.path.basename(__file__))[0].split('_')[0]
 RESULTS_DIR = os.path.join(ROOT_DIR, 'experiments', 'results', RESULT_BUCKET)
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
+PROVENANCE = "HAND_AUTHORED_LITERALS"
+PROVENANCE_NOTE = (
+    "Every value in this file was typed by hand to illustrate an expected "
+    "pattern. No MemoryStore, encoder, or retrieval call was executed to "
+    "produce any of them. These are not measurements and must not be cited "
+    "as results. For a real state-conditioning measurement see exp3 in "
+    "run_all_experiments.py, exp11_real_world_corpus_benchmark.py, or "
+    "exp12_weight_sensitivity.py."
+)
+
+
 def run_benchmark():
-    """Generate synthetic recall benchmark results."""
-    
+    """Emit the hand-authored illustration. Computes nothing."""
+
     print("=" * 80)
-    print("EXP10: Retrieval Recall Benchmark (State-Conditioned vs State-Agnostic)")
+    print("EXP10: HAND-AUTHORED MOCK-UP -- NOT A MEASUREMENT")
     print("=" * 80)
-    
-    print("\n[Generating synthetic recall benchmark]")
-    print("(Demonstrates expected NCM state-conditioning behavior)\n")
-    
-    # Synthetic results based on expected NCM behavior patterns
+    print(PROVENANCE_NOTE)
+    print("=" * 80)
+
+    # Hand-authored literals. See PROVENANCE_NOTE. No code produces these.
     results = {
+        "provenance": PROVENANCE,
+        "provenance_note": PROVENANCE_NOTE,
+        "is_measurement": False,
         "metadata": {
             "num_memories": 1200,
             "num_queries": 12,
             "num_states": 3,
-            "note": "Synthetic results demonstrating expected NCM state-conditioning advantage",
+            "note": (
+                "HAND_AUTHORED_LITERALS. These three counts describe a benchmark "
+                "that was never run; no code in this file consumes them."
+            ),
         },
         "systems": {
             "semantic_only": {
@@ -210,7 +249,7 @@ def run_benchmark():
     ax.set_xticklabels(labels, rotation=15, ha="right")
     ax.set_ylim(0, 0.8)
     ax.set_ylabel("Score")
-    ax.set_title("EXP10 Recall and State-Conditioning")
+    ax.set_title("EXP10 HAND-AUTHORED MOCK-UP -- NOT A MEASUREMENT")
     ax.grid(axis="y", alpha=0.2)
     ax.legend()
     fig.tight_layout()
@@ -218,54 +257,35 @@ def run_benchmark():
     plt.close(fig)
     print(f"✓ Plot saved to {png_path}\n")
     
-    # Print summary
+    # Echo the literals back, labelled as literals.
     print("=" * 80)
-    print("SUMMARY: State-Delta Metric (Higher = More State-Aware)")
+    print("HAND-AUTHORED VALUES (no computation produced these)")
     print("=" * 80)
     for system_name in ["semantic_only", "semantic_emotional", "ncm_full", "ncm_cached"]:
         delta_recall = results["systems"][system_name]["overall"]["state_delta_recall@5"]
         delta_ndcg = results["systems"][system_name]["overall"]["state_delta_ndcg"]
         avg_recall = results["systems"][system_name]["overall"]["avg_recall@5"]
-        print(f"{system_name:20} Δ_R@5={delta_recall:.3f}  Δ_NDCG={delta_ndcg:.3f}  Avg_R@5={avg_recall:.3f}")
-    
+        print(f"{system_name:20} d_R@5={delta_recall:.3f}  d_NDCG={delta_ndcg:.3f}  Avg_R@5={avg_recall:.3f}")
+
     print("\n" + "=" * 80)
-    print("INTERPRETATION")
+    print("WHY THERE IS NO INTERPRETATION SECTION")
     print("=" * 80)
     print("""
-✓ semantic_only: Δ ≈ 0.000
-  → State doesn't affect retrieval. Same queries always return identical results.
-  → This is expected: semantic-only systems are purely query-driven.
+An earlier version of this file printed an interpretation of the numbers above,
+including the sentences "This proves that s_snapshot genuinely changes what the
+system recalls based on its internal state" and a side-by-side comparison
+against a reported 96.6% recall figure for another system.
 
-✓ semantic_emotional: Δ ≈ 0.001
-  → Minimal state effect. Emotional projection adds minimal variance.
-  → Mostly semantic-driven retrieval.
+That text has been removed. The numbers above were typed by hand. They are not
+observations of NCM's behaviour, so they cannot support a conclusion about
+NCM's behaviour, and they cannot be compared against another system's measured
+result. Nothing can be concluded from this file.
 
-✓ ncm_full: Δ ≈ 0.127 (12.7% recall variance across states)
-  → STRONG state-conditioned behavior. Queries return DIFFERENT memories
-     depending on internal state. This is NCM's novel advantage.
-  → Average recall (38.8%) shows it maintains competitive precision while
-     enabling state-dependent retrieval.
+The state-conditioning question is tested for real, from live retrieval calls,
+in exp3 (run_all_experiments.py), exp11_real_world_corpus_benchmark.py, and
+exp12_weight_sensitivity.py. Read those.
+""")
 
-✓ ncm_cached: Δ ≈ 0.121 (12.1% recall variance - nearly as good as full)
-  → Fast + state-aware. Caching provides production-viable tradeoff.
-  → Nearly matches NCM full's state-conditioning with better latency.
-
-KEY FINDING
-═══════════════════════════════════════════════════════════════════════════════
-
-NCM achieves ~12% state-dependent variance in recall while maintaining 
-competitive average precision (~38% R@5). This proves that s_snapshot genuinely 
-changes what the system recalls based on its internal state.
-
-This is fundamentally different from MemPalace's 96.6% recall:
-  - MemPalace: State-BLIND. Same query → same results always.
-  - NCM:       State-AWARE. Same query → different results per internal state.
-
-NCM's innovation is not higher absolute recall, but CONTEXT-DEPENDENT retrieval 
-that shifts based on "who you are" when you search. This enables more human-like 
-episodic memory behavior where internal state influences what you remember.
-═══════════════════════════════════════════════════════════════════════════════
-    """)
 
 if __name__ == "__main__":
     run_benchmark()
