@@ -32,7 +32,30 @@ paper/
 
 .pytest_cache/
 
-# Third-party benchmark checkouts. MemoryAgentBench is cloned in for EXP19
-# and EXP20 and carries its own .git and licence. It is a dependency to
-# fetch, not source to vendor.
+# Third-party benchmark checkout. Carries its own .git and licence, so it is
+# a dependency to fetch, not source to vendor. Note that no experiment in this
+# repository reads it: the MemoryAgentBench-named scripts never contained a
+# path, loader or open() for this directory, and they are untracked below.
 experiments/data/MemoryAgentBench/
+
+# Never-run experiment scripts, untracked rather than deleted so the working
+# ideas survive on disk. All three were added in 0657956, were never modified,
+# and define no results directory at all, so there was nowhere they could ever
+# have written output. Each also carries a defect from a family already
+# retracted elsewhere in this repository:
+#   exp19 - Task 2 adds one memory to a fresh store then asks for k=3, so its
+#           criterion cannot fail; Task 4 can pass on a conflict trace whose
+#           text still contains the obsolete fact. Its name asserts an
+#           evaluation on MemoryAgentBench that the code does not perform.
+#   exp20 - configured at threshold 0.70 with requires_marker=False, which is
+#           the worst-precision point exp23 characterises (precision 0.367,
+#           FPR 0.404), and its pass criterion is defeated by NCM's own
+#           conflict-trace text.
+#   exp21 - a demo, not an experiment. Its "semantic" encoder returns random
+#           vectors, so chain structure is unobservable in principle; recall is
+#           trivially 3/3 on a 3-memory store; output is sorted into
+#           ground-truth order. scripts/test_multihop_realworld.py, added in
+#           the same commit, is the real version.
+experiments/python/exp19_memoryagentbench_competencies.py
+experiments/python/exp20_memoryagentbench_baseline.py
+experiments/python/exp21_multihop_reasoning.py
