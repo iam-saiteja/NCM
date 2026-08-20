@@ -1,0 +1,258 @@
+EXP24: Paraphrase Robustness Diagnosis and Per-Channel Attribution
+==================================================================
+
+Seed: 20260820    Encoder backend: sentence-transformers    Encoder state_dim: 7
+Retrieval weights: alpha=0.40 beta=0.20 gamma=0.30 delta=0.10 (shipped defaults, unchanged)
+
+RUN SCALE
+- smoke mode: False
+- max_conversations: 20 (the committed default is 20)
+- conversations loaded: 14
+- held-out targets: 48
+- paired targets evaluated: 48 from 14 conversations, [4, 3, 4, 4, 4, 3, 4, 3, 4, 3, 3, 3, 4, 2] per conversation
+- bootstrap resamples: 200000
+- the shipped numbers are the committed defaults with no flags: max_conversations=20 and bootstrap=200000. A --smoke run reads 4 conversations and is a validation run only, never the shipped result.
+
+DISCLOSURE
+The paraphrase arm uses 48 HAND-AUTHORED paraphrases written by the
+experimenter. Every paraphrase-arm number below is a number over
+hand-authored query text. The relevance label is the corpus
+session_id field on both arms and was not authored here.
+
+Dataset
+- Corpus: experiments/data/real_world_corpus/train.jsonl
+- Conversations loaded: 14
+- Paired targets evaluated: 48
+- Mean store size: 40.5 memories
+- Mean relevant per query: 11.31
+- Random-guess precision: 0.2803 (mean over queries of n_relevant/store_size)
+- Monte Carlo chance level per metric, 20000 random rankings per
+  query using that query's own n_relevant and store_size:
+  P@5 0.2800  P@10 0.2808  NDCG@10 0.2837  MRR 0.4934
+  The MRR chance level is far above the precision ratio, because
+  a uniformly random ranking still places some relevant item
+  early most of the time. Comparing MRR against the precision
+  ratio overstates the margin over chance.
+- Paraphrase source-prefix integrity failures: 0
+
+Second manipulated variable: orthography
+- Hand-authored paraphrases checked: 48
+- Paraphrases using a British spelling absent from their source
+  turn: 5 of 48
+- Method: fixed hand-built list of 41 British/American spelling pairs, whole-word case-folded match; a paraphrase counts if it uses the British form and its source turn does not
+  conv 5 session 1: favourite (American form favorite, source uses it: False), programme (American form program, source uses it: False)
+  conv 5 session 2: favourite (American form favorite, source uses it: True)
+  conv 9 session 3: organised (American form organized, source uses it: True)
+  conv 13 session 1: travelling (American form traveling, source uses it: False)
+  conv 16 session 1: favourite (American form favorite, source uses it: False)
+  Rewording and orthography are therefore CONFOUNDED in this
+  stimulus set. The paraphrase arm varies two things at once,
+  wording and spelling convention, and this design cannot
+  separate their contributions. The paraphrases were not
+  rewritten, because changing the stimuli would break
+  comparability with the previously shipped run.
+
+Decomposition fidelity
+- Max abs error between the reconstructed composite and the shipped
+  retrieve_top_k_fast distances over the returned top-k: 0.000e+00
+  Below the 1.0e-05 gate, so the decomposition reproduces the shipped
+  ranking function and the channel figures below describe the real
+  system. The run aborts if this gate is not met.
+
+Arm results (mean over 48 paired targets)
+arm                                 P@5     P@10    NDCG@10      MRR        ms
+------------------------------------------------------------------------------
+verbatim__semantic_only          0.4875   0.4146     0.4550   0.7304     0.099
+verbatim__ncm                    0.4833   0.4125     0.4538   0.7269     0.397
+paraphrase__semantic_only        0.4792   0.4167     0.4563   0.7306     0.103
+paraphrase__ncm                  0.4750   0.4167     0.4605   0.7463     0.433
+
+Latency caveat: not a latency benchmark. retrieve_semantic_only
+rebuilds its own (n,128) matrix per call while retrieve_top_k_fast
+reads a cache warmed once per conversation. exp4 is the latency
+measurement. These columns are recorded only for completeness.
+
+Paraphrase regression (paraphrase minus verbatim, paired)
+Two CIs per row. 'target CI' resamples targets and assumes they are
+independent, which they are not. 'cluster CI' resamples whole
+conversations and is the interval to quote. Wilcoxon p is the exact
+signed-rank test and also assumes independent pairs.
+system / metric           verbatim  paraphr.    delta          target CI         cluster CI  wilcox p
+-----------------------------------------------------------------------------------------------------
+semantic_only p@5           0.4875    0.4792  -0.0083  [-0.0500,+0.0333]  [-0.0520,+0.0298]    0.9218
+semantic_only p@10          0.4146    0.4167  +0.0021  [-0.0312,+0.0354]  [-0.0294,+0.0383]    0.9341
+semantic_only ndcg@10       0.4550    0.4563  +0.0013  [-0.0300,+0.0318]  [-0.0227,+0.0315]    0.8034
+semantic_only mrr           0.7304    0.7306  +0.0002  [-0.0724,+0.0740]  [-0.0859,+0.0783]    1.0000
+ncm p@5                     0.4833    0.4750  -0.0083  [-0.0542,+0.0375]  [-0.0553,+0.0356]    0.9441
+ncm p@10                    0.4125    0.4167  +0.0042  [-0.0292,+0.0375]  [-0.0250,+0.0362]    0.9321
+ncm ndcg@10                 0.4538    0.4605  +0.0067  [-0.0248,+0.0377]  [-0.0162,+0.0351]    0.6109
+ncm mrr                     0.7269    0.7463  +0.0194  [-0.0433,+0.0858]  [-0.0474,+0.0847]    0.7119
+
+Sensitivity of each row (B3, B4, S1)
+system / metric            nonzero  MDE(80pct)   ICC(1) effective n     wilcox
+------------------------------------------------------------------------------
+semantic_only p@5            24/48      0.0577  +0.0031       47.64      exact
+semantic_only p@10           27/48      0.0490  +0.0330       44.43      exact
+semantic_only ndcg@10        48/48      0.0447  -0.0653       57.04      exact
+semantic_only mrr            17/48      0.1054  +0.1386       35.91      exact
+ncm p@5                      24/48      0.0645  +0.0069       47.21      exact
+ncm p@10                     29/48      0.0486  -0.0510       54.78      exact
+ncm ndcg@10                  47/48      0.0451  -0.1085       65.16      exact
+ncm mrr                      17/48      0.0934  +0.0396       43.79      exact
+nonzero is the count of targets whose metric actually changed,
+out of the paired total. MDE is the smallest paired mean difference
+this design would detect 80 percent of the time at two-sided 0.05.
+A row whose nonzero count is small cannot produce an interval that
+clears zero no matter what the effect is, so its CI carries no
+effect-size information. ICC(1) above zero means targets inside a
+conversation resemble each other and the target CI is too narrow. A
+NEGATIVE ICC(1) means targets inside a conversation differ more than
+targets drawn at random, which makes the design effect less than 1
+and pushes the effective n above the nominal n. That is a real
+property of these 14 conversations, not a gain in information, and
+the cluster CI is then narrower than the target CI. Read the cluster
+CI in both directions.
+
+Does the composite add fragility beyond the encoder?
+- dod__p@5: +0.0000, n=48, 6 of 48 targets changed
+  target CI [-0.0208, +0.0208], cluster CI [-0.0213, +0.0255]
+  MDE at 80pct power, two-sided 0.05: 0.0289  ICC(1) +0.1822, effective n 33.28
+- dod__ndcg@10: +0.0055, n=48, 36 of 48 targets changed
+  target CI [-0.0038, +0.0155], cluster CI [-0.0008, +0.0116]
+  MDE at 80pct power, two-sided 0.05: 0.0139  ICC(1) -0.2297, effective n 108.55
+A CI containing zero means no difference between the composite and
+the bare encoder was DETECTED. It does not establish that none
+exists; any true difference smaller than the MDE above would be
+missed by this design.
+
+Query length across the two arms
+- Mean characters: verbatim 98.9, hand-authored paraphrase 104.5
+  paired mean change +5.6 characters (+5.6 percent)
+- Exact Wilcoxon on the paired character counts: p = 0.0005
+  The arms are NOT length-matched. Query length is a second
+  manipulated variable alongside rewording in this stimulus
+  set, and this design cannot separate the two.
+- Paired length change vs paired metric change, Spearman rho:
+    ncm__mrr                 rho -0.0359  p 0.8085  n 48
+    ncm__ndcg@10             rho -0.0030  p 0.9836  n 48
+    ncm__p@5                 rho -0.0443  p 0.7648  n 48
+    semantic_only__mrr       rho -0.0998  p 0.4996  n 48
+    semantic_only__ndcg@10   rho +0.0394  p 0.7904  n 48
+    semantic_only__p@5       rho -0.0733  p 0.6204  n 48
+  A significant rho means that metric's movement tracks the
+  per-target query length change, which is a stronger statement
+  than the arm-level length difference above: it would locate the
+  length effect target by target and not only in the arm means.
+  A null rho does not clear the arm-level difference, because a
+  per-target rank correlation and a difference in arm means are
+  different quantities.
+
+Per-channel decomposition across candidates
+Ranking depends only on how much a channel VARIES across
+candidates. A channel with near-zero std shifts every candidate by
+nearly the same amount and rarely reorders them, whatever its weight.
+'std share' is each channel's share of the SUM OF THE FOUR
+PER-CHANNEL STANDARD DEVIATIONS. It is not a variance
+decomposition: std(sum) does not equal sum(std) unless the channels
+are perfectly correlated, and d_emo and d_state are correlated here.
+A variance-based share would put d_sem higher still, so this share
+understates d_sem's dominance rather than overstating it.
+
+  condition = verbatim
+  channel           raw mean    wtd mean     wtd std   std share      spearman
+  ----------------------------------------------------------------------------
+  sem                 0.8084      0.3234    0.059254       91.7%        0.9907
+  emo                 0.0067      0.0013    0.000620        1.0%        0.0274
+  state               0.0265      0.0080    0.003240        5.4%        0.1682
+  time                0.0208      0.0021    0.001163        1.9%        0.0635
+  d_emo vs d_state Pearson r across candidates: 0.2939
+
+  condition = paraphrase
+  channel           raw mean    wtd mean     wtd std   std share      spearman
+  ----------------------------------------------------------------------------
+  sem                 0.8170      0.3268    0.059894       91.8%        0.9900
+  emo                 0.0067      0.0013    0.000637        1.0%        0.0315
+  state               0.0268      0.0080    0.003249        5.3%        0.1364
+  time                0.0208      0.0021    0.001163        1.9%        0.0389
+  d_emo vs d_state Pearson r across candidates: 0.3022
+
+  e_emotional and the state snapshot are ONE TURN APART
+  build_store passes the PRE-update auto-state to
+  encode_emotional, while MemoryStore.add overwrites
+  auto_state_snapshot with the POST-update state, so a memory's
+  emotional projection and its state snapshot come from
+  different vectors one turn apart. Measured over 567 memories in
+  14 evaluated stores: 0 pairs identical, mean L2 gap 0.017796, max
+  0.045682. Shifting by one turn closes the gap exactly: max L2
+  between pre-update state i and snapshot i-1 is 0.000e+00.
+  This offset is recorded, not changed. ncm/memory.py is not
+  modified by this experiment.
+
+State channel controllability (the retrieve_top_k_fast API trap)
+- Probe A, s_current_normalized argument varied with
+  store.auto_state pinned: ranking identical = True
+  The argument IS ignored, as documented at ncm/retrieval.py:346
+  against line 372, which is why this script installs the state
+  by assigning store.auto_state.state instead.
+- Probe B, store.auto_state.state assigned two opposite extremes:
+  ranking changed = True, distances changed = True
+  The distances DID move, so the state channel is live and was
+  genuinely driven. A small measured state effect below is
+  therefore not a false negative from a dead input.
+  installed=inferred  d_state mean=0.0263 std=0.014480 range=0.055587
+  installed=low       d_state mean=0.0220 std=0.011594 range=0.045660
+  installed=high      d_state mean=0.4582 std=0.006504 range=0.026512
+
+Auto-state dispersion
+Three scopes, kept apart. Across-target dispersion within one arm
+and the within-target shift between arms are different quantities.
+- ACROSS TARGETS, verbatim arm only: pairwise L2 between 48 query
+  states over 1128 pairs: min 0.0052, mean 0.0262, max 0.0792
+- ACROSS TARGETS, paraphrase arm only: pairwise L2 between 48 query
+  states over 1128 pairs: min 0.0032, mean 0.0271, max 0.0779
+- WITHIN TARGET, verbatim vs hand-authored paraphrase (n=48):
+  min 0.0036, mean 0.0128, max 0.0407
+- POOLED over both arms, 96 query states over 4560 pairs:
+  min 0.0014, mean 0.0265, max 0.0872
+  This pooled figure mixes the two scopes above and is reported
+  only for continuity with the earlier run. Read the two
+  separated scopes instead.
+- Max abs deviation of any query state dimension from neutral 0.5: 0.0498
+- Max abs deviation of any STORED memory state from 0.5: 0.1045
+  Scope: all 567 stored turns across all 14 evaluated stores.
+- Analytic ceiling on one EMA step per dimension: alpha*|signal-0.5| with signal bounded in [0,1] and alpha = [0.15,0.15,0.15,0.20,0.25]; the largest move one utterance can make in each dimension starting from the neutral 0.5 state.
+
+Structural zero padding
+- AutoStateTracker emits 5 dims, encoder.state_dim is 7, encode_state returns 7 dims
+- Trailing dims all zero: True, values [0.0, 0.0]
+- AutoStateTracker emits 5 dimensions while SentenceEncoder.state_dim defaults to 7, so encode_state and encode_emotional zero-pad and dimensions 6 and 7 carry no information. Note that the composite state channel compares auto_state_snapshot directly at 5 dims, so the padding affects the emotional projection, not d_state.
+
+Figures
+- experiments/results/exp24/exp24_paraphrase_regression.png
+  Left panel: the four arm means per metric, with a Monte Carlo
+  chance level drawn separately for each metric. Right panel: the
+  paired paraphrase delta with the target-level and the
+  conversation-level bootstrap CI side by side.
+- experiments/results/exp24/exp24_channel_variance.png
+  Per-channel weighted mean and per-channel across-candidate
+  standard deviation, for both query conditions.
+
+Reading of the result
+- Scale: 48 paired targets from 14 conversations, 200000 bootstrap resamples, hand-authored paraphrases.
+- NCM P@5 changes by -0.0083 from verbatim to hand-authored paraphrase queries. Target-level 95pct CI [-0.0542, +0.0375]; conversation-level cluster CI [-0.0553, +0.0356], which is the one to read because the targets are clustered. The cluster CI includes zero, so no paraphrase regression is established at this sample size. 24 of 48 targets changed on this metric; the smallest difference this design would detect at 80 percent power is 0.0645.
+- The semantic-only baseline P@5 changes by -0.0083 from verbatim to hand-authored paraphrase queries. Target-level 95pct CI [-0.0500, +0.0333]; conversation-level cluster CI [-0.0520, +0.0298], which is the one to read because the targets are clustered. The cluster CI includes zero, so no paraphrase regression is established at this sample size. 24 of 48 targets changed on this metric; the smallest difference this design would detect at 80 percent power is 0.0577.
+- The targets are clustered by conversation, not independent. Measured ICC(1) for the NCM P@5 delta is +0.0069 over 14 conversations of mean size 3.43, a design effect of 1.017 and an effective sample size of 47.21 against 48 nominal observations.
+- No difference in paraphrase P@5 loss between the composite and the bare encoder was detected: +0.0000, conversation-level cluster CI [-0.0213, +0.0255], zero strictly interior. At n=48 the smallest difference this design would detect at 80 percent power is 0.0289 P@5, so a composite-added fragility below that remains possible. 6 of 48 targets changed on this measure.
+- MRR RISES under hand-authored paraphrase, by +0.0194 for NCM and +0.0002 for the semantic-only baseline. That is larger in magnitude than the largest P@5 movement (0.0083) and opposite in sign to it, so the word regression does not describe every metric in this table. The NCM MRR conversation-level cluster CI is [-0.0474, +0.0847], which includes zero, so the direction is not established.
+- The two arms are NOT length-matched at this scale. The hand-authored paraphrases are longer by +5.6 characters on average (+5.6 percent), exact Wilcoxon on the paired character counts p = 0.0005. Query length is therefore a second manipulated variable alongside rewording, and this design cannot separate the two.
+- No paired length-versus-metric Spearman correlation reaches p < 0.05 over the 6 metrics tested, the largest being semantic_only__mrr rho -0.0998 p 0.4996. No metric's per-target movement was found to track per-target length change. This does NOT clear the arm-level length difference reported above: a per-target rank correlation and a difference in arm means are different quantities, and with 48 targets this test is underpowered against a small one.
+- Under verbatim queries, d_sem supplies 91.7 percent of the SUMMED per-channel across-candidate standard deviation; the shares are sem 91.7, emo 1.0, state 5.4, time 1.9 percent. This is a share of a sum of standard deviations, not a variance decomposition, because std(sum) does not equal sum(std) unless the channels are perfectly correlated. A variance-based share would put d_sem higher, so this figure understates its dominance.
+- Under paraphrase queries, d_sem supplies 91.8 percent of the SUMMED per-channel across-candidate standard deviation; the shares are sem 91.8, emo 1.0, state 5.3, time 1.9 percent. This is a share of a sum of standard deviations, not a variance decomposition, because std(sum) does not equal sum(std) unless the channels are perfectly correlated. A variance-based share would put d_sem higher, so this figure understates its dominance.
+- gamma*d_state has 18.3 times less across-candidate dispersion than alpha*d_sem (0.003240 against 0.059254), so despite carrying weight gamma=0.3 it rarely changes the order. It is not incapable of reordering: no single-channel ablation was run here, so the extra channels' contribution to the ranking is not attributed.
+- retrieve_top_k_fast ignored its s_current_normalized argument: two opposite argument values produced an identical ranking.
+- Assigning store.auto_state.state DID change the distances, so the state channel was genuinely driven and the low dispersion above is not a false negative from an uncontrolled input.
+- Across targets within the verbatim arm alone, pairwise L2 between the 48 inferred query states spans 0.0052 to 0.0792 over 1128 pairs, against a per-dimension single-step ceiling of at most 0.125, because AutoStateTracker.update applies one EMA step from the neutral 0.5 vector.
+- Across targets within the paraphrase arm alone, pairwise L2 between the 48 inferred query states spans 0.0032 to 0.0779 over 1128 pairs, against a per-dimension single-step ceiling of at most 0.125, because AutoStateTracker.update applies one EMA step from the neutral 0.5 vector.
+- Within a target, the verbatim-to-paraphrase state shift is a separate and smaller quantity: mean L2 0.0128 over 48 targets. The earlier pooled figure mixed these two scopes.
+- d_emo and d_state correlate at Pearson r = 0.2939 across candidates under verbatim queries. They are built from RELATED BUT DIFFERENT vectors, not the same one: e_emotional is a fixed linear projection W_emo of the PRE-update auto-state, while d_state compares the POST-update auto_state_snapshot of the same memory. Measured over 567 stored memories in 14 stores, 0 pairs are identical and the mean L2 gap is 0.017796, while the max L2 between the pre-update state at index i and the snapshot at index i-1 is 0.000e+00, which places them exactly one turn apart. r stays below 1 for two further reasons: W_emo has shape (3, 7), so it maps the 5 informative state dimensions into 3 and loses rank, and encode_emotional L2-normalizes the projection, which discards its magnitude (measured output norm 1.0000).
+
