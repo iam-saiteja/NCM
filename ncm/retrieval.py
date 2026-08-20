@@ -43,6 +43,67 @@ from ncm.profile import RetrievalWeights
 EMO_NORM = 2.0        # General L2-normalized vectors
 STATE_NORM = np.sqrt(2.0)  # Positive orthant L2-normalized vectors
 
+# Channel rescaling modes for `vectorized_manifold_distance`.
+#
+# WHY THIS EXISTS. The two constants above are worst-case bounds, and the
+# distances they divide never approach them. Measured over 9,401 (query,
+# memory) pairs in experiments/results/exp22/exp22_emo_ablation.json, under the
+# shipped weights (0.4, 0.2, 0.3, 0.1):
+#
+#   channel    mean      sd       weight x sd    effective influence
+#   d_sem      0.82217   0.15513  0.062050       91.67%
+#   d_emo      0.00698   0.00427  0.000853        1.26%
+#   d_state    0.02524   0.01184  0.003551        5.25%
+#   d_time     0.02123   0.01231  0.001231        1.82%
+#
+# Ranking depends only on how much a channel varies between candidates, so a
+# channel's real influence is its weight times its spread, not its weight. The
+# emotional term is nominally a fifth of the decision and is in fact 1.26% of
+# it. That is why removing it changes almost nothing: exp22 measured a null on
+# a channel that was already inert.
+#
+# "minmax" and "robust" rescale each channel across the candidate set so every
+# channel spans the unit interval and the profile weights become effective.
+# Because the weights sum to 1 and each rescaled channel lies in [0, 1], the
+# composite stays in [0, 1] without relying on the final clip.
+#
+# HONEST LIMITS. Rescaling is per query and per candidate set, so the resulting
+# composite is a ranking score and is NOT comparable across queries or across
+# stores of different composition. Absolute-threshold logic must not use it.
+# "none" is the default and preserves the shipped arithmetic exactly.
+CHANNEL_NORMALIZATION_MODES = ("none", "minmax", "robust")
+
+# Spread below which a channel is treated as carrying no ranking information.
+# Dividing by a smaller span would amplify floating-point noise into a signal.
+CHANNEL_SPAN_EPS = 1e-9
+
+# Percentile bounds for the "robust" mode, which resists a single outlying
+# candidate compressing every other candidate into a narrow band.
+CHANNEL_ROBUST_LOW = 5.0
+CHANNEL_ROBUST_HIGH = 95.0
+
+
+def _rescale_channel(d: np.ndarray, mode: str) -> np.ndarray:
+    """Rescale one channel's distances so its spread matches the other channels.
+
+    Returns a channel in [0, 1] whose ordering is identical to the input. A
+    channel that is constant across the candidate set returns all zeros,
+    because it cannot separate candidates and must not be amplified.
+    """
+    if mode == "none" or d is None or d.size < 2:
+        return d
+    if mode == "minmax":
+        lo = float(d.min())
+        hi = float(d.max())
+    else:  # "robust"
+        lo = float(np.percentile(d, CHANNEL_ROBUST_LOW))
+        hi = float(np.percentile(d, CHANNEL_ROBUST_HIGH))
+    span = hi - lo
+    if span <= CHANNEL_SPAN_EPS:
+        return np.zeros_like(d)
+    out = ((d - lo) / span).astype(d.dtype, copy=False)
+    return np.clip(out, 0.0, 1.0, out=out)
+
 
 def vectorized_manifold_distance(
     sem_matrix: np.ndarray,      # (N, d) semantic vectors
@@ -61,6 +122,7 @@ def vectorized_manifold_distance(
     contradiction_weight: float = 0.0,       # lambda for contradiction penalty
     contradiction_gate: float = 1.0,         # query-intent gate in [0, 1]
     use_fast_temporal: bool = False,    # opt-in approximation for temporal term
+    channel_normalization: str = "none",  # "none" | "minmax" | "robust", see above
 ) -> np.ndarray:
     """
     Compute manifold distance for ALL memories at once via optimized vectorized numpy.
@@ -105,27 +167,35 @@ def vectorized_manifold_distance(
     lambda_contra = float(np.clip(contradiction_weight, 0.0, 1.0))
     gate = float(np.clip(contradiction_gate, 0.0, 1.0))
     base_scale = 1.0 - lambda_contra
+    rescale = "none" if channel_normalization is None else str(channel_normalization)
+    if rescale not in CHANNEL_NORMALIZATION_MODES:
+        raise ValueError(
+            "channel_normalization must be one of %r, got %r"
+            % (list(CHANNEL_NORMALIZATION_MODES), channel_normalization)
+        )
 
     # OPTIMIZATION: Pre-allocate output
     total = np.zeros(N, dtype=np.float32)
+
+    # Each channel is computed first and accumulated below, so that the optional
+    # rescaling in between sees the whole candidate set. A channel whose weight
+    # is negligible is left as None and never computed, as before.
+    d_sem = d_emo = d_state = d_time = None
 
     # Semantic: cosine distance via dot product (vectors are L2-normalized)
     if alpha > 1e-8:
         sem_sims = sem_matrix @ query_semantic  # (N,)
         d_sem = np.clip(1.0 - sem_sims, 0.0, 1.0)
-        total += base_scale * alpha * d_sem
 
     # Emotional: Euclidean between PROJECTED vectors
     if beta > 1e-8:
         emo_diff = emo_matrix - query_emotional[np.newaxis, :]  # (N, k)
         d_emo = np.clip(np.linalg.norm(emo_diff, axis=1) / EMO_NORM, 0.0, 1.0)
-        total += base_scale * beta * d_emo
 
     # State: Euclidean between L2-normalized state vectors
     if gamma > 1e-8:
         state_diff = state_matrix - s_current[np.newaxis, :]  # (N, n)
         d_state = np.clip(np.linalg.norm(state_diff, axis=1) / STATE_NORM, 0.0, 1.0)
-        total += base_scale * gamma * d_state
 
     # Temporal: exact exponential by default; optional fast approximation is opt-in.
     if delta > 1e-8:
@@ -140,6 +210,25 @@ def vectorized_manifold_distance(
         else:
             # Exact temporal term (default): preserves baseline math behavior.
             d_time = np.clip(1.0 - np.exp(-decay_rate * delta_t), 0.0, 1.0)
+
+    # Optional: equalize the channels' spreads so the profile weights are the
+    # weights that actually act. Off by default, in which case the accumulation
+    # below is arithmetically identical to the shipped version.
+    if rescale != "none":
+        d_sem = _rescale_channel(d_sem, rescale)
+        d_emo = _rescale_channel(d_emo, rescale)
+        d_state = _rescale_channel(d_state, rescale)
+        d_time = _rescale_channel(d_time, rescale)
+
+    # Accumulated in the original order so that "none" reproduces the shipped
+    # floating-point result exactly, addition not being associative.
+    if d_sem is not None:
+        total += base_scale * alpha * d_sem
+    if d_emo is not None:
+        total += base_scale * beta * d_emo
+    if d_state is not None:
+        total += base_scale * gamma * d_state
+    if d_time is not None:
         total += base_scale * delta * d_time
 
     # Contradiction penalty: push contradicted memories down unless query gate disables it
@@ -307,6 +396,10 @@ def retrieve_top_k(
     contra_array = np.array([
         1.0 if m.contradicted_by is not None else 0.0 for m in candidates
     ], dtype=np.float32) if contra_enabled else None
+    # Same opt-in rescaling as the fast path, so tag-filtered retrieval and
+    # unfiltered retrieval rank by the same rule. Note the candidate set here is
+    # the filtered one, which is the correct set to rescale against.
+    chan_norm = str(store.profile.get_custom("channel_normalization", "none"))
 
     distances = vectorized_manifold_distance(
         sem_matrix, emo_matrix, state_matrix, ts_array,
@@ -317,6 +410,7 @@ def retrieve_top_k(
         contradiction_weight=contra_lambda,
         contradiction_gate=contra_gate,
         use_fast_temporal=use_fast_temporal,
+        channel_normalization=chan_norm,
     )
 
     # Adaptive temperature
@@ -389,6 +483,10 @@ def retrieve_top_k_fast(
     contra_lambda = float(store.profile.get_custom("contradiction_penalty", 0.0)) if contra_enabled else 0.0
     contra_gate = float(store.profile.get_custom("contradiction_query_gate", 1.0)) if contra_enabled else 1.0
     contra_array = store._contra_cache if contra_enabled else None
+    # Opt-in channel rescaling, read from the profile so a store carries its own
+    # retrieval semantics. Absent from a profile, this is "none" and the
+    # composite is byte-for-byte the shipped one.
+    chan_norm = str(store.profile.get_custom("channel_normalization", "none"))
 
     distances = vectorized_manifold_distance(
         store._sem_cache, store._emo_cache, store._auto_state_cache, store._ts_cache,
@@ -399,6 +497,7 @@ def retrieve_top_k_fast(
         contradiction_weight=contra_lambda,
         contradiction_gate=contra_gate,
         use_fast_temporal=use_fast_temporal,
+        channel_normalization=chan_norm,
     )
 
     temp = adaptive_temperature(distances, store.profile.temperature)
