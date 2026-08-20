@@ -3,22 +3,35 @@ NCM - Text and state encoding system.
 
 FIXES from v1:
   1. Semantic projection is now documented as Johnson-Lindenstrauss random projection
-     (not "trained projector"). JL lemma guarantees pairwise distances are preserved
-     within (1±epsilon) with high probability when target dim >= O(log(n)/epsilon^2).
-     For n=100k memories, epsilon=0.1: min_dim = ~110. We use 128. Justified.
+     (not "trained projector"). The construction is the standard JL one, but the JL
+     distance-preservation bound is NOT satisfied at the dimensions shipped here.
+     `verify_math()` computes the bound and records jl_satisfied=False for the
+     shipped configuration (semantic_dim=128). See the note at the projection
+     construction below for the arithmetic. Treat the projection as an empirically
+     adequate compression with uncharacterized distortion, not as a guarantee.
      
   2. Emotional encoding now returns BOTH the projected vector AND exposes
      encode_emotional() so retrieval can compare projected-to-projected.
      
   3. Added encode_state() for proper state normalization.
 
-NEW MATH:
-  Information-theoretic encoding gate:
-    gate(x, S) = H(x|S) / H_max
-    where H(x|S) is the conditional entropy of new input given current state,
-    and H_max is the maximum possible entropy.
-    If gate < threshold, the experience is too predictable to store.
-    This implements selective encoding (Ebbinghaus + resource-rational account).
+ENCODING GATE:
+  The write gate is a nearest-neighbour novelty score, not an information
+  measure:
+    novelty(x, M) = clip(1 - max_j cos(x, m_j), 0, 1)
+  over the stored memory vectors m_j. If novelty is below a threshold, the
+  experience is treated as too predictable to store.
+
+  An earlier version of this docstring described the gate as
+  "gate(x, S) = H(x|S) / H_max", a conditional entropy normalised by the
+  maximum entropy. That description was wrong. `encoding_gate` estimates no
+  probability distribution, computes no entropy, and has no H_max term, so the
+  gate is not information-theoretic and should not be described as such.
+
+  Selective encoding here is a design choice motivated by bounded
+  storage, not a result taken from a cited source. Ebbinghaus (1885)
+  concerns retention and forgetting over time, not what is written at
+  encoding time, so it is not a warrant for this gate.
 """
 
 import os
@@ -160,7 +173,7 @@ class SentenceEncoder:
         # Math: W_emo · W_emo^T ≈ I_k numerically. This preserves geometric
         # independence of emotional dimensions and prevents information collapse
         # in retrieval. Note: numeric orthonormality is subject to floating-point
-        # precision — the experiment suite records a small orthonormality error on the
+        # precision. The experiment suite records a small orthonormality error on the
         # order of 1e-7 (see experiments outputs). Treat this as an empirical
         # observation rather than an unconditional mathematical equality.
         # for typical runs (see `experiments/results/run_all_experiments/math_verification.json`).
@@ -313,16 +326,19 @@ class SentenceEncoder:
 
     def encoding_gate(self, query_vec: np.ndarray, memory_vecs: np.ndarray) -> float:
         """
-        Information-theoretic encoding gate.
-        
-        NEW MATH:
-          novelty(q, M) = 1 - max_similarity(q, M)
+        Nearest-neighbour novelty gate for writes.
+
+        This is not an information-theoretic quantity. It estimates no
+        distribution and computes no entropy.
+
+          novelty(q, M) = clip(1 - max_similarity(q, M), 0, 1)
           where similarity is cosine similarity to all stored memories.
-          
+
           If novelty < threshold, the input is too predictable to store.
-          This implements selective encoding per the resource-rational
-          account (Dubrow & Davachi, 2016).
-          
+          Discarding predictable input is a design choice in NCM, made to
+          keep storage bounded. It is not a reproduction of a published
+          empirical result.
+
         For empty memory, returns 1.0 (everything is novel).
         """
         if memory_vecs is None or len(memory_vecs) == 0:

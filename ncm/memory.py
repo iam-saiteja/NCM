@@ -286,8 +286,10 @@ class MemoryStore:
             memory: MemoryEntry to add
             gate_check: If True, only add if the memory is novel enough
                         (encoding gate > write_threshold from profile).
-                        Implements selective encoding: not everything is
-                        worth remembering (Dubrow & Davachi, 2016).
+                        This is a design choice: NCM does not store every
+                        experience, on the assumption that storage is a
+                        limited resource. No empirical result is claimed
+                        for this behaviour.
         """
         expected_sem = self.profile.semantic_dim
         if memory.e_semantic.shape != (expected_sem,):

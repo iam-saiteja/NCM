@@ -84,8 +84,13 @@ def vectorized_manifold_distance(
         strength=2.0 (max, heavily reinforced) -> distance reduced by strength_boost
         strength=0.5 (decayed) -> distance increased by 0.5·strength_boost
         
-        This implements the spacing effect: frequently retrieved memories
-        are easier to recall (Ebbinghaus, 1885; Cepeda et al., 2006).
+        Strength modulation is an NCM design choice, not a modelled
+        psychological effect. It makes reinforced memories easier to
+        retrieve and decayed memories harder. Note that the mechanism
+        carries no interstudy-interval term, so it does not implement
+        the spacing effect. The temporal term d_time below is an
+        exponential forgetting curve of the general form reported by
+        Ebbinghaus (1885).
       
       d_sem   = 1 - cos(e_sem_m, e_sem_q)           ∈ [0, 1]
       d_emo   = ||e_emo_m - e_emo_q|| / 2.0          ∈ [0, 1]  (projected vs projected)
@@ -249,7 +254,8 @@ def retrieve_top_k(
     3. Avoid redundant adaptive temperature computation
     
     Uses strength-weighted retrieval by default: reinforced memories are
-    easier to recall, decayed memories are harder (spacing effect).
+    easier to recall, decayed memories are harder. This is a design choice;
+    it is not an implementation of the spacing effect.
     
     Returns list of (distance, probability, MemoryEntry) tuples.
     """
