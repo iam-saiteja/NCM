@@ -1,0 +1,327 @@
+EXP22: Is the emotional channel redundant with the state channel?
+=================================================================
+
+Question: e_emotional = L2_normalize(W_emo @ s_padded) with W_emo a
+fixed orthonormal QR projection (ncm/encoder.py encode_emotional), so
+the emotional channel is a deterministic linear function of the same
+auto-state that the state channel compares. Does removing beta*d_emo
+change retrieval quality?
+
+Setup
+- Seed: 20260819 (corpus order, held-out choices, query bootstrap); 20260820 for the conversation bootstrap
+- Encoder backend: sentence-transformers
+- Encoder state_dim: 7, emotional_dim: 3, AutoStateTracker dims: 5
+- Corpus: experiments/data/real_world_corpus/train.jsonl (8939 records, counted at run time)
+- Relevance label: a stored turn is relevant iff it shares the held-out query turn's session_id
+- Label provenance: session_id ships with the corpus and was not authored for this experiment
+- Query state: the 5-dim auto-state is inferred from the query text alone by a fresh AutoStateTracker and assigned to store.auto_state.state; no label information reaches the query, so no arm here is an oracle
+- max_conversations: 100 (script default 100)
+- Reproduce with: venv/Scripts/python.exe experiments/python/exp22_emo_ablation.py
+- No synthetic or hand-authored data is used anywhere in this run.
+
+Arms and how the removed weight was redistributed
+- default: alpha 0.4, beta 0.2, gamma 0.3, delta 0.1
+    redistribution: none; shipped defaults from ncm/profile.py RetrievalWeights
+- no_emo_renorm: alpha 0.5, beta 0.0, gamma 0.375, delta 0.125
+    redistribution: beta 0.2 removed, then alpha, gamma and delta each multiplied by 1/(1-0.2) = 1.25, giving 0.5, 0.375, 0.125; sum 1.0
+- no_emo_state_absorbs: alpha 0.4, beta 0.0, gamma 0.5, delta 0.1
+    redistribution: beta 0.2 removed and added entirely to gamma, giving gamma 0.5 with alpha and delta untouched; sum 1.0
+- semantic_only: ncm.retrieval.retrieve_semantic_only, no weights
+Total composite weight is 1.0 in every arm, so the ablation is not
+confounded with a rescaling of the distance.
+
+WEIGHTS-ARE-LIVE GUARD
+- passed: True
+- guard ran on: conversation id 0, session_id 0, store size 46
+- provenance: a real store built from the corpus, not synthetic
+- sem_pure_vs_time_pure_top10_differs: True
+- emo_pure_vs_state_pure_top10_differs: True
+- emo_channel_distance_varies_across_memories: True
+- state_channel_distance_varies_across_memories: True
+- default_vs_no_emo_renorm_distances_differ: True
+- default_vs_no_emo_state_absorbs_distances_differ: True
+- no_emo_renorm_is_uniform_rescale_of_default: True
+- beta_is_live_at_shipped_value: True
+- all_memory_strengths_are_1: True
+- contradiction_awareness_is_off: True
+- arm_profiles_differ_only_in_retrieval_weights: True
+- max abs distance difference default vs no_emo_renorm: 0.10309523
+- max abs distance difference default vs no_emo_state_absorbs: 0.01011175
+- emotional-channel distance sd across the guard store: 0.00562108
+- state-channel distance sd across the guard store: 0.01645968
+- beta-is-live residual: 5.290e-08
+    max over the memories of the guard store of |d_default - d_no_emo_renorm/1.25 - 0.2*d_emo|, where d_emo is the probe_emo_pure distance. Zero to floating point means beta contributes at its shipped value and not merely at the 1.0 used by the probe. The 'distances differ' checks above do not establish this, because the alpha, gamma and delta rescale changes every distance on its own
+Without this guard a dead weight would make every arm the same
+computation and the null result below would be an artifact. The
+distance-difference checks alone are not enough, because the
+alpha, gamma and delta rescale changes every distance whether or
+not beta contributes; the residual above is what pins beta at its
+shipped 0.2.
+
+Dataset
+- Conversations loaded: 100
+- Conversations benchmarked: 65
+- Skipped, fewer than 2 sessions: 35
+- Skipped, no session with at least 3 stored turns: 0
+- Queries evaluated: 228
+- Turns stored in total: 2628
+- Mean store size: 40.43
+- Mean relevant turns per query: 11.53
+- Random-guess precision: 0.2851
+    definition: mean over queries of (n_relevant / store_size); this is the expected precision at any k for a retriever drawing k memories uniformly at random, and is independent of k. It is NOT mean(n_relevant)/mean(store_size), which would divide a per-query mean by a per-conversation mean.
+
+Means per arm (sd per query in the JSON)
+arm                        P@5    P@10    R@10   NDCG@10     MRR     n
+----------------------------------------------------------------------
+default                 0.4561  0.4088  0.3600    0.4529  0.7714   228
+no_emo_renorm           0.4579  0.4088  0.3602    0.4534  0.7749   228
+no_emo_state_absorbs    0.4596  0.4083  0.3590    0.4530  0.7733   228
+semantic_only           0.4640  0.4053  0.3576    0.4518  0.7786   228
+
+Paired per-query deltas against default
+Each row is the mean of the per-query difference. Two percentile
+bootstrap 95 pct CIs are given (10000 resamples): one resampling queries
+(seed 20260819), one resampling whole conversations (seed 20260820). Queries inside
+one conversation share a store and a candidate set, so they are not
+independent and the conversation-level interval is the one to read
+when the two disagree. 'zero' names where 0.0 sits in the
+query-level interval: interior, on a bound, or outside. A bound
+landing exactly on 0.0 is a discreteness artifact of a difference
+vector that is mostly zeros, not a measurement of equivalence, so
+'nonzero' (the number of queries whose metric actually changed) has
+to be read with every interval. MDE is the minimum detectable
+effect at 80 pct power, two-sided 0.05.
+
+no_emo_renorm minus default
+  metric       delta           query CI      conversation CI  nonzero    MDE80  wilcox p     method
+  p@5        +0.0018  [-0.0026,+0.0070]    [-0.0043,+0.0070]    8/228   0.0070    0.6406      exact
+  p@10       +0.0000  [-0.0022,+0.0026]    [-0.0022,+0.0022]    8/228   0.0035    0.8438      exact
+  r@10       +0.0002  [-0.0017,+0.0022]    [-0.0014,+0.0019]    8/228   0.0028    0.6406      exact
+  ndcg@10    +0.0005  [-0.0013,+0.0024]    [-0.0011,+0.0021]   46/228   0.0026    0.5157      exact
+  mrr        +0.0035  [-0.0001,+0.0092]    [-0.0000,+0.0089]    5/228   0.0068    0.1875      exact
+  where zero sits, and which queries moved
+  - p@5: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 5 changed queries favour the arm, 3 favour the reference, 220 are exactly 0.0
+  - p@10: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 4 changed queries favour the arm, 4 favour the reference, 220 are exactly 0.0
+  - r@10: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 4 changed queries favour the arm, 4 favour the reference, 220 are exactly 0.0
+  - ndcg@10: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 24 changed queries favour the arm, 22 favour the reference, 182 are exactly 0.0
+  - mrr: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 4 changed queries favour the arm, 1 favour the reference, 223 are exactly 0.0
+
+no_emo_state_absorbs minus default
+  metric       delta           query CI      conversation CI  nonzero    MDE80  wilcox p     method
+  p@5        +0.0035  [-0.0035,+0.0105]    [-0.0028,+0.0104]   16/228   0.0098    0.4037      exact
+  p@10       -0.0004  [-0.0039,+0.0031]    [-0.0039,+0.0031]   14/228   0.0051    0.5416      exact
+  r@10       -0.0010  [-0.0043,+0.0019]    [-0.0042,+0.0020]   14/228   0.0044    0.3575      exact
+  ndcg@10    +0.0002  [-0.0026,+0.0030]    [-0.0021,+0.0026]   84/228   0.0039    0.6176      exact
+  mrr        +0.0019  [-0.0047,+0.0089]    [-0.0042,+0.0076]    8/228   0.0096    0.3828      exact
+  where zero sits, and which queries moved
+  - p@5: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 10 changed queries favour the arm, 6 favour the reference, 212 are exactly 0.0
+  - p@10: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 7 changed queries favour the arm, 7 favour the reference, 214 are exactly 0.0
+  - r@10: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 7 changed queries favour the arm, 7 favour the reference, 214 are exactly 0.0
+  - ndcg@10: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 42 changed queries favour the arm, 42 favour the reference, 144 are exactly 0.0
+  - mrr: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 6 changed queries favour the arm, 2 favour the reference, 220 are exactly 0.0
+
+semantic_only minus default
+  metric       delta           query CI      conversation CI  nonzero    MDE80  wilcox p     method
+  p@5        +0.0079  [-0.0009,+0.0167]    [-0.0009,+0.0167]   22/228   0.0122   0.05007      exact
+  p@10       -0.0035  [-0.0083,+0.0013]    [-0.0077,+0.0009]   29/228   0.0069    0.2053      exact
+  r@10       -0.0024  [-0.0066,+0.0015]    [-0.0061,+0.0013]   29/228   0.0058     0.442      exact
+  ndcg@10    -0.0011  [-0.0050,+0.0028]    [-0.0043,+0.0022]  108/228   0.0056    0.9113      exact
+  mrr        +0.0072  [-0.0016,+0.0168]    [-0.0012,+0.0165]   16/228   0.0134    0.1046      exact
+  where zero sits, and which queries moved
+  - p@5: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 15 changed queries favour the arm, 7 favour the reference, 206 are exactly 0.0
+  - p@10: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 11 changed queries favour the arm, 18 favour the reference, 199 are exactly 0.0
+  - r@10: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 11 changed queries favour the arm, 18 favour the reference, 199 are exactly 0.0
+  - ndcg@10: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 52 changed queries favour the arm, 56 favour the reference, 120 are exactly 0.0
+  - mrr: query CI contains_zero_in_interior, conversation CI contains_zero_in_interior; 10 changed queries favour the arm, 6 favour the reference, 212 are exactly 0.0
+
+MDE definition: minimum detectable effect: the smallest true mean paired difference this design would detect with 80 percent power at a two-sided 0.05 level, computed as (z_0.975 + z_0.80) * sd_delta / sqrt(n_queries) = 2.801585 * sd_delta / sqrt(n_queries). A normal approximation to the paired t-test, quoted as a scale only. It ignores the conversation clustering, so it is optimistic
+Wilcoxon: scipy.stats.wilcoxon, zero_method=wilcox, two-sided, method=exact. The exact null distribution assumes distinct absolute differences; the per-query metrics here are quantised so ties are present and no midrank correction is applied in exact mode. The exact p-value is the larger of the two and is reported for that reason. method=auto would have returned the normal approximation, which understates small-n p-values.
+
+Ranking divergence against default
+- no_emo_renorm: top-10 list differs on 0.3596 of queries, top-1 changed on 0.0132, mean set Jaccard 0.9864
+- no_emo_state_absorbs: top-10 list differs on 0.6404 of queries, top-1 changed on 0.0175, mean set Jaccard 0.9714
+- semantic_only: top-10 list differs on 0.7895 of queries, top-1 changed on 0.0439, mean set Jaccard 0.9518
+
+Direct redundancy measurement
+- Over 9401 (query, stored memory) pairs from the
+  corpus, the emotional-channel distance and the state-channel
+  distance correlate at Pearson r = 0.4691 and
+  Spearman rho = 0.4767.
+- the 9401 pairs come from 228 queries in 65 conversations, so they are clustered and far from independent. No p-value is reported for either correlation for that reason; r and rho are descriptive only.
+- Channel source: each channel is the distance returned by ncm.retrieval.retrieve_top_k_fast with all weight on that one channel, which equals the clipped channel distance exactly when every memory strength is 1.0 and contradiction awareness is off; both conditions are members of the weights-are-live guard's checks dict and therefore gate the run
+
+Dispersion of each channel over all (query, memory) pairs
+  channel     weight      mean        sd       min       max       w*sd    w*range
+  d_sem        0.400   0.82217   0.15513   0.20168   1.00000   0.062050   0.319329
+  d_emo        0.200   0.00698   0.00427   0.00008   0.02682   0.000853   0.005347
+  d_state      0.300   0.02524   0.01184   0.00281   0.08249   0.003551   0.023904
+  d_time       0.100   0.02123   0.01231   0.00100   0.04687   0.001231   0.004587
+  definition: sd is the standard deviation of that channel's distance over all (query, memory) pairs, pooled across stores; weighted_sd multiplies it by the shipped weight, giving the scale on which that channel can move the composite distance between two candidate memories
+  d_sem clip: d_sem is np.clip(1.0 - cosine_similarity, 0.0, 1.0) at ncm/retrieval.py:115, so a maximum of exactly 1.00000 is the clip boundary and not an observed extreme. Any range-based statistic involving d_sem is therefore truncated; 1503 of 9401 pairs sit on the boundary
+- Measured as weighted standard deviations, the semantic
+  channel's spread is 72.73 times the
+  emotional channel's.
+- Measured as weighted ranges, and with the d_sem numerator
+  truncated by the clip noted above, the ratio is 59.72.
+  two different dispersion measures, not interchangeable. weighted_sd_ratio_sem_over_emo is (alpha times the sd of d_sem) divided by (beta times the sd of d_emo). weighted_range_ratio_sem_over_emo is the same ratio with ranges in place of standard deviations, and its numerator is truncated by the d_sem clip. Both are pooled over all (query, memory) pairs. Each sentence that quotes a ratio names which one it is
+- Order-flip budget of the emotional term, as a weighted range
+  pooled over all (query, memory) pairs: 0.005347. Two memories can
+  be reordered by the emotional term only if the other three
+  terms place their composite distances within that much of each
+  other.
+  beta times the range of d_emo. Two memories can be reordered by the emotional term only if the other three terms place their composite distances within this much of each other. The range is pooled over all (query, memory) pairs, which is wider than the range inside any one store, so this is an upper bound on the term's influence. The near-tie table reports the within-store version
+
+Near-tie accounting: what the emotional term is reordering
+- Measured on 228 queries, over the top 12 memories of the shipped composite ranking.
+- Median order-flip budget of the emotional term inside a single
+  store: 0.002570.
+- Median adjacent-rank gap of the shipped composite in the top 12:
+  0.005709.
+- Adjacent-rank gaps smaller than that query's emotional budget: 703 of
+  2508, 28.0 pct.
+  definition: for each query, the emotional order-flip budget inside that one store is beta times the range of d_emo over the memories of that store, and the adjacent-rank gaps are the successive differences of the shipped composite distance over the top 12 memories as returned by ncm.retrieval.retrieve_top_k_fast under the default weights. A gap below the budget is a pair the emotional term could reorder on its own. The fraction is over all (query, adjacent pair) gaps, pooled across queries
+- Read together with the ranking divergence above: the emotional
+  term does move top-10 lists, and the pairs it can move are
+  near-ties in the other three channels. It is not too flat to
+  reorder anything; it is reordering candidates the rest of the
+  composite has already placed within its reach, without changing
+  how many relevant turns land in the top k.
+
+Structural note on how much the emotional channel can carry
+- SentenceEncoder.state_dim is 7 and
+  AutoStateTracker emits 5 dimensions, so 2 of the
+  dimensions that encode_emotional pads to are structurally always
+  zero, and the corresponding columns of W_emo never contribute.
+- W_emo therefore maps an effectively 5-dim input to 3 dims.
+- encode_emotional L2-normalizes its output, so e_emotional depends
+  only on the direction of the auto-state. _rebuild_cache also
+  L2-normalizes the stored auto-state before the state channel sees
+  it. Both channels therefore read the same normalized quantity, one
+  at 5 dims and one compressed to 3.
+- Measured scale invariance of encode_emotional: max abs component
+  difference between encode_emotional(s) and encode_emotional(s/||s||) over
+  20 real inferred query states was 1.192e-07.
+
+Calibration against exp17
+- Reference file: experiments/results/exp17/exp17_real_world_scale.json, fields config.max_conversations, dataset.*, arms.ncm_inferred.*, arms.semantic_only.*, arms.recency_only.p@5.
+- exp17 at max_conversations=100: 65 conversations, 228 queries,
+  2628 stored turns, semantic_only P@5 0.4640, ncm_inferred P@5 0.4561.
+- this run at max_conversations=100: 65 conversations, 228 queries,
+  2628 stored turns, semantic_only P@5 0.4640, default P@5 0.4561.
+- Same scale as exp17: True.
+- Per-metric comparison, computed at run time from both result
+  files. No number in this block was recorded by hand.
+  default_vs_exp17_ncm_inferred
+    metric      this run     exp17      diff
+    p@5           0.4561    0.4561   +0.0000
+    p@10          0.4088    0.4088   +0.0000
+    r@10          0.3600    0.3600   +0.0000
+    ndcg@10       0.4529    0.4529   +0.0000
+    mrr           0.7714    0.7714   +0.0000
+  semantic_only_vs_exp17_semantic_only
+    metric      this run     exp17      diff
+    p@5           0.4640    0.4640   +0.0000
+    p@10          0.4053    0.4053   +0.0000
+    r@10          0.3576    0.3576   +0.0000
+    ndcg@10       0.4518    0.4518   +0.0000
+    mrr           0.7786    0.7786   +0.0000
+- Largest absolute difference: 0.000000 against a tolerance of 0.0001.
+- MATCH: on the same query set this run's default arm equals exp17's ncm_inferred arm and this run's semantic_only arm equals exp17's semantic_only arm to four decimal places on all 5 reported metrics; largest absolute difference 0.00e+00.
+- exp17's figures are means over its own query set. When max_conversations is below 100 the query set here is a prefix subset of exp17's, because the loader takes records in file order and the held-out choices are drawn from the same seeded RNG in the same order, so absolute values differ by sampling and only the paired columns are tight comparisons.
+
+Reading of the result
+The retrieval weights are proved live and beta is proved live at
+its shipped 0.2, with a residual of
+5.290e-08 on the identity
+d_default - d_no_emo_renorm/1.25 - 0.2*d_emo, so the comparison
+below is between genuinely different scorers and not between
+copies.
+
+Scale of the test: 228 queries drawn from 65 conversations.
+Between the two redistributions and the three key metrics, the
+number of queries whose metric actually changed ranges from
+5 to 84 out of 228. Every paired
+difference vector is therefore mostly exact zeros, and that has to
+be read alongside any interval computed from it.
+
+Removing the emotional term does not hurt retrieval quality on
+this task. For both redistributions and all three key metrics,
+zero lies strictly inside both the query-level and the
+conversation-level 95 pct interval, so neither direction is
+supported at that level. The point estimates weakly favour
+removal: 6 of the 6 point estimates are
+positive in the direction of removal, which is the direction a
+redundant term would move if it were adding noise. That is a
+sign pattern, not a detected effect.
+
+What this does not license. It does not show that the emotional
+channel earns none of its 0.2 weight, and it does not show that
+the two arms are equivalent. A two-sided interval that contains
+zero is not an equivalence test, and on difference vectors this
+sparse it is close to uninformative about effect size. The
+largest minimum detectable effect over these six cells is
+0.0098 at 80 pct power and two-sided 0.05, so any true
+effect smaller than that would have been missed by this design.
+
+The ranking does move, so the arms are not identical
+computations. The emotional term reorders results without
+changing how many relevant turns land in the top k.
+
+The semantic_only arm, which is the most consequential number
+here, is not an ablation of the emotional term but a weight-free
+external reference. Against the shipped composite it scores
+P@5 +0.0079 with query-level CI [-0.0009, +0.0167] and
+conversation-level CI [-0.0009, +0.0167], 22/228 queries changed.
+NDCG@10 -0.0011 with query-level CI [-0.0050, +0.0028] and
+conversation-level CI [-0.0043, +0.0022], 108/228 queries changed.
+MRR +0.0072 with query-level CI [-0.0016, +0.0168] and
+conversation-level CI [-0.0012, +0.0165], 16/228 queries changed.
+Reading: on this corpus and this label, dropping the three
+non-semantic channels entirely does not lose retrieval quality
+either, and on P@5 the point estimate favours the semantic-only
+retriever. That is a finding about the whole composite, not just
+about beta, and it is the number a reader should be shown first.
+
+The two channels are correlated at Pearson r = 0.4691 and Spearman
+rho = 0.4767 over 9401 real (query, memory) pairs from
+65 conversations. No p-value is quoted: the pairs are
+clustered by query and by store, so an independence-based p-value
+would be meaningless. The correlation is consistent with the
+structural argument that both channels are deterministic
+functions of the same normalized auto-state, so the emotional
+term supplies no input the state term lacks. It is not an
+algebraic identity, because the projection to 3 dimensions
+distorts angles, so d_emo is not a function of d_state alone.
+
+Mechanism. Pooled over all (query, memory) pairs, the emotional
+distance has standard deviation 0.00427 against
+0.15513 for the semantic distance, and after the
+shipped weights that is 0.000853 against
+0.062050. The channel is small in scale,
+but it is not too small to act. Inside a single store its median
+order-flip budget is 0.002570 against a median
+adjacent-rank gap of 0.005709 in the top 12 of the
+shipped composite, and
+28.0 pct of those adjacent gaps (703 of
+2508) are smaller than that query's
+budget. So the term does reorder candidates, and the candidates it
+can reorder are the ones the other three channels have already
+placed within its reach. It reorders near-ties and carries no
+relevance signal, which is why the ranking moves while the metrics
+do not. It is not that the channel cannot separate candidates at
+all.
+
+This run measures beta only at its shipped 0.2. It says nothing
+about what a larger beta would do.
+
+Scope. One corpus, one relevance label, one query-state condition,
+one encoder, one machine, and the shipped weight vector. This does
+not show that an emotional channel is useless in general, and it
+does not show that this one is worthless. It shows that on this
+task, at this scale, removing this projection of this state does
+not measurably change retrieval quality in either direction.
+
+Latency is deliberately not measured here. exp4 is the latency
+measurement. The composite path reads a cache warmed once per
+conversation while retrieve_semantic_only rebuilds its own matrix on
+every call, so timings taken here would compare cache states.
