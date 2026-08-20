@@ -1,0 +1,188 @@
+EXP23: CADP Detection Precision and False Positive Characterisation
+==============================================================================
+
+DATA DISCLOSURE
+------------------------------------------------------------------------------
+Every memory pair, chain and distractor used in this experiment is
+HAND-AUTHORED SYNTHETIC TEXT written by the experiment author. There is no
+external corpus, no independent annotator and no inter-annotator agreement
+statistic. The ground-truth labels are one author's judgement. Every number
+in this file is a property of that hand-authored set and of the detector, and
+carries no claim about natural user data.
+
+CONFIGURATION
+------------------------------------------------------------------------------
+seed: 42
+encoder_backend: sentence-transformers
+primary contradiction_similarity_threshold: 0.82
+primary contradiction_requires_marker: True
+contradiction_penalty used for the retrieval measurement: 0.2
+shipped default contradiction_penalty: 0.0
+shipped default enable_contradiction_awareness: False
+shipped default contradiction_similarity_threshold: 0.85
+The primary threshold and marker settings are the values EXP18 uses, so this
+experiment characterises the same configuration whose true-positive behaviour
+EXP18 reports. A penalty of 0.2 is NOT the shipped default.
+
+CONFUSION MATRIX FOR THE LINKING DECISION, PRIMARY CONDITION
+------------------------------------------------------------------------------
+Positive class: the older memory genuinely is superseded and should be linked.
+Computed over the hand-authored synthetic pair set.
+  true positives  : 4
+  false positives : 3
+  false negatives : 8
+  true negatives  : 44
+  scored pairs    : 59 (12 positive, 47 negative)
+  ambiguous pairs excluded from all rates: 4 (of which the detector linked 0)
+
+  precision           : 0.571  (4/7)
+  recall              : 0.333  (4/12)
+  F1                  : 0.421
+  false positive rate : 0.064  (3/47)
+
+These denominators are small. A precision computed over a handful of items
+must not be read as if it were computed over hundreds.
+
+PER-FAMILY BREAKDOWN, PRIMARY CONDITION
+------------------------------------------------------------------------------
+Families are hand-authored and label-homogeneous. 'linked' means add() set
+contradicted_by on the older memory.
+
+  family                           truth      linked    errors   error kind
+  incidental_temporal              ambiguous  0/4       n/a      not scored (ambiguous)
+  true_positive_marked             link       3/6       3        false negatives
+  true_positive_unmarked           link       1/6       5        false negatives
+  additive_detail                  no_link    0/5       0        false positives
+  legitimate_change_over_time      no_link    0/4       0        false positives
+  lexical_overlap_unrelated        no_link    0/5       0        false positives
+  marked_non_correction            no_link    0/7       0        false positives
+  marker_substring_artifact        no_link    2/6       2        false positives
+  paraphrase_same_fact             no_link    1/5       1        false positives
+  polarity_time_shift              no_link    0/4       0        false positives
+  topically_related_compatible     no_link    0/6       0        false positives
+  unrelated_statements             no_link    0/5       0        false positives
+
+Negative families where the detector produced false positives:
+  marker_substring_artifact: 2 of 6 pairs wrongly linked
+  paraphrase_same_fact: 1 of 5 pairs wrongly linked
+
+Positive families the detector missed:
+  true_positive_unmarked: 5 of 6 genuine supersessions not linked
+  true_positive_marked: 3 of 6 genuine supersessions not linked
+
+MULTI-STEP CHAIN ANCESTOR COVERAGE
+------------------------------------------------------------------------------
+Hand-authored three-step chains A then B then C. Correct behaviour links both
+A and B once C is written.
+  chains with all superseded ancestors flagged: 1/3
+  chain_seat: contradicted_by per memory = ['C', 'C', None], all ancestors flagged = True
+  chain_project_code: contradicted_by per memory = ['B', None, None], all ancestors flagged = False
+  chain_city: contradicted_by per memory = [None, None, None], all ancestors flagged = False
+
+AMBIGUOUS BUCKET
+------------------------------------------------------------------------------
+  pairs placed in the ambiguous bucket: 4
+  of those, the detector linked: 0
+  Reason for the bucket: these pairs use 'now' non-correctively over a slot
+  that is not single-valued, for example reading two books or varying a
+  commute. The author judges supersession genuinely undecidable, so forcing a
+  label would make the precision number meaningless. They are excluded from
+  precision, recall, F1 and the false positive rate, and reported only here.
+    [not linked] I am reading a book about birds. -> I am now reading a book about volcanoes.
+    [not linked] I am working on the parser. -> I am now working on the optimizer.
+    [not linked] I take the bus to work. -> I am now cycling to work.
+    [not linked] I listen to jazz in the evening. -> I am now listening to classical music.
+
+THRESHOLD AND MARKER GATE SWEEP
+------------------------------------------------------------------------------
+Rates over the hand-authored synthetic set. P = precision, R = recall,
+FPR = false positive rate. TP/FP/FN/TN are raw counts.
+
+  contradiction_requires_marker = True
+    thresh   TP   FP   FN   TN   P        R        F1       FPR
+    0.50     7    9    5    38   0.438    0.583    0.500    0.191
+    0.55     7    7    5    40   0.500    0.583    0.538    0.149
+    0.60     7    6    5    41   0.538    0.583    0.560    0.128
+    0.65     7    5    5    42   0.583    0.583    0.583    0.106
+    0.70     6    5    6    42   0.545    0.500    0.522    0.106
+    0.75     6    4    6    43   0.600    0.500    0.545    0.085
+    0.80     5    3    7    44   0.625    0.417    0.500    0.064
+    0.82     4    3    8    44   0.571    0.333    0.421    0.064
+    0.85     4    3    8    44   0.571    0.333    0.421    0.064
+    0.90     4    3    8    44   0.571    0.333    0.421    0.064
+    0.95     4    3    8    44   0.571    0.333    0.421    0.064
+    0.99     4    3    8    44   0.571    0.333    0.421    0.064
+
+  contradiction_requires_marker = False
+    thresh   TP   FP   FN   TN   P        R        F1       FPR
+    0.50     12   29   0    18   0.293    1.000    0.453    0.617
+    0.55     12   23   0    24   0.343    1.000    0.511    0.489
+    0.60     12   22   0    25   0.353    1.000    0.522    0.468
+    0.65     12   20   0    27   0.375    1.000    0.545    0.426
+    0.70     11   19   1    28   0.367    0.917    0.524    0.404
+    0.75     10   16   2    31   0.385    0.833    0.526    0.340
+    0.80     9    11   3    36   0.450    0.750    0.562    0.234
+    0.82     8    10   4    37   0.444    0.667    0.533    0.213
+    0.85     8    8    4    39   0.500    0.667    0.571    0.170
+    0.90     8    7    4    40   0.533    0.667    0.593    0.149
+    0.95     7    6    5    41   0.538    0.583    0.560    0.128
+    0.99     7    6    5    41   0.538    0.583    0.560    0.128
+
+MARKER GATE MECHANISM PROBE
+------------------------------------------------------------------------------
+These probe strings are artificial and hand-authored, not natural language.
+They hold the content change fixed and vary only the leading token, so any
+change in the decision is attributable to the marker test alone.
+  fixed older text: My meeting room is R12.
+  leading tokens that satisfied the marker gate: ['correction:', 'update:', 'actually', 'instead', 'revised:', 'now', 'know', 'snow', 'nowhere', 'renowned']
+
+RETRIEVAL CONSEQUENCE OF A FALSE POSITIVE
+------------------------------------------------------------------------------
+Measured on the same store with only contradiction_penalty toggled between
+0.0 and 0.2, so links, embeddings, timestamps and auto-state
+are identical across the two readings and the whole rank change is
+attributable to the penalty. Hand-authored synthetic pairs and hand-authored
+distractor memories.
+  wrongly flagged pairs measured: 3
+  cases with a hand-authored probe query: 3
+  median rank drop: 2.0
+  max rank drop: 9
+  wrongly flagged memory pushed out of rank 1: 1/3
+  wrongly flagged memory pushed out of the top 3: 2/3
+
+  Per case, hand-authored probe query:
+    p019 marker_substring_artifact: rank 2 -> 4 of 14, distance 0.1079 -> 0.2863
+      wrongly flagged text: My mentor is Sara.
+      query: Who is my mentor?
+    p023 marker_substring_artifact: rank 2 -> 11 of 14, distance 0.1432 -> 0.3146
+      wrongly flagged text: My knowledge of Rust is basic.
+      query: How good is my Rust?
+    p025 paraphrase_same_fact: rank 1 -> 3 of 14, distance 0.0727 -> 0.2582
+      wrongly flagged text: My office is on the third floor.
+      query: Which floor is my office on?
+
+OBSERVED IMPLEMENTATION BEHAVIOUR
+------------------------------------------------------------------------------
+  - MemoryStore._is_correction_pair tests correction markers with a bare substring test over the marker list, so any word containing a marker as a substring satisfies the gate. The marker 'now' is contained in 'know', 'snow', 'nowhere', 'knowledge' and 'renowned'.
+  - When the subject extracted from both texts is equal, MemoryStore._is_correction_pair lowers the effective similarity threshold to min(threshold, 0.55), so raising contradiction_similarity_threshold above 0.55 cannot tighten the decision for subject-aligned pairs.
+  - MemoryStore._extract_subject requires the copula ' is ' and returns None for sentences without it, so many natural statements have no extracted subject.
+  - retrieve_top_k_fast accepts s_current_normalized and never reads it; ncm/retrieval.py:372 uses store.auto_state.get_current_state() instead.
+  - Enabling a non-zero contradiction_penalty rescales all base distances by (1 - penalty) in addition to adding the penalty to flagged memories, so a flagged memory must beat an unflagged one by penalty/(1 - penalty) in raw distance to keep its position.
+
+INTERNAL CONSISTENCY CHECKS
+------------------------------------------------------------------------------
+  auto-state equivalence: 0 of 63 decisions differ when update_auto_state is toggled
+    auto-state does not affect the linking decision on this set
+  retrieve_top_k_fast s_current_normalized ignored: identical distances for zeros vs ones = True, assigning store.auto_state.state changes distances = True
+
+VERDICT
+------------------------------------------------------------------------------
+On this hand-authored synthetic set the detector wrongly linked 3 of 47 negative pairs. The failing families are: marker_substring_artifact (2/6), paraphrase_same_fact (1/5).
+It also missed 8 of 12 genuine supersessions.
+When a memory is wrongly flagged, the penalty of 0.2 moved it out of rank 1 in 1 of 3 cases and out of the top 3 in 2 of 3 cases, with a median rank drop of 2.0.
+Conservative reading: the false positive rate above is measured on a small hand-authored set chosen to span negative families, not sampled from any population, so it characterises the detector's failure modes rather than estimating a rate. Treat the identified failure modes as the finding and the rate itself as illustrative.
+
+Figures:
+  per_family_link_rate: experiments/results/exp23/exp23_per_family_link_rate.png
+  false_positive_rank_shift: experiments/results/exp23/exp23_false_positive_rank_shift.png
+  threshold_sweep: experiments/results/exp23/exp23_threshold_sweep.png

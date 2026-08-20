@@ -1,0 +1,2191 @@
+{
+  "experiment": "EXP23 CADP detection precision and false positive characterisation",
+  "data_disclosure": "ALL pairs, chains and distractor memories in this file are HAND-AUTHORED SYNTHETIC TEXT written by the experiment author. No external corpus, no independent annotator, no inter-annotator agreement. Every rate below is a property of this hand-authored set.",
+  "run_metadata": {
+    "seed": 42,
+    "encoder_backend": "sentence-transformers",
+    "encoder_backend_error": null,
+    "encoder_model_dir": "models\\all-MiniLM-L6-v2",
+    "numpy_version": "1.26.4",
+    "matplotlib_backend": "Agg",
+    "sweep_enabled": true,
+    "pair_limit": null,
+    "n_pairs_run": 63
+  },
+  "shipped_defaults": {
+    "enable_contradiction_awareness": false,
+    "contradiction_penalty": 0.0,
+    "contradiction_similarity_threshold": 0.85,
+    "contradiction_requires_marker": true,
+    "note": "CADP is opt-in. EXP18 used a penalty of 0.20, not the shipped default."
+  },
+  "primary_condition": {
+    "profile_settings": {
+      "name": "detect_t0.82_m1",
+      "custom": {
+        "enable_contradiction_awareness": true,
+        "contradiction_similarity_threshold": 0.82,
+        "contradiction_requires_marker": true,
+        "contradiction_penalty": 0.2,
+        "contradiction_query_gate": 1.0,
+        "write_conflict_trace": false
+      },
+      "retrieval_weights": {
+        "alpha": 0.4,
+        "beta": 0.2,
+        "gamma": 0.3,
+        "delta": 0.1
+      },
+      "semantic_dim": 128,
+      "emotional_dim": 3,
+      "state_dim": 7,
+      "decay_rate": 0.001,
+      "temperature": 0.1,
+      "max_size": 10000
+    },
+    "contradiction_penalty_used_for_retrieval": 0.2,
+    "confusion": {
+      "true_positives": 4,
+      "false_positives": 3,
+      "false_negatives": 8,
+      "true_negatives": 44,
+      "scored_pairs": 59,
+      "labelled_positive_pairs": 12,
+      "labelled_negative_pairs": 47,
+      "precision": 0.571429,
+      "precision_denominator": 7,
+      "recall": 0.333333,
+      "recall_denominator": 12,
+      "f1": 0.421053,
+      "false_positive_rate": 0.06383,
+      "false_positive_rate_denominator": 47,
+      "ambiguous_pairs_excluded": 4,
+      "ambiguous_pairs_linked": 0
+    },
+    "per_family": {
+      "true_positive_marked": {
+        "family": "true_positive_marked",
+        "ground_truth_label": "link",
+        "n_pairs": 6,
+        "n_linked": 3,
+        "linked_pair_ids": [
+          "p001",
+          "p003",
+          "p005"
+        ],
+        "unlinked_pair_ids": [
+          "p000",
+          "p002",
+          "p004"
+        ],
+        "link_rate": 0.5,
+        "link_rate_as_fraction": "3/6",
+        "errors_are": "false negatives",
+        "n_errors": 3
+      },
+      "true_positive_unmarked": {
+        "family": "true_positive_unmarked",
+        "ground_truth_label": "link",
+        "n_pairs": 6,
+        "n_linked": 1,
+        "linked_pair_ids": [
+          "p006"
+        ],
+        "unlinked_pair_ids": [
+          "p007",
+          "p008",
+          "p009",
+          "p010",
+          "p011"
+        ],
+        "link_rate": 0.166667,
+        "link_rate_as_fraction": "1/6",
+        "errors_are": "false negatives",
+        "n_errors": 5
+      },
+      "marked_non_correction": {
+        "family": "marked_non_correction",
+        "ground_truth_label": "no_link",
+        "n_pairs": 7,
+        "n_linked": 0,
+        "linked_pair_ids": [],
+        "unlinked_pair_ids": [
+          "p012",
+          "p013",
+          "p014",
+          "p015",
+          "p016",
+          "p017",
+          "p018"
+        ],
+        "link_rate": 0.0,
+        "link_rate_as_fraction": "0/7",
+        "errors_are": "false positives",
+        "n_errors": 0
+      },
+      "marker_substring_artifact": {
+        "family": "marker_substring_artifact",
+        "ground_truth_label": "no_link",
+        "n_pairs": 6,
+        "n_linked": 2,
+        "linked_pair_ids": [
+          "p019",
+          "p023"
+        ],
+        "unlinked_pair_ids": [
+          "p020",
+          "p021",
+          "p022",
+          "p024"
+        ],
+        "link_rate": 0.333333,
+        "link_rate_as_fraction": "2/6",
+        "errors_are": "false positives",
+        "n_errors": 2
+      },
+      "paraphrase_same_fact": {
+        "family": "paraphrase_same_fact",
+        "ground_truth_label": "no_link",
+        "n_pairs": 5,
+        "n_linked": 1,
+        "linked_pair_ids": [
+          "p025"
+        ],
+        "unlinked_pair_ids": [
+          "p026",
+          "p027",
+          "p028",
+          "p029"
+        ],
+        "link_rate": 0.2,
+        "link_rate_as_fraction": "1/5",
+        "errors_are": "false positives",
+        "n_errors": 1
+      },
+      "topically_related_compatible": {
+        "family": "topically_related_compatible",
+        "ground_truth_label": "no_link",
+        "n_pairs": 6,
+        "n_linked": 0,
+        "linked_pair_ids": [],
+        "unlinked_pair_ids": [
+          "p030",
+          "p031",
+          "p032",
+          "p033",
+          "p034",
+          "p035"
+        ],
+        "link_rate": 0.0,
+        "link_rate_as_fraction": "0/6",
+        "errors_are": "false positives",
+        "n_errors": 0
+      },
+      "additive_detail": {
+        "family": "additive_detail",
+        "ground_truth_label": "no_link",
+        "n_pairs": 5,
+        "n_linked": 0,
+        "linked_pair_ids": [],
+        "unlinked_pair_ids": [
+          "p036",
+          "p037",
+          "p038",
+          "p039",
+          "p040"
+        ],
+        "link_rate": 0.0,
+        "link_rate_as_fraction": "0/5",
+        "errors_are": "false positives",
+        "n_errors": 0
+      },
+      "legitimate_change_over_time": {
+        "family": "legitimate_change_over_time",
+        "ground_truth_label": "no_link",
+        "n_pairs": 4,
+        "n_linked": 0,
+        "linked_pair_ids": [],
+        "unlinked_pair_ids": [
+          "p041",
+          "p042",
+          "p043",
+          "p044"
+        ],
+        "link_rate": 0.0,
+        "link_rate_as_fraction": "0/4",
+        "errors_are": "false positives",
+        "n_errors": 0
+      },
+      "polarity_time_shift": {
+        "family": "polarity_time_shift",
+        "ground_truth_label": "no_link",
+        "n_pairs": 4,
+        "n_linked": 0,
+        "linked_pair_ids": [],
+        "unlinked_pair_ids": [
+          "p045",
+          "p046",
+          "p047",
+          "p048"
+        ],
+        "link_rate": 0.0,
+        "link_rate_as_fraction": "0/4",
+        "errors_are": "false positives",
+        "n_errors": 0
+      },
+      "lexical_overlap_unrelated": {
+        "family": "lexical_overlap_unrelated",
+        "ground_truth_label": "no_link",
+        "n_pairs": 5,
+        "n_linked": 0,
+        "linked_pair_ids": [],
+        "unlinked_pair_ids": [
+          "p049",
+          "p050",
+          "p051",
+          "p052",
+          "p053"
+        ],
+        "link_rate": 0.0,
+        "link_rate_as_fraction": "0/5",
+        "errors_are": "false positives",
+        "n_errors": 0
+      },
+      "unrelated_statements": {
+        "family": "unrelated_statements",
+        "ground_truth_label": "no_link",
+        "n_pairs": 5,
+        "n_linked": 0,
+        "linked_pair_ids": [],
+        "unlinked_pair_ids": [
+          "p054",
+          "p055",
+          "p056",
+          "p057",
+          "p058"
+        ],
+        "link_rate": 0.0,
+        "link_rate_as_fraction": "0/5",
+        "errors_are": "false positives",
+        "n_errors": 0
+      },
+      "incidental_temporal": {
+        "family": "incidental_temporal",
+        "ground_truth_label": "ambiguous",
+        "n_pairs": 4,
+        "n_linked": 0,
+        "linked_pair_ids": [],
+        "unlinked_pair_ids": [
+          "p059",
+          "p060",
+          "p061",
+          "p062"
+        ],
+        "link_rate": 0.0,
+        "link_rate_as_fraction": "0/4",
+        "errors_are": "not scored (ambiguous)",
+        "n_errors": null
+      }
+    },
+    "labelled_dataset_with_decisions": [
+      {
+        "pair_id": "p000",
+        "family": "true_positive_marked",
+        "older": "I live in Berlin.",
+        "newer": "Correction: I live in Munich.",
+        "probe": "Where do I live?",
+        "label": "link",
+        "rationale": "Explicit correction marker and a single-valued slot. The older city is superseded.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.660398,
+        "decision_correct": false
+      },
+      {
+        "pair_id": "p001",
+        "family": "true_positive_marked",
+        "older": "My office is on the third floor.",
+        "newer": "Correction: my office is on the fifth floor.",
+        "probe": "Which floor is my office on?",
+        "label": "link",
+        "rationale": "Explicit correction of a single-valued slot.",
+        "data_origin": "hand-authored synthetic",
+        "linked": true,
+        "cosine_similarity": 0.785826,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p002",
+        "family": "true_positive_marked",
+        "older": "My flight leaves at 9 am.",
+        "newer": "Update: my flight leaves at 11 am.",
+        "probe": "What time does my flight leave?",
+        "label": "link",
+        "rationale": "Marked update to a single-valued slot. The earlier departure time no longer holds.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.818632,
+        "decision_correct": false
+      },
+      {
+        "pair_id": "p003",
+        "family": "true_positive_marked",
+        "older": "My employee id is E-101.",
+        "newer": "Correction: my employee id is E-222.",
+        "probe": "What is my employee id?",
+        "label": "link",
+        "rationale": "Explicit correction of an identifier.",
+        "data_origin": "hand-authored synthetic",
+        "linked": true,
+        "cosine_similarity": 0.835533,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p004",
+        "family": "true_positive_marked",
+        "older": "I drive a blue sedan.",
+        "newer": "Actually I drive a grey sedan.",
+        "probe": "What colour is my car?",
+        "label": "link",
+        "rationale": "The marker 'actually' here does correct the previous colour claim.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.788028,
+        "decision_correct": false
+      },
+      {
+        "pair_id": "p005",
+        "family": "true_positive_marked",
+        "older": "My hometown is Pune.",
+        "newer": "Revised: my hometown is Mumbai.",
+        "probe": "What is my hometown?",
+        "label": "link",
+        "rationale": "Explicit revision of a single-valued slot.",
+        "data_origin": "hand-authored synthetic",
+        "linked": true,
+        "cosine_similarity": 0.605,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p006",
+        "family": "true_positive_unmarked",
+        "older": "My manager is Ana.",
+        "newer": "My manager is Ravi now.",
+        "probe": "Who is my manager?",
+        "label": "link",
+        "rationale": "Single-valued reporting relationship. The older manager is superseded.",
+        "data_origin": "hand-authored synthetic",
+        "linked": true,
+        "cosine_similarity": 0.607702,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p007",
+        "family": "true_positive_unmarked",
+        "older": "My manager is Ana.",
+        "newer": "My manager is Ravi.",
+        "probe": "Who is my manager?",
+        "label": "link",
+        "rationale": "Same supersession with no temporal adverb at all.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.676944,
+        "decision_correct": false
+      },
+      {
+        "pair_id": "p008",
+        "family": "true_positive_unmarked",
+        "older": "My phone number is 555-0100.",
+        "newer": "My phone number is 555-0199.",
+        "probe": "What is my phone number?",
+        "label": "link",
+        "rationale": "Single-valued contact detail, silently replaced.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.989022,
+        "decision_correct": false
+      },
+      {
+        "pair_id": "p009",
+        "family": "true_positive_unmarked",
+        "older": "I live in Berlin.",
+        "newer": "I live in Munich.",
+        "probe": "Where do I live?",
+        "label": "link",
+        "rationale": "Single-valued residence, silently replaced.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.709131,
+        "decision_correct": false
+      },
+      {
+        "pair_id": "p010",
+        "family": "true_positive_unmarked",
+        "older": "My desk is in room 12.",
+        "newer": "My desk is in room 30.",
+        "probe": "Which room is my desk in?",
+        "label": "link",
+        "rationale": "Single-valued desk location, silently replaced.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.808151,
+        "decision_correct": false
+      },
+      {
+        "pair_id": "p011",
+        "family": "true_positive_unmarked",
+        "older": "My laptop password expires in June.",
+        "newer": "My laptop password expires in August.",
+        "probe": "When does my laptop password expire?",
+        "label": "link",
+        "rationale": "Single-valued expiry date, silently replaced.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.918919,
+        "decision_correct": false
+      },
+      {
+        "pair_id": "p012",
+        "family": "marked_non_correction",
+        "older": "The project started in March.",
+        "newer": "Update: the project is still on schedule.",
+        "probe": "When did the project start?",
+        "label": "no_link",
+        "rationale": "The marker introduces a status report, not a replacement of the start date.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.568688,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p013",
+        "family": "marked_non_correction",
+        "older": "I think the design is good.",
+        "newer": "Actually, I agree with you.",
+        "probe": "What do I think of the design?",
+        "label": "no_link",
+        "rationale": "'Actually' is used as a discourse particle expressing agreement, not correction.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.273899,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p014",
+        "family": "marked_non_correction",
+        "older": "My passport expires next year.",
+        "newer": "I need to update my passport photo.",
+        "probe": "When does my passport expire?",
+        "label": "no_link",
+        "rationale": "'update' is the main verb of a new task, not a correction of the expiry date.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.541552,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p015",
+        "family": "marked_non_correction",
+        "older": "We shipped the release on Tuesday.",
+        "newer": "Update: no changes since yesterday.",
+        "probe": "When did we ship the release?",
+        "label": "no_link",
+        "rationale": "The marker introduces an explicit statement that nothing changed.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.348047,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p016",
+        "family": "marked_non_correction",
+        "older": "I read the quarterly report.",
+        "newer": "Actually, that was a useful report.",
+        "probe": "Did I read the quarterly report?",
+        "label": "no_link",
+        "rationale": "An evaluative remark about the same object, not a replacement of it.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.516811,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p017",
+        "family": "marked_non_correction",
+        "older": "The server has 32 GB of memory.",
+        "newer": "Instead of guessing, let us measure the server memory.",
+        "probe": "How much memory does the server have?",
+        "label": "no_link",
+        "rationale": "'instead' governs a proposed action, not a revised memory figure.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.716635,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p018",
+        "family": "marked_non_correction",
+        "older": "My deadline is on Friday.",
+        "newer": "Update: I have nothing new to report about the deadline.",
+        "probe": "When is my deadline?",
+        "label": "no_link",
+        "rationale": "A marked non-update. The deadline is unchanged and explicitly so.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.620336,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p019",
+        "family": "marker_substring_artifact",
+        "older": "My mentor is Sara.",
+        "newer": "My mentor is renowned in the field.",
+        "probe": "Who is my mentor?",
+        "label": "no_link",
+        "rationale": "A compliment about the same mentor. 'renowned' contains the substring 'now'.",
+        "data_origin": "hand-authored synthetic",
+        "linked": true,
+        "cosine_similarity": 0.656625,
+        "decision_correct": false
+      },
+      {
+        "pair_id": "p020",
+        "family": "marker_substring_artifact",
+        "older": "The answer is unclear.",
+        "newer": "I know the answer is 42.",
+        "probe": "What is the answer?",
+        "label": "no_link",
+        "rationale": "Resolution of uncertainty. 'know' contains the substring 'now'.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.496698,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p021",
+        "family": "marker_substring_artifact",
+        "older": "The weather is warm.",
+        "newer": "It snowed heavily last night.",
+        "probe": "What is the weather like?",
+        "label": "no_link",
+        "rationale": "Two weather observations at different times. 'snowed' contains 'now'.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.397821,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p022",
+        "family": "marker_substring_artifact",
+        "older": "The parking lot is full.",
+        "newer": "There is nowhere to park.",
+        "probe": "Is there parking available?",
+        "label": "no_link",
+        "rationale": "A restatement, not a correction. 'nowhere' contains 'now'.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.360758,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p023",
+        "family": "marker_substring_artifact",
+        "older": "My knowledge of Rust is basic.",
+        "newer": "My knowledge of Rust is still improving.",
+        "probe": "How good is my Rust?",
+        "label": "no_link",
+        "rationale": "Compatible statements about the same skill. 'knowledge' contains 'now'.",
+        "data_origin": "hand-authored synthetic",
+        "linked": true,
+        "cosine_similarity": 0.846502,
+        "decision_correct": false
+      },
+      {
+        "pair_id": "p024",
+        "family": "marker_substring_artifact",
+        "older": "The report is ready.",
+        "newer": "It is snowing outside.",
+        "probe": "Is the report ready?",
+        "label": "no_link",
+        "rationale": "Unrelated content that nonetheless contains the substring 'now'.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": -0.012158,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p025",
+        "family": "paraphrase_same_fact",
+        "older": "My office is on the third floor.",
+        "newer": "Actually my office is on floor three.",
+        "probe": "Which floor is my office on?",
+        "label": "no_link",
+        "rationale": "Identical fact, different wording. No value changed.",
+        "data_origin": "hand-authored synthetic",
+        "linked": true,
+        "cosine_similarity": 0.920164,
+        "decision_correct": false
+      },
+      {
+        "pair_id": "p026",
+        "family": "paraphrase_same_fact",
+        "older": "I was born in 1994.",
+        "newer": "Update: my year of birth is 1994.",
+        "probe": "When was I born?",
+        "label": "no_link",
+        "rationale": "Restatement of the same year under a marker.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.780494,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p027",
+        "family": "paraphrase_same_fact",
+        "older": "My flight leaves at 9 am.",
+        "newer": "My flight departs at nine in the morning.",
+        "probe": "What time does my flight leave?",
+        "label": "no_link",
+        "rationale": "Same departure time expressed differently.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.822883,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p028",
+        "family": "paraphrase_same_fact",
+        "older": "I work as a data engineer.",
+        "newer": "My job is data engineering.",
+        "probe": "What is my job?",
+        "label": "no_link",
+        "rationale": "Same occupation, rephrased.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.875618,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p029",
+        "family": "paraphrase_same_fact",
+        "older": "The meeting is at noon.",
+        "newer": "The meeting is at 12 pm.",
+        "probe": "When is the meeting?",
+        "label": "no_link",
+        "rationale": "Same time, two notations.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.794074,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p030",
+        "family": "topically_related_compatible",
+        "older": "I speak Tamil.",
+        "newer": "I speak English.",
+        "probe": "What languages do I speak?",
+        "label": "no_link",
+        "rationale": "Multilingualism. Both remain true.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.533036,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p031",
+        "family": "topically_related_compatible",
+        "older": "I own a bicycle.",
+        "newer": "I own a car.",
+        "probe": "What vehicles do I own?",
+        "label": "no_link",
+        "rationale": "Ownership is additive, not exclusive.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.684032,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p032",
+        "family": "topically_related_compatible",
+        "older": "One of my hobbies is chess.",
+        "newer": "One of my hobbies is painting.",
+        "probe": "What are my hobbies?",
+        "label": "no_link",
+        "rationale": "'One of' makes joint truth explicit. Same extracted subject, so this pair also probes the subject-aligned threshold bypass.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.508876,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p033",
+        "family": "topically_related_compatible",
+        "older": "I am allergic to peanuts.",
+        "newer": "I am allergic to shellfish.",
+        "probe": "What am I allergic to?",
+        "label": "no_link",
+        "rationale": "Allergies accumulate. Both remain true.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.473648,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p034",
+        "family": "topically_related_compatible",
+        "older": "I visited Japan in 2019.",
+        "newer": "I visited Peru in 2022.",
+        "probe": "Which countries have I visited?",
+        "label": "no_link",
+        "rationale": "Two distinct completed events.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.494441,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p035",
+        "family": "topically_related_compatible",
+        "older": "My cat is called Mochi.",
+        "newer": "My dog is called Rex.",
+        "probe": "What are my pets called?",
+        "label": "no_link",
+        "rationale": "Two different pets, high topical overlap.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.420794,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p036",
+        "family": "additive_detail",
+        "older": "I work at a hospital.",
+        "newer": "I work at a hospital in the cardiology ward.",
+        "probe": "Where do I work?",
+        "label": "no_link",
+        "rationale": "The refinement entails the original statement.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.798977,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p037",
+        "family": "additive_detail",
+        "older": "My office is in Building B.",
+        "newer": "My office is in Building B on the second floor.",
+        "probe": "Where is my office?",
+        "label": "no_link",
+        "rationale": "Added detail, same building.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.923322,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p038",
+        "family": "additive_detail",
+        "older": "I studied physics.",
+        "newer": "I studied physics at a university in Chennai.",
+        "probe": "What did I study?",
+        "label": "no_link",
+        "rationale": "Added location, same subject of study.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.750751,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p039",
+        "family": "additive_detail",
+        "older": "My car is a hatchback.",
+        "newer": "My car is a red hatchback.",
+        "probe": "What kind of car do I have?",
+        "label": "no_link",
+        "rationale": "Added colour, same body type. Same extracted subject, so this pair also probes the subject-aligned threshold bypass.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.85221,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p040",
+        "family": "additive_detail",
+        "older": "I have a meeting on Monday.",
+        "newer": "I have a meeting on Monday with the design team.",
+        "probe": "When is my meeting?",
+        "label": "no_link",
+        "rationale": "Added attendee, same day.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.772629,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p041",
+        "family": "legitimate_change_over_time",
+        "older": "In 2019 I lived in Delhi.",
+        "newer": "In 2023 I live in Berlin.",
+        "probe": "Where did I live in 2019?",
+        "label": "no_link",
+        "rationale": "Each statement is anchored to its own year and both stay true.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.507578,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p042",
+        "family": "legitimate_change_over_time",
+        "older": "Last year my title was junior analyst.",
+        "newer": "This year my title is senior analyst.",
+        "probe": "What was my title last year?",
+        "label": "no_link",
+        "rationale": "A promotion. The historical title remains a correct record.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.90749,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p043",
+        "family": "legitimate_change_over_time",
+        "older": "In my first year I rented a studio flat.",
+        "newer": "In my third year I rented a two bedroom flat.",
+        "probe": "What did I rent in my first year?",
+        "label": "no_link",
+        "rationale": "Two separate tenancies, both true of their period.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.805879,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p044",
+        "family": "legitimate_change_over_time",
+        "older": "The 2021 budget was 40 thousand.",
+        "newer": "The 2024 budget is 90 thousand.",
+        "probe": "What was the 2021 budget?",
+        "label": "no_link",
+        "rationale": "Different fiscal years. Neither figure invalidates the other.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.72461,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p045",
+        "family": "polarity_time_shift",
+        "older": "I used to smoke.",
+        "newer": "I do not smoke.",
+        "probe": "Did I ever smoke?",
+        "label": "no_link",
+        "rationale": "'Used to' already entails present non-smoking. Jointly consistent.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.600266,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p046",
+        "family": "polarity_time_shift",
+        "older": "I used to live in Delhi.",
+        "newer": "I do not live in Delhi.",
+        "probe": "Have I ever lived in Delhi?",
+        "label": "no_link",
+        "rationale": "Past residence and present non-residence are consistent.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.84219,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p047",
+        "family": "polarity_time_shift",
+        "older": "I was a vegetarian for ten years.",
+        "newer": "I am not a vegetarian.",
+        "probe": "Was I ever a vegetarian?",
+        "label": "no_link",
+        "rationale": "A completed ten year period remains a true record.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.727226,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p048",
+        "family": "polarity_time_shift",
+        "older": "I used to run marathons.",
+        "newer": "I no longer run marathons.",
+        "probe": "Did I ever run marathons?",
+        "label": "no_link",
+        "rationale": "The two sentences assert the same thing from opposite directions.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.774666,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p049",
+        "family": "lexical_overlap_unrelated",
+        "older": "The bank by the river flooded.",
+        "newer": "I opened an account at the bank.",
+        "probe": "What happened at the river bank?",
+        "label": "no_link",
+        "rationale": "Two senses of 'bank'. Nothing is superseded.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.325185,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p050",
+        "family": "lexical_overlap_unrelated",
+        "older": "My python script is slow.",
+        "newer": "I saw a python at the zoo.",
+        "probe": "Why is my script slow?",
+        "label": "no_link",
+        "rationale": "Two senses of 'python'.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.257124,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p051",
+        "family": "lexical_overlap_unrelated",
+        "older": "My mouse stopped working.",
+        "newer": "There is a mouse in the kitchen.",
+        "probe": "What is wrong with my mouse?",
+        "label": "no_link",
+        "rationale": "Two senses of 'mouse'.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.477904,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p052",
+        "family": "lexical_overlap_unrelated",
+        "older": "I need to charge my phone.",
+        "newer": "The charge on the invoice is wrong.",
+        "probe": "Does my phone need charging?",
+        "label": "no_link",
+        "rationale": "Two senses of 'charge'.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.382677,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p053",
+        "family": "lexical_overlap_unrelated",
+        "older": "I booked a table for four.",
+        "newer": "The table in the report has four rows.",
+        "probe": "How many people is the restaurant booking for?",
+        "label": "no_link",
+        "rationale": "Two senses of 'table', shared numeral.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.503324,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p054",
+        "family": "unrelated_statements",
+        "older": "I enjoy hiking on weekends.",
+        "newer": "The printer on the second floor is jammed.",
+        "probe": "What do I do on weekends?",
+        "label": "no_link",
+        "rationale": "No shared subject or topic.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.051506,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p055",
+        "family": "unrelated_statements",
+        "older": "My favourite cuisine is Korean food.",
+        "newer": "The quarterly audit begins in November.",
+        "probe": "What cuisine do I like?",
+        "label": "no_link",
+        "rationale": "No shared subject or topic.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": -0.105877,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p056",
+        "family": "unrelated_statements",
+        "older": "I use Linux for development.",
+        "newer": "My neighbour adopted two kittens.",
+        "probe": "What operating system do I use?",
+        "label": "no_link",
+        "rationale": "No shared subject or topic.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.038052,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p057",
+        "family": "unrelated_statements",
+        "older": "My commute takes about 25 minutes.",
+        "newer": "The library closes at eight on Sundays.",
+        "probe": "How long is my commute?",
+        "label": "no_link",
+        "rationale": "No shared subject or topic.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.174302,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p058",
+        "family": "unrelated_statements",
+        "older": "I read science fiction novels.",
+        "newer": "The boiler needs servicing before winter.",
+        "probe": "What genre do I read?",
+        "label": "no_link",
+        "rationale": "No shared subject or topic.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": -0.031041,
+        "decision_correct": true
+      },
+      {
+        "pair_id": "p059",
+        "family": "incidental_temporal",
+        "older": "I am reading a book about birds.",
+        "newer": "I am now reading a book about volcanoes.",
+        "probe": "What book am I reading?",
+        "label": "ambiguous",
+        "rationale": "A person can read two books at once, so the older may still hold.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.278507,
+        "decision_correct": null
+      },
+      {
+        "pair_id": "p060",
+        "family": "incidental_temporal",
+        "older": "I am working on the parser.",
+        "newer": "I am now working on the optimizer.",
+        "probe": "What am I working on?",
+        "label": "ambiguous",
+        "rationale": "Concurrent workstreams are normal, so supersession is not implied.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.337225,
+        "decision_correct": null
+      },
+      {
+        "pair_id": "p061",
+        "family": "incidental_temporal",
+        "older": "I take the bus to work.",
+        "newer": "I am now cycling to work.",
+        "probe": "How do I get to work?",
+        "label": "ambiguous",
+        "rationale": "Commute mode can vary by day, so the older may still hold.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.612118,
+        "decision_correct": null
+      },
+      {
+        "pair_id": "p062",
+        "family": "incidental_temporal",
+        "older": "I listen to jazz in the evening.",
+        "newer": "I am now listening to classical music.",
+        "probe": "What music do I listen to?",
+        "label": "ambiguous",
+        "rationale": "A momentary activity does not clearly cancel a stated habit.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.64252,
+        "decision_correct": null
+      }
+    ]
+  },
+  "ambiguous_bucket": {
+    "n_pairs": 4,
+    "n_linked": 0,
+    "why_ambiguous": "These hand-authored pairs use 'now' non-correctively over a slot that is not single-valued. Supersession is genuinely undecidable, so they are excluded from precision, recall, F1 and the false positive rate.",
+    "pairs": [
+      {
+        "pair_id": "p059",
+        "family": "incidental_temporal",
+        "older": "I am reading a book about birds.",
+        "newer": "I am now reading a book about volcanoes.",
+        "probe": "What book am I reading?",
+        "label": "ambiguous",
+        "rationale": "A person can read two books at once, so the older may still hold.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.278507,
+        "decision_correct": null
+      },
+      {
+        "pair_id": "p060",
+        "family": "incidental_temporal",
+        "older": "I am working on the parser.",
+        "newer": "I am now working on the optimizer.",
+        "probe": "What am I working on?",
+        "label": "ambiguous",
+        "rationale": "Concurrent workstreams are normal, so supersession is not implied.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.337225,
+        "decision_correct": null
+      },
+      {
+        "pair_id": "p061",
+        "family": "incidental_temporal",
+        "older": "I take the bus to work.",
+        "newer": "I am now cycling to work.",
+        "probe": "How do I get to work?",
+        "label": "ambiguous",
+        "rationale": "Commute mode can vary by day, so the older may still hold.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.612118,
+        "decision_correct": null
+      },
+      {
+        "pair_id": "p062",
+        "family": "incidental_temporal",
+        "older": "I listen to jazz in the evening.",
+        "newer": "I am now listening to classical music.",
+        "probe": "What music do I listen to?",
+        "label": "ambiguous",
+        "rationale": "A momentary activity does not clearly cancel a stated habit.",
+        "data_origin": "hand-authored synthetic",
+        "linked": false,
+        "cosine_similarity": 0.64252,
+        "decision_correct": null
+      }
+    ]
+  },
+  "chains": {
+    "n_chains": 3,
+    "n_chains_with_all_ancestors_flagged": 1,
+    "coverage_as_fraction": "1/3",
+    "per_chain": [
+      {
+        "chain_id": "chain_seat",
+        "texts": [
+          "My office seat is A-11.",
+          "Update: my office seat is B-22.",
+          "Correction: my office seat is C-33."
+        ],
+        "data_origin": "hand-authored synthetic",
+        "contradicted_by_label_per_memory": [
+          "C",
+          "C",
+          null
+        ],
+        "oldest_ancestor_flagged": true,
+        "middle_ancestor_flagged": true,
+        "all_superseded_ancestors_flagged": true
+      },
+      {
+        "chain_id": "chain_project_code",
+        "texts": [
+          "My project code is ALPHA.",
+          "Update: my project code is BETA.",
+          "Final correction: my project code is GAMMA."
+        ],
+        "data_origin": "hand-authored synthetic",
+        "contradicted_by_label_per_memory": [
+          "B",
+          null,
+          null
+        ],
+        "oldest_ancestor_flagged": true,
+        "middle_ancestor_flagged": false,
+        "all_superseded_ancestors_flagged": false
+      },
+      {
+        "chain_id": "chain_city",
+        "texts": [
+          "I live in Berlin.",
+          "Correction: I live in Munich.",
+          "Correction: I live in Hamburg."
+        ],
+        "data_origin": "hand-authored synthetic",
+        "contradicted_by_label_per_memory": [
+          null,
+          null,
+          null
+        ],
+        "oldest_ancestor_flagged": false,
+        "middle_ancestor_flagged": false,
+        "all_superseded_ancestors_flagged": false
+      }
+    ]
+  },
+  "auto_state_equivalence": {
+    "pairs_checked": 63,
+    "decisions_that_differ": 0,
+    "mismatched_pair_ids": [],
+    "conclusion": "auto-state does not affect the linking decision on this set"
+  },
+  "marker_gate_probe": {
+    "probe_kind": "artificial mechanism probe, hand-authored, not natural language",
+    "fixed_older_text": "My meeting room is R12.",
+    "n_probes": 14,
+    "tokens_that_satisfy_the_marker_gate": [
+      "correction:",
+      "update:",
+      "actually",
+      "instead",
+      "revised:",
+      "now",
+      "know",
+      "snow",
+      "nowhere",
+      "renowned"
+    ],
+    "probes": [
+      {
+        "leading_token": "(none)",
+        "newer_text": "my meeting room is R30.",
+        "linked_with_marker_gate_on": false,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.840569
+      },
+      {
+        "leading_token": "correction:",
+        "newer_text": "correction: my meeting room is R30.",
+        "linked_with_marker_gate_on": true,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.779896
+      },
+      {
+        "leading_token": "update:",
+        "newer_text": "update: my meeting room is R30.",
+        "linked_with_marker_gate_on": true,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.796151
+      },
+      {
+        "leading_token": "actually",
+        "newer_text": "actually my meeting room is R30.",
+        "linked_with_marker_gate_on": true,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.81438
+      },
+      {
+        "leading_token": "instead",
+        "newer_text": "instead my meeting room is R30.",
+        "linked_with_marker_gate_on": true,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.787828
+      },
+      {
+        "leading_token": "revised:",
+        "newer_text": "revised: my meeting room is R30.",
+        "linked_with_marker_gate_on": true,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.772031
+      },
+      {
+        "leading_token": "now",
+        "newer_text": "now my meeting room is R30.",
+        "linked_with_marker_gate_on": true,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.79113
+      },
+      {
+        "leading_token": "know",
+        "newer_text": "know my meeting room is R30.",
+        "linked_with_marker_gate_on": true,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.798473
+      },
+      {
+        "leading_token": "snow",
+        "newer_text": "snow my meeting room is R30.",
+        "linked_with_marker_gate_on": true,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.689655
+      },
+      {
+        "leading_token": "nowhere",
+        "newer_text": "nowhere my meeting room is R30.",
+        "linked_with_marker_gate_on": true,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.791109
+      },
+      {
+        "leading_token": "renowned",
+        "newer_text": "renowned my meeting room is R30.",
+        "linked_with_marker_gate_on": true,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.757063
+      },
+      {
+        "leading_token": "furthermore",
+        "newer_text": "furthermore my meeting room is R30.",
+        "linked_with_marker_gate_on": false,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.799661
+      },
+      {
+        "leading_token": "moreover",
+        "newer_text": "moreover my meeting room is R30.",
+        "linked_with_marker_gate_on": false,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.768165
+      },
+      {
+        "leading_token": "additionally",
+        "newer_text": "additionally my meeting room is R30.",
+        "linked_with_marker_gate_on": false,
+        "linked_with_marker_gate_off": true,
+        "cosine_similarity": 0.800285
+      }
+    ]
+  },
+  "retrieval_consequence": {
+    "penalty_compared": {
+      "baseline": 0.0,
+      "cadp": 0.2
+    },
+    "shipped_default_penalty": 0.0,
+    "note": "Measured on hand-authored synthetic pairs. Both readings come from the same store with only contradiction_penalty toggled.",
+    "n_false_positive_pairs_measured": 3,
+    "n_cases": 6,
+    "probe_query_median_rank_drop": 2.0,
+    "probe_query_max_rank_drop": 9,
+    "probe_query_n_left_top_1": 1,
+    "probe_query_n_left_top_3": 2,
+    "probe_query_n_cases": 3,
+    "cases": [
+      {
+        "pair_id": "p019",
+        "family": "marker_substring_artifact",
+        "older_wrongly_flagged": "My mentor is Sara.",
+        "newer": "My mentor is renowned in the field.",
+        "query_kind": "hand_authored_probe",
+        "query": "Who is my mentor?",
+        "link_present_in_store": true,
+        "store_size": 14,
+        "rank_penalty_0.0": 2,
+        "rank_penalty_0.20": 4,
+        "rank_drop": 2,
+        "distance_penalty_0.0": 0.107912,
+        "distance_penalty_0.20": 0.28633,
+        "left_top_1": false,
+        "left_top_3": true
+      },
+      {
+        "pair_id": "p019",
+        "family": "marker_substring_artifact",
+        "older_wrongly_flagged": "My mentor is Sara.",
+        "newer": "My mentor is renowned in the field.",
+        "query_kind": "exact_older_text",
+        "query": "My mentor is Sara.",
+        "link_present_in_store": true,
+        "store_size": 14,
+        "rank_penalty_0.0": 1,
+        "rank_penalty_0.20": 2,
+        "rank_drop": 1,
+        "distance_penalty_0.0": 0.005695,
+        "distance_penalty_0.20": 0.204556,
+        "left_top_1": true,
+        "left_top_3": false
+      },
+      {
+        "pair_id": "p023",
+        "family": "marker_substring_artifact",
+        "older_wrongly_flagged": "My knowledge of Rust is basic.",
+        "newer": "My knowledge of Rust is still improving.",
+        "query_kind": "hand_authored_probe",
+        "query": "How good is my Rust?",
+        "link_present_in_store": true,
+        "store_size": 14,
+        "rank_penalty_0.0": 2,
+        "rank_penalty_0.20": 11,
+        "rank_drop": 9,
+        "distance_penalty_0.0": 0.143224,
+        "distance_penalty_0.20": 0.314579,
+        "left_top_1": false,
+        "left_top_3": true
+      },
+      {
+        "pair_id": "p023",
+        "family": "marker_substring_artifact",
+        "older_wrongly_flagged": "My knowledge of Rust is basic.",
+        "newer": "My knowledge of Rust is still improving.",
+        "query_kind": "exact_older_text",
+        "query": "My knowledge of Rust is basic.",
+        "link_present_in_store": true,
+        "store_size": 14,
+        "rank_penalty_0.0": 1,
+        "rank_penalty_0.20": 2,
+        "rank_drop": 1,
+        "distance_penalty_0.0": 0.005391,
+        "distance_penalty_0.20": 0.204313,
+        "left_top_1": true,
+        "left_top_3": false
+      },
+      {
+        "pair_id": "p025",
+        "family": "paraphrase_same_fact",
+        "older_wrongly_flagged": "My office is on the third floor.",
+        "newer": "Actually my office is on floor three.",
+        "query_kind": "hand_authored_probe",
+        "query": "Which floor is my office on?",
+        "link_present_in_store": true,
+        "store_size": 14,
+        "rank_penalty_0.0": 1,
+        "rank_penalty_0.20": 3,
+        "rank_drop": 2,
+        "distance_penalty_0.0": 0.072702,
+        "distance_penalty_0.20": 0.258162,
+        "left_top_1": true,
+        "left_top_3": false
+      },
+      {
+        "pair_id": "p025",
+        "family": "paraphrase_same_fact",
+        "older_wrongly_flagged": "My office is on the third floor.",
+        "newer": "Actually my office is on floor three.",
+        "query_kind": "exact_older_text",
+        "query": "My office is on the third floor.",
+        "link_present_in_store": true,
+        "store_size": 14,
+        "rank_penalty_0.0": 1,
+        "rank_penalty_0.20": 2,
+        "rank_drop": 1,
+        "distance_penalty_0.0": 0.007119,
+        "distance_penalty_0.20": 0.205695,
+        "left_top_1": true,
+        "left_top_3": false
+      }
+    ]
+  },
+  "ignored_state_argument": {
+    "argument_under_test": "s_current_normalized",
+    "read_site_in_source": "ncm/retrieval.py:372 reads store.auto_state.get_current_state()",
+    "passing_zeros_vs_ones_gives_same_order": true,
+    "passing_zeros_vs_ones_gives_identical_distances": true,
+    "assigning_store_auto_state_changes_distances": true,
+    "baseline_top_distance": 0.057155,
+    "conclusion": "s_current_normalized is accepted and ignored; the query state must be set by assigning store.auto_state.state"
+  },
+  "threshold_sweep": {
+    "thresholds_swept": [
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.82,
+      0.85,
+      0.9,
+      0.95,
+      0.99
+    ],
+    "marker_gate_values_swept": [
+      true,
+      false
+    ],
+    "n_configs": 24,
+    "note": "All rates below are computed over the hand-authored synthetic pair set described in this file. Raw counts accompany every rate.",
+    "configs": [
+      {
+        "contradiction_similarity_threshold": 0.5,
+        "contradiction_requires_marker": true,
+        "confusion": {
+          "true_positives": 7,
+          "false_positives": 9,
+          "false_negatives": 5,
+          "true_negatives": 38,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.4375,
+          "precision_denominator": 16,
+          "recall": 0.583333,
+          "recall_denominator": 12,
+          "f1": 0.5,
+          "false_positive_rate": 0.191489,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 2
+        },
+        "false_positives_by_family": {
+          "marked_non_correction": 5,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 2
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.55,
+        "contradiction_requires_marker": true,
+        "confusion": {
+          "true_positives": 7,
+          "false_positives": 7,
+          "false_negatives": 5,
+          "true_negatives": 40,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.5,
+          "precision_denominator": 14,
+          "recall": 0.583333,
+          "recall_denominator": 12,
+          "f1": 0.538462,
+          "false_positive_rate": 0.148936,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 2
+        },
+        "false_positives_by_family": {
+          "marked_non_correction": 3,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 2
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.6,
+        "contradiction_requires_marker": true,
+        "confusion": {
+          "true_positives": 7,
+          "false_positives": 6,
+          "false_negatives": 5,
+          "true_negatives": 41,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.538462,
+          "precision_denominator": 13,
+          "recall": 0.583333,
+          "recall_denominator": 12,
+          "f1": 0.56,
+          "false_positive_rate": 0.12766,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 2
+        },
+        "false_positives_by_family": {
+          "marked_non_correction": 2,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 2
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.65,
+        "contradiction_requires_marker": true,
+        "confusion": {
+          "true_positives": 7,
+          "false_positives": 5,
+          "false_negatives": 5,
+          "true_negatives": 42,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.583333,
+          "precision_denominator": 12,
+          "recall": 0.583333,
+          "recall_denominator": 12,
+          "f1": 0.583333,
+          "false_positive_rate": 0.106383,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "marked_non_correction": 1,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 2
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.7,
+        "contradiction_requires_marker": true,
+        "confusion": {
+          "true_positives": 6,
+          "false_positives": 5,
+          "false_negatives": 6,
+          "true_negatives": 42,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.545455,
+          "precision_denominator": 11,
+          "recall": 0.5,
+          "recall_denominator": 12,
+          "f1": 0.521739,
+          "false_positive_rate": 0.106383,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "marked_non_correction": 1,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 2
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.75,
+        "contradiction_requires_marker": true,
+        "confusion": {
+          "true_positives": 6,
+          "false_positives": 4,
+          "false_negatives": 6,
+          "true_negatives": 43,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.6,
+          "precision_denominator": 10,
+          "recall": 0.5,
+          "recall_denominator": 12,
+          "f1": 0.545455,
+          "false_positive_rate": 0.085106,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 2
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.8,
+        "contradiction_requires_marker": true,
+        "confusion": {
+          "true_positives": 5,
+          "false_positives": 3,
+          "false_negatives": 7,
+          "true_negatives": 44,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.625,
+          "precision_denominator": 8,
+          "recall": 0.416667,
+          "recall_denominator": 12,
+          "f1": 0.5,
+          "false_positive_rate": 0.06383,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 1
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.82,
+        "contradiction_requires_marker": true,
+        "confusion": {
+          "true_positives": 4,
+          "false_positives": 3,
+          "false_negatives": 8,
+          "true_negatives": 44,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.571429,
+          "precision_denominator": 7,
+          "recall": 0.333333,
+          "recall_denominator": 12,
+          "f1": 0.421053,
+          "false_positive_rate": 0.06383,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 1
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.85,
+        "contradiction_requires_marker": true,
+        "confusion": {
+          "true_positives": 4,
+          "false_positives": 3,
+          "false_negatives": 8,
+          "true_negatives": 44,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.571429,
+          "precision_denominator": 7,
+          "recall": 0.333333,
+          "recall_denominator": 12,
+          "f1": 0.421053,
+          "false_positive_rate": 0.06383,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 1
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.9,
+        "contradiction_requires_marker": true,
+        "confusion": {
+          "true_positives": 4,
+          "false_positives": 3,
+          "false_negatives": 8,
+          "true_negatives": 44,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.571429,
+          "precision_denominator": 7,
+          "recall": 0.333333,
+          "recall_denominator": 12,
+          "f1": 0.421053,
+          "false_positive_rate": 0.06383,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 1
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.95,
+        "contradiction_requires_marker": true,
+        "confusion": {
+          "true_positives": 4,
+          "false_positives": 3,
+          "false_negatives": 8,
+          "true_negatives": 44,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.571429,
+          "precision_denominator": 7,
+          "recall": 0.333333,
+          "recall_denominator": 12,
+          "f1": 0.421053,
+          "false_positive_rate": 0.06383,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 1
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.99,
+        "contradiction_requires_marker": true,
+        "confusion": {
+          "true_positives": 4,
+          "false_positives": 3,
+          "false_negatives": 8,
+          "true_negatives": 44,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.571429,
+          "precision_denominator": 7,
+          "recall": 0.333333,
+          "recall_denominator": 12,
+          "f1": 0.421053,
+          "false_positive_rate": 0.06383,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 1
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.5,
+        "contradiction_requires_marker": false,
+        "confusion": {
+          "true_positives": 12,
+          "false_positives": 29,
+          "false_negatives": 0,
+          "true_negatives": 18,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.292683,
+          "precision_denominator": 41,
+          "recall": 1.0,
+          "recall_denominator": 12,
+          "f1": 0.45283,
+          "false_positive_rate": 0.617021,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 2
+        },
+        "false_positives_by_family": {
+          "additive_detail": 5,
+          "legitimate_change_over_time": 4,
+          "lexical_overlap_unrelated": 1,
+          "marked_non_correction": 5,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 5,
+          "polarity_time_shift": 4,
+          "topically_related_compatible": 3
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.55,
+        "contradiction_requires_marker": false,
+        "confusion": {
+          "true_positives": 12,
+          "false_positives": 23,
+          "false_negatives": 0,
+          "true_negatives": 24,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.342857,
+          "precision_denominator": 35,
+          "recall": 1.0,
+          "recall_denominator": 12,
+          "f1": 0.510638,
+          "false_positive_rate": 0.489362,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 2
+        },
+        "false_positives_by_family": {
+          "additive_detail": 5,
+          "legitimate_change_over_time": 3,
+          "marked_non_correction": 3,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 5,
+          "polarity_time_shift": 4,
+          "topically_related_compatible": 1
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.6,
+        "contradiction_requires_marker": false,
+        "confusion": {
+          "true_positives": 12,
+          "false_positives": 22,
+          "false_negatives": 0,
+          "true_negatives": 25,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.352941,
+          "precision_denominator": 34,
+          "recall": 1.0,
+          "recall_denominator": 12,
+          "f1": 0.521739,
+          "false_positive_rate": 0.468085,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 2
+        },
+        "false_positives_by_family": {
+          "additive_detail": 5,
+          "legitimate_change_over_time": 3,
+          "marked_non_correction": 2,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 5,
+          "polarity_time_shift": 4,
+          "topically_related_compatible": 1
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.65,
+        "contradiction_requires_marker": false,
+        "confusion": {
+          "true_positives": 12,
+          "false_positives": 20,
+          "false_negatives": 0,
+          "true_negatives": 27,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.375,
+          "precision_denominator": 32,
+          "recall": 1.0,
+          "recall_denominator": 12,
+          "f1": 0.545455,
+          "false_positive_rate": 0.425532,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "additive_detail": 5,
+          "legitimate_change_over_time": 3,
+          "marked_non_correction": 1,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 5,
+          "polarity_time_shift": 3,
+          "topically_related_compatible": 1
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.7,
+        "contradiction_requires_marker": false,
+        "confusion": {
+          "true_positives": 11,
+          "false_positives": 19,
+          "false_negatives": 1,
+          "true_negatives": 28,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.366667,
+          "precision_denominator": 30,
+          "recall": 0.916667,
+          "recall_denominator": 12,
+          "f1": 0.52381,
+          "false_positive_rate": 0.404255,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "additive_detail": 5,
+          "legitimate_change_over_time": 3,
+          "marked_non_correction": 1,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 5,
+          "polarity_time_shift": 3
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.75,
+        "contradiction_requires_marker": false,
+        "confusion": {
+          "true_positives": 10,
+          "false_positives": 16,
+          "false_negatives": 2,
+          "true_negatives": 31,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.384615,
+          "precision_denominator": 26,
+          "recall": 0.833333,
+          "recall_denominator": 12,
+          "f1": 0.526316,
+          "false_positive_rate": 0.340426,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "additive_detail": 5,
+          "legitimate_change_over_time": 2,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 5,
+          "polarity_time_shift": 2
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.8,
+        "contradiction_requires_marker": false,
+        "confusion": {
+          "true_positives": 9,
+          "false_positives": 11,
+          "false_negatives": 3,
+          "true_negatives": 36,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.45,
+          "precision_denominator": 20,
+          "recall": 0.75,
+          "recall_denominator": 12,
+          "f1": 0.5625,
+          "false_positive_rate": 0.234043,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "additive_detail": 2,
+          "legitimate_change_over_time": 2,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 4,
+          "polarity_time_shift": 1
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.82,
+        "contradiction_requires_marker": false,
+        "confusion": {
+          "true_positives": 8,
+          "false_positives": 10,
+          "false_negatives": 4,
+          "true_negatives": 37,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.444444,
+          "precision_denominator": 18,
+          "recall": 0.666667,
+          "recall_denominator": 12,
+          "f1": 0.533333,
+          "false_positive_rate": 0.212766,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "additive_detail": 2,
+          "legitimate_change_over_time": 1,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 4,
+          "polarity_time_shift": 1
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.85,
+        "contradiction_requires_marker": false,
+        "confusion": {
+          "true_positives": 8,
+          "false_positives": 8,
+          "false_negatives": 4,
+          "true_negatives": 39,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.5,
+          "precision_denominator": 16,
+          "recall": 0.666667,
+          "recall_denominator": 12,
+          "f1": 0.571429,
+          "false_positive_rate": 0.170213,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "additive_detail": 2,
+          "legitimate_change_over_time": 1,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 3
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.9,
+        "contradiction_requires_marker": false,
+        "confusion": {
+          "true_positives": 8,
+          "false_positives": 7,
+          "false_negatives": 4,
+          "true_negatives": 40,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.533333,
+          "precision_denominator": 15,
+          "recall": 0.666667,
+          "recall_denominator": 12,
+          "f1": 0.592593,
+          "false_positive_rate": 0.148936,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "additive_detail": 2,
+          "legitimate_change_over_time": 1,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 2
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.95,
+        "contradiction_requires_marker": false,
+        "confusion": {
+          "true_positives": 7,
+          "false_positives": 6,
+          "false_negatives": 5,
+          "true_negatives": 41,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.538462,
+          "precision_denominator": 13,
+          "recall": 0.583333,
+          "recall_denominator": 12,
+          "f1": 0.56,
+          "false_positive_rate": 0.12766,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "additive_detail": 2,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 2
+        }
+      },
+      {
+        "contradiction_similarity_threshold": 0.99,
+        "contradiction_requires_marker": false,
+        "confusion": {
+          "true_positives": 7,
+          "false_positives": 6,
+          "false_negatives": 5,
+          "true_negatives": 41,
+          "scored_pairs": 59,
+          "labelled_positive_pairs": 12,
+          "labelled_negative_pairs": 47,
+          "precision": 0.538462,
+          "precision_denominator": 13,
+          "recall": 0.583333,
+          "recall_denominator": 12,
+          "f1": 0.56,
+          "false_positive_rate": 0.12766,
+          "false_positive_rate_denominator": 47,
+          "ambiguous_pairs_excluded": 4,
+          "ambiguous_pairs_linked": 0
+        },
+        "false_positives_by_family": {
+          "additive_detail": 2,
+          "marker_substring_artifact": 2,
+          "paraphrase_same_fact": 2
+        }
+      }
+    ]
+  },
+  "implementation_observations": [
+    "MemoryStore._is_correction_pair tests correction markers with a bare substring test over the marker list, so any word containing a marker as a substring satisfies the gate. The marker 'now' is contained in 'know', 'snow', 'nowhere', 'knowledge' and 'renowned'.",
+    "When the subject extracted from both texts is equal, MemoryStore._is_correction_pair lowers the effective similarity threshold to min(threshold, 0.55), so raising contradiction_similarity_threshold above 0.55 cannot tighten the decision for subject-aligned pairs.",
+    "MemoryStore._extract_subject requires the copula ' is ' and returns None for sentences without it, so many natural statements have no extracted subject.",
+    "retrieve_top_k_fast accepts s_current_normalized and never reads it; ncm/retrieval.py:372 uses store.auto_state.get_current_state() instead.",
+    "Enabling a non-zero contradiction_penalty rescales all base distances by (1 - penalty) in addition to adding the penalty to flagged memories, so a flagged memory must beat an unflagged one by penalty/(1 - penalty) in raw distance to keep its position."
+  ],
+  "verdict_lines": [
+    "On this hand-authored synthetic set the detector wrongly linked 3 of 47 negative pairs. The failing families are: marker_substring_artifact (2/6), paraphrase_same_fact (1/5).",
+    "It also missed 8 of 12 genuine supersessions.",
+    "When a memory is wrongly flagged, the penalty of 0.2 moved it out of rank 1 in 1 of 3 cases and out of the top 3 in 2 of 3 cases, with a median rank drop of 2.0.",
+    "Conservative reading: the false positive rate above is measured on a small hand-authored set chosen to span negative families, not sampled from any population, so it characterises the detector's failure modes rather than estimating a rate. Treat the identified failure modes as the finding and the rate itself as illustrative."
+  ],
+  "plots": {
+    "per_family_link_rate": "experiments/results/exp23/exp23_per_family_link_rate.png",
+    "false_positive_rank_shift": "experiments/results/exp23/exp23_false_positive_rank_shift.png",
+    "threshold_sweep": "experiments/results/exp23/exp23_threshold_sweep.png"
+  }
+}
