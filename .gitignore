@@ -6,7 +6,7 @@ dist/
 build/
 *.egg
 
-# Models (large files - download at runtime)
+# Models (large files, downloaded at runtime)
 models/
 
 # IDE
@@ -24,10 +24,15 @@ results/bench_*.ncm
 # Local utility (developer-local)
 ollama_ncm_qwen2/hidden_vector.py
 
+# Virtualenv
 venv/
 
-# Ignore full paper workspace (manuscripts, figures, tooling)
+# Full paper workspace (manuscripts, figures, tooling)
 paper/
-venv/
-paper/
+
 .pytest_cache/
+
+# Third-party benchmark checkouts. MemoryAgentBench is cloned in for EXP19
+# and EXP20 and carries its own .git and licence. It is a dependency to
+# fetch, not source to vendor.
+experiments/data/MemoryAgentBench/
