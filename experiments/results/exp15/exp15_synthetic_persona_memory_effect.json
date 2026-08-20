@@ -6,7 +6,7 @@
     "d_style": 4,
     "top_k": 8,
     "seed": 42,
-    "timestamp": 1775914233.264695,
+    "timestamp": 1787256375.7727644,
     "style_dims": [
       "analytical",
       "warm",
@@ -21,6 +21,8 @@
     "memory_gain_b_mean": 0.3882911503314972,
     "memory_gain_a_positive_rate": 0.9998,
     "memory_gain_b_positive_rate": 0.9998,
+    "memory_gain_a_positive_count": 4999,
+    "memory_gain_b_positive_count": 4999,
     "persona_class_acc_a": 1.0,
     "persona_class_acc_b": 1.0
   },

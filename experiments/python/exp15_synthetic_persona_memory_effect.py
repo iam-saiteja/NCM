@@ -228,6 +228,11 @@ def run_experiment(
             "memory_gain_b_mean": float(np.mean(gain_b)),
             "memory_gain_a_positive_rate": float(np.mean(gain_a > 0.0)),
             "memory_gain_b_positive_rate": float(np.mean(gain_b > 0.0)),
+            # Raw counts as well as the rate. A rate printed to three decimals
+            # rounds 4999/5000 to "1.000", which reads as "no case failed"
+            # when one case did. The counts cannot be rounded up.
+            "memory_gain_a_positive_count": int((gain_a > 0.0).sum()),
+            "memory_gain_b_positive_count": int((gain_b > 0.0).sum()),
             "persona_class_acc_a": float(acc_a),
             "persona_class_acc_b": float(acc_b),
         },
@@ -267,10 +272,14 @@ def write_outputs(data: dict) -> None:
         f"- Persona separation L2 (p90): {m['persona_separation_l2_p90']:.4f}",
         f"- Memory gain A (mean): {m['memory_gain_a_mean']:.4f}",
         f"- Memory gain B (mean): {m['memory_gain_b_mean']:.4f}",
-        f"- Memory gain A positive-rate: {m['memory_gain_a_positive_rate']:.3f}",
-        f"- Memory gain B positive-rate: {m['memory_gain_b_positive_rate']:.3f}",
-        f"- Persona class acc A: {m['persona_class_acc_a']:.3f}",
-        f"- Persona class acc B: {m['persona_class_acc_b']:.3f}",
+        f"- Memory gain A positive-rate: {m['memory_gain_a_positive_rate']:.4f}"
+        f" ({m['memory_gain_a_positive_count']} of"
+        f" {data['metadata']['num_prompts']})",
+        f"- Memory gain B positive-rate: {m['memory_gain_b_positive_rate']:.4f}"
+        f" ({m['memory_gain_b_positive_count']} of"
+        f" {data['metadata']['num_prompts']})",
+        f"- Persona class acc A: {m['persona_class_acc_a']:.4f}",
+        f"- Persona class acc B: {m['persona_class_acc_b']:.4f}",
         "",
         "Targeted style deltas (B - A):",
         f"- analytical: {d['delta_analytical_mean']:+.4f}",

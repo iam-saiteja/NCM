@@ -9,10 +9,10 @@ Core metrics:
 - Persona separation L2 (p90): 0.7946
 - Memory gain A (mean): 0.4002
 - Memory gain B (mean): 0.3883
-- Memory gain A positive-rate: 1.000
-- Memory gain B positive-rate: 1.000
-- Persona class acc A: 1.000
-- Persona class acc B: 1.000
+- Memory gain A positive-rate: 0.9998 (4999 of 5000)
+- Memory gain B positive-rate: 0.9998 (4999 of 5000)
+- Persona class acc A: 1.0000
+- Persona class acc B: 1.0000
 
 Targeted style deltas (B - A):
 - analytical: -0.3430
