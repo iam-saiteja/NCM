@@ -1,39 +1,32 @@
-EXP14: Persona Memory Effect with Real Ollama
-============================================
-Model: qwen2:7B
-Prompts: 6
+EXP14: Does persona memory content change model output style?
+==============================================================
+Model: phi4-mini:latest  digest 78fad5d182a7c33065e153a5f8ba210754207ba9d91973f57dffa7f487363753
+Ollama version: 0.32.14
+Decoding: {"temperature": 0.0, "top_p": 1.0, "top_k": 1, "num_predict": -1, "seed": 7}
+Paired prompts: 12 (6 affective, 6 task)
 Top-k memory context: 4
+Validity verdict: valid, reproduction confirmed against previous run
+All generations completed: True
+Generations reproduced vs previous run: True  (Every generation is byte-identical to the previous run.)
+Repeat determinism (recorded, not gating): False
 
-Mean style metrics (Persona A):
-- chars: 1304.833
-- words: 199.500
-- exclamations: 0.167
-- questions: 0.000
-- analytical_markers: 1.667
-- warm_markers: 1.333
+The state vector is hand-authored, not measured, and is identical in both
+arms, so it cannot contribute to any difference reported below.
 
-Mean style metrics (Persona B):
-- chars: 1654.500
-- words: 265.833
-- exclamations: 0.667
-- questions: 0.167
-- analytical_markers: 2.667
-- warm_markers: 4.667
+Paired differences (Persona B minus Persona A), one observation per prompt.
+p_holm is Holm-Bonferroni adjusted across all 8 metrics and is the value to
+quote. Primary metrics named in advance: analytical_marker_types, warm_marker_types
 
-Delta (B - A):
-- chars: +349.667
-- words: +66.333
-- exclamations: +0.500
-- questions: +0.167
-- analytical_markers: +1.000
-- warm_markers: +3.333
+metric                        A mean    B mean      diff       sd      dz  CI95 low  CI95 high     p_raw    p_holm  B>A  A>B  tie
+---------------------------------------------------------------------------------------------------------------------------------
+analytical_marker_types *      0.083     0.667    +0.583    0.669  +0.873    +0.250     +1.000    0.0312    0.0938    6    0    6
+warm_marker_types *            0.333     1.500    +1.167    0.937  +1.245    +0.667     +1.667    0.0039    0.0195    9    0    3
+analytical_markers             0.083     0.667    +0.583    0.669  +0.873    +0.250     +1.000    0.0312    0.0938    6    0    6
+warm_markers                   0.333     1.833    +1.500    1.087  +1.380    +0.917     +2.083    0.0020    0.0117   10    0    2
+words                         80.750   158.583   +77.833   58.999  +1.319   +47.165   +111.583    0.0005    0.0039   12    0    0
+chars                        482.667   938.000  +455.333  331.740  +1.373  +279.333   +641.175    0.0005    0.0039   12    0    0
+exclamations                   0.000     0.667    +0.667    0.778  +0.856    +0.250     +1.083    0.0312    0.0938    6    0    6
+questions                      0.000     1.333    +1.333    1.557  +0.856    +0.583     +2.250    0.0156    0.0625    7    0    5
 
-Prompt-wise sample (first 2):
-
-[p1] I failed my quiz and feel bad. What should I do next?
-A: - Reflect on the areas where you struggled during the quiz. - Review your study materials focusing on those challenging topics. - Seek help from teachers or peers to clarify doubts. - Practice more questions related to weak areas. - Set a schedule for regular 
-B: I'm sorry to hear that you're feeling down about failing your quiz, but it's important to remember that everyone experiences setbacks sometimes. It's okay to feel disappointed right now, but let's focus on what you can do moving forward.  Firstly, take a momen
-
-[p2] Plan my day for study, exercise, and rest.
-A: **Day Plan: Study, Exercise, and Rest**  1. **Morning (6:00 AM - 8:00 AM)**    - **Exercise:** Begin with a 30-minute moderate-intensity cardio session to boost energy levels.    - **Preparation for the Day:** Spend 15 minutes reviewing your study schedule and
-B: Absolutely! Planning your day effectively can help you maximize productivity while ensuring you balance work, health, and relaxation. Here’s a balanced plan that incorporates study time, exercise, and rest:  ### Morning (6:00 AM - 12:00 PM) **6:30 AM - 7:00 AM
+Scope limit: One model, one machine, 12 paired prompts, 5 persona lines per arm. Supports a claim about this model under this protocol only.
+Supersedes: The earlier temperature-0.2 unseeded 6-prompt run of this experiment is retracted. See experiments/results/exp14/RETRACTION.md.

@@ -1,0 +1,99 @@
+{
+  "experiment": "exp14_determinism_probe",
+  "purpose": "Distinguish repeat determinism (same request twice in one session) from history determinism (same request sequence twice, from a forced-unloaded model). EXP14 reproducibility depends on the second, not the first.",
+  "model": "phi4-mini:latest",
+  "seed": 7,
+  "decoding": {
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "top_k": 1,
+    "num_predict": -1,
+    "seed": 7
+  },
+  "repeats_per_run": 3,
+  "run_a": [
+    {
+      "sha256": "5fe7bc8eca87c09418e75fa79576288a1d8893f08bd1a6dd2617198464fa8012",
+      "chars": 1834,
+      "eval_count": 335,
+      "prompt_eval_count": 75,
+      "done_reason": "stop"
+    },
+    {
+      "sha256": "45bc6d53035033dab816623043056fb29ccc891b0fb5cc1b11b295d9777d1022",
+      "chars": 2516,
+      "eval_count": 481,
+      "prompt_eval_count": 75,
+      "done_reason": "stop"
+    },
+    {
+      "sha256": "45bc6d53035033dab816623043056fb29ccc891b0fb5cc1b11b295d9777d1022",
+      "chars": 2516,
+      "eval_count": 481,
+      "prompt_eval_count": 75,
+      "done_reason": "stop"
+    }
+  ],
+  "run_b": [
+    {
+      "sha256": "5fe7bc8eca87c09418e75fa79576288a1d8893f08bd1a6dd2617198464fa8012",
+      "chars": 1834,
+      "eval_count": 335,
+      "prompt_eval_count": 75,
+      "done_reason": "stop"
+    },
+    {
+      "sha256": "45bc6d53035033dab816623043056fb29ccc891b0fb5cc1b11b295d9777d1022",
+      "chars": 2516,
+      "eval_count": 481,
+      "prompt_eval_count": 75,
+      "done_reason": "stop"
+    },
+    {
+      "sha256": "45bc6d53035033dab816623043056fb29ccc891b0fb5cc1b11b295d9777d1022",
+      "chars": 2516,
+      "eval_count": 481,
+      "prompt_eval_count": 75,
+      "done_reason": "stop"
+    }
+  ],
+  "repeat_determinism_run_a": false,
+  "repeat_determinism_run_b": false,
+  "position_match_a_vs_b": [
+    true,
+    true,
+    true
+  ],
+  "history_determinism": true,
+  "chars_run_a": [
+    1834,
+    2516,
+    2516
+  ],
+  "chars_run_b": [
+    1834,
+    2516,
+    2516
+  ],
+  "eval_counts_run_a": [
+    335,
+    481,
+    481
+  ],
+  "eval_counts_run_b": [
+    335,
+    481,
+    481
+  ],
+  "prompt_eval_counts_run_a": [
+    75,
+    75,
+    75
+  ],
+  "prompt_eval_counts_run_b": [
+    75,
+    75,
+    75
+  ],
+  "interpretation": "Greedy decoding here is deterministic given identical request history, but not invariant to request history. Repeating one request inside a session changes its output because the repeat reuses a cached prompt prefix. Reissuing the same sequence from a clean model reproduces every output exactly. EXP14 is therefore reproducible run to run, and its repeat-based validity gate was testing a property the experiment does not use."
+}
