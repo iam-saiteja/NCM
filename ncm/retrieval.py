@@ -25,6 +25,8 @@ NEW MATH:
     This makes retrieval personality DYNAMIC, not static.
 """
 
+import warnings
+
 import numpy as np
 from ncm.memory import MemoryEntry, MemoryStore
 from ncm.profile import RetrievalWeights
@@ -352,6 +354,80 @@ def adaptive_temperature(
     return t_base * (1.0 + eta * novelty)
 
 
+def _resolve_current_state(store: MemoryStore,
+                           s_current_normalized: np.ndarray,
+                           channel_width: int) -> np.ndarray:
+    """Pick the state vector the state channel compares memories against.
+
+    Both retrieval entry points accept an `s_current_normalized` argument that
+    they historically discarded. The cause was a width mismatch, not an
+    oversight that could be flipped: the state channel is 5 wide, built from
+    MemoryEntry.auto_state_snapshot, while every in-tree caller passes
+    SentenceEncoder.encode_state(...), which pads to state_dim and is 7 wide by
+    default. A 7-vector cannot feed a 5-wide channel, so both paths fell back to
+    store.auto_state and said nothing about it. `retrieve_top_k` even labels the
+    parameter "retained for backward compatibility".
+
+    Consequences worth knowing, because they differ per experiment: exp22
+    documented the no-op and worked around it by assigning store.auto_state.state
+    before each query, so its state channel really was query-dependent. exp11 and
+    exp12 passed a query state and did not, so their d_state compared every
+    memory against whatever state the last add() happened to leave behind, which
+    is a per-memory bias rather than a query-relevance signal.
+
+    This resolves the argument instead of ignoring it, but only behind the
+    profile custom "honor_caller_state", so the default is byte-for-byte the
+    previous behaviour and no committed result moves. A refused vector now warns
+    rather than vanishing. Warning text is constant per branch so Python's
+    once-per-location filter collapses a whole benchmark loop into one message.
+    """
+    s_current_auto = store.auto_state.get_current_state()
+    if s_current_normalized is None:
+        return s_current_auto
+
+    supplied = np.asarray(s_current_normalized, dtype=np.float32).reshape(-1)
+    if supplied.shape[0] != channel_width:
+        warnings.warn(
+            "s_current_normalized was ignored: the state channel is "
+            f"{channel_width} wide and the supplied vector is "
+            f"{supplied.shape[0]} wide. Building it with "
+            "SentenceEncoder.encode_state produces exactly this mismatch, "
+            "because encode_state pads to state_dim while the channel reads "
+            "the 5-wide auto-state. The store's own auto_state was used, so "
+            "the state channel did not see your vector. To drive it, assign "
+            "store.auto_state.state, or pass a vector of the channel's width "
+            "with the profile custom 'honor_caller_state' set true.",
+            RuntimeWarning, stacklevel=3)
+        return s_current_auto
+
+    if not bool(store.profile.get_custom("honor_caller_state", False)):
+        warnings.warn(
+            "s_current_normalized was ignored because the profile custom "
+            "'honor_caller_state' is not set, so the store's own auto_state "
+            "was used. This preserves the behaviour every committed result was "
+            "scored under. Set that custom true to drive the state channel "
+            "from the caller.",
+            RuntimeWarning, stacklevel=3)
+        return s_current_auto
+
+    return supplied
+
+
+def _unit(v: np.ndarray) -> np.ndarray:
+    """L2-normalize, leaving a near-zero vector alone rather than dividing.
+
+    The norm is deliberately left as the numpy float64 scalar that
+    np.linalg.norm returns, so the division promotes to float64 and casts back
+    exactly as the inlined code it replaces did. Converting it to a Python float
+    first would keep the division in float32 under numpy's weak scalar rules and
+    could move the last bit of every state distance.
+    """
+    n = np.linalg.norm(v)
+    if n > 1e-8:
+        return (v / n).astype(np.float32)
+    return np.asarray(v).astype(np.float32)
+
+
 def retrieve_top_k(
     query_semantic: np.ndarray,
     query_emotional: np.ndarray,  # must be pre-projected via encode_emotional
@@ -382,14 +458,11 @@ def retrieve_top_k(
     if not candidates:
         return []
 
-    s_current_auto = store.auto_state.get_current_state()
-    s_norm = np.linalg.norm(s_current_auto)
-    if s_norm > 1e-8:
-        s_current_for_distance = (s_current_auto / s_norm).astype(np.float32)
-    else:
-        s_current_for_distance = s_current_auto.astype(np.float32)
-
-    # OPTIMIZATION: If no tag filter, use fast path with pre-cached matrices
+    # OPTIMIZATION: If no tag filter, use fast path with pre-cached matrices.
+    # The current-state vector is resolved further down, after the candidate
+    # matrices exist, because only the tag-filtered branch below consumes it and
+    # its required width is a property of those matrices. Resolving it here
+    # instead meant doing the work on every delegated call and throwing it away.
     if not tag_filter:
         return retrieve_top_k_fast(
             query_semantic, query_emotional, store, s_current_normalized,
@@ -415,6 +488,8 @@ def retrieve_top_k(
         return (raw / n).astype(np.float32) if n > 1e-8 else raw
 
     state_matrix = np.array([_memory_auto_state(m) for m in candidates], dtype=np.float32)
+    s_current_for_distance = _unit(_resolve_current_state(
+        store, s_current_normalized, int(state_matrix.shape[1])))
     ts_array = np.array([m.timestamp for m in candidates], dtype=np.int64)
     str_array = np.array([m.strength for m in candidates], dtype=np.float32) if use_strength else None
 
@@ -493,18 +568,33 @@ def retrieve_top_k_fast(
     3. Compute adaptive temperature from minimal work
     
     Includes strength-weighted retrieval by default.
+
+    s_current_normalized: for most of this function's history this argument was
+    accepted and then silently discarded, because the state channel reads the
+    5-wide auto-state cache while every in-tree caller passes
+    SentenceEncoder.encode_state(...), which is state_dim wide (7 by default).
+    A 7-vector cannot feed a 5-wide channel, so the argument was unusable as
+    declared and the function read store.auto_state instead. exp22 documented
+    the no-op and worked around it by assigning store.auto_state.state; exp11
+    and exp12 did not, and so scored d_state against whatever state the last
+    add() had left behind rather than against their query.
+
+    The argument is now real, but only behind an opt-in, so no committed result
+    changes. With the profile custom "honor_caller_state" absent or false the
+    behaviour is exactly as before. Set it true and pass a vector whose width
+    matches the auto-state cache to drive the state channel from outside, which
+    is the only supported way to feed the channel from a real affect model
+    rather than from the internal keyword-anchor probe. A caller that passes a
+    vector of the wrong width, or passes one while the opt-in is off, now gets
+    a RuntimeWarning instead of silence.
     """
     store._rebuild_cache()
     
     if store._sem_cache.shape[0] == 0:
         return []
 
-    s_current_auto = store.auto_state.get_current_state()
-    s_norm = np.linalg.norm(s_current_auto)
-    if s_norm > 1e-8:
-        s_current_for_distance = (s_current_auto / s_norm).astype(np.float32)
-    else:
-        s_current_for_distance = s_current_auto.astype(np.float32)
+    s_current_for_distance = _unit(_resolve_current_state(
+        store, s_current_normalized, int(store._auto_state_cache.shape[1])))
 
     weights = store.profile.retrieval_weights
     decay_rate = store.profile.decay_rate
