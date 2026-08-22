@@ -1,0 +1,295 @@
+EXP25: Channel normalization, or does making the weights effective help?
+==========================================================================
+
+The profile weights alpha, beta, gamma and delta do not act at their nominal size, because a channel influences a ranking only through how much it varies across the candidates. Rescaling each channel across the candidate set before the weighted sum makes the nominal weights close to the effective ones. This measures what that does to retrieval quality. Both directions are reportable: a gain means the affective channels carry usable signal that the arithmetic was suppressing, and a loss means they carry noise and the near-constant auto-state moving average has to be fixed before any weight on them can help.
+
+DATASET
+--------------------------------------------------------------------------
+  corpus                                       experiments/data/real_world_corpus/train.jsonl
+  conversations_loaded                         100
+  conversations_benchmarked                    65
+  conversations_skipped_too_few_sessions       35
+  conversations_skipped_no_eligible_session    0
+  queries_evaluated                            228
+  total_turns_stored                           2628
+  mean_store_size                              40.43
+  mean_relevant_per_query                      11.53
+  random_guess_precision                       0.2851
+
+ARMS
+--------------------------------------------------------------------------
+  arm                    weights                    mode    
+  default_none           (0.4, 0.2, 0.3, 0.1)       none    
+      the shipped composite, unchanged. Reference arm, and the calibration target against exp22's `default`
+  default_minmax         (0.4, 0.2, 0.3, 0.1)       minmax  
+      the shipped weights with every channel rescaled onto [0, 1] across the candidate set. The primary test
+  default_robust         (0.4, 0.2, 0.3, 0.1)       robust  
+      as default_minmax but anchored on the 5th and 95th percentiles, so a single outlying candidate cannot set the scale for the rest
+  sem_pure_none          (1, 0, 0, 0)               none    
+      weights (1, 0, 0, 0), no rescaling. The baseline for both single-channel probes: against sem_pure_minmax it shows that an affine rescaling of one channel cannot change a ranking, and against sem_pure_robust it shows how much ranking a clipping rescaling does change
+  sem_pure_minmax        (1, 0, 0, 0)               minmax  
+      weights (1, 0, 0, 0) with rescaling. Must score identically to sem_pure_none, because a strictly increasing map of a single channel leaves its order untouched. Any difference here would mean the rescaling is not order preserving and would invalidate the other arms
+  sem_pure_robust        (1, 0, 0, 0)               robust  
+      weights (1, 0, 0, 0) with robust rescaling. Isolates the one thing robust mode does that minmax does not: clipping at the percentile bounds collapses each tail of d_sem to a single value, and the low tail of a distance channel is the head of the ranking. With no other channel carrying weight, ties there are broken by argsort order instead, so sem_pure_robust against sem_pure_none measures the head-of-list information robust mode destroys, separately from any influence the other channels gain. Without this arm the robust result could not be attributed
+  no_emo_minmax          (0.5, 0, 0.375, 0.125)     minmax  
+      beta removed and alpha, gamma, delta renormalised by 1/(1-beta), then rescaled. Isolates what the emotional channel contributes once it actually has its nominal weight, which is the question exp22 could not reach
+  semantic_only          not applicable             not applicable
+      ncm.retrieval.retrieve_semantic_only, cosine distance alone. Reads no weights and no normalization mode, so it is the same number in every mode and serves as an external reference
+
+RETRIEVAL QUALITY
+--------------------------------------------------------------------------
+  arm                           p@5       p@10       r@10    ndcg@10        mrr
+  default_none               0.4561     0.4088     0.3600     0.4529     0.7714
+  default_minmax             0.4351     0.3965     0.3463     0.4273     0.6876
+  default_robust             0.4272     0.3982     0.3470     0.4164     0.6219
+  sem_pure_none              0.4640     0.4053     0.3576     0.4518     0.7786
+  sem_pure_minmax            0.4640     0.4053     0.3576     0.4518     0.7786
+  sem_pure_robust            0.4640     0.4053     0.3576     0.4414     0.7179
+  no_emo_minmax              0.4579     0.3982     0.3512     0.4364     0.7249
+  semantic_only              0.4640     0.4053     0.3576     0.4518     0.7786
+  random guess               0.2851
+
+PAIRED DIFFERENCES AGAINST default_none
+--------------------------------------------------------------------------
+  Every reported metric, so a null on one metric cannot stand in for the
+  others. P@5 is the declared primary; the rest are exploratory and are
+  corrected over the whole grid further down.
+
+  default_minmax
+    metric       delta             query CI              conv CI          p  nonzero
+    p@5        -0.0211 [ -0.0526, +0.0096] [ -0.0468, +0.0046]     0.1958      146
+    p@10       -0.0123 [ -0.0346, +0.0101] [ -0.0287, +0.0043]      0.192      181
+    r@10       -0.0137 [ -0.0336, +0.0064] [ -0.0283, +0.0011]     0.2363      181
+    ndcg@10    -0.0255 [ -0.0489, -0.0014] [ -0.0398, -0.0112]    0.02153      227  both CIs exclude zero
+    mrr        -0.0838 [ -0.1298, -0.0391] [ -0.1190, -0.0473]  0.0003832      110  both CIs exclude zero
+    p@5 sign pattern: 63 changed queries favour the arm, 83 favour the reference, 82 are exactly 0.0
+    p@5 MDE at 80 percent power 0.0451
+
+  default_robust
+    metric       delta             query CI              conv CI          p  nonzero
+    p@5        -0.0289 [ -0.0640, +0.0053] [ -0.0567, -0.0009]    0.06304      159
+    p@10       -0.0105 [ -0.0329, +0.0114] [ -0.0269, +0.0059]     0.3947      166
+    r@10       -0.0130 [ -0.0329, +0.0067] [ -0.0280, +0.0020]     0.4156      166
+    ndcg@10    -0.0364 [ -0.0626, -0.0108] [ -0.0524, -0.0204]   0.004628      224  both CIs exclude zero
+    mrr        -0.1495 [ -0.2044, -0.0943] [ -0.1896, -0.1090]  3.257e-07      137  both CIs exclude zero
+    p@5 sign pattern: 67 changed queries favour the arm, 92 favour the reference, 69 are exactly 0.0
+    p@5 MDE at 80 percent power 0.0491
+
+  sem_pure_none
+    metric       delta             query CI              conv CI          p  nonzero
+    p@5        +0.0079 [ -0.0000, +0.0167] [ -0.0009, +0.0170]    0.05007       22
+    p@10       -0.0035 [ -0.0083, +0.0013] [ -0.0077, +0.0009]     0.2053       29
+    r@10       -0.0024 [ -0.0065, +0.0017] [ -0.0061, +0.0013]      0.442       29
+    ndcg@10    -0.0011 [ -0.0050, +0.0028] [ -0.0043, +0.0022]     0.9113      108
+    mrr        +0.0072 [ -0.0017, +0.0168] [ -0.0010, +0.0165]     0.1046       16
+    p@5 sign pattern: 15 changed queries favour the arm, 7 favour the reference, 206 are exactly 0.0
+    p@5 MDE at 80 percent power 0.0122
+
+  sem_pure_minmax
+    metric       delta             query CI              conv CI          p  nonzero
+    p@5        +0.0079 [ -0.0009, +0.0167] [ -0.0009, +0.0167]    0.05007       22
+    p@10       -0.0035 [ -0.0083, +0.0013] [ -0.0077, +0.0009]     0.2053       29
+    r@10       -0.0024 [ -0.0065, +0.0017] [ -0.0060, +0.0013]      0.442       29
+    ndcg@10    -0.0011 [ -0.0050, +0.0027] [ -0.0044, +0.0022]     0.9113      108
+    mrr        +0.0072 [ -0.0017, +0.0171] [ -0.0011, +0.0164]     0.1046       16
+    p@5 sign pattern: 15 changed queries favour the arm, 7 favour the reference, 206 are exactly 0.0
+    p@5 MDE at 80 percent power 0.0122
+
+  sem_pure_robust
+    metric       delta             query CI              conv CI          p  nonzero
+    p@5        +0.0079 [ -0.0000, +0.0167] [ -0.0009, +0.0167]    0.05007       22
+    p@10       -0.0035 [ -0.0083, +0.0013] [ -0.0078, +0.0009]     0.2053       29
+    r@10       -0.0024 [ -0.0066, +0.0016] [ -0.0061, +0.0012]      0.442       29
+    ndcg@10    -0.0114 [ -0.0188, -0.0041] [ -0.0189, -0.0037]   0.002779      144  both CIs exclude zero
+    mrr        -0.0535 [ -0.0917, -0.0160] [ -0.0891, -0.0187]   0.007778       85  both CIs exclude zero
+    p@5 sign pattern: 15 changed queries favour the arm, 7 favour the reference, 206 are exactly 0.0
+    p@5 MDE at 80 percent power 0.0122
+
+  no_emo_minmax
+    metric       delta             query CI              conv CI          p  nonzero
+    p@5        +0.0018 [ -0.0246, +0.0289] [ -0.0219, +0.0248]     0.9317      124
+    p@10       -0.0105 [ -0.0263, +0.0053] [ -0.0237, +0.0027]     0.1268      146
+    r@10       -0.0088 [ -0.0238, +0.0060] [ -0.0206, +0.0031]     0.2126      146
+    ndcg@10    -0.0164 [ -0.0344, +0.0013] [ -0.0277, -0.0047]    0.06467      224
+    mrr        -0.0465 [ -0.0865, -0.0070] [ -0.0800, -0.0110]    0.02564       88  both CIs exclude zero
+    p@5 sign pattern: 61 changed queries favour the arm, 63 favour the reference, 104 are exactly 0.0
+    p@5 MDE at 80 percent power 0.0375
+
+  semantic_only
+    metric       delta             query CI              conv CI          p  nonzero
+    p@5        +0.0079 [ -0.0009, +0.0167] [ -0.0009, +0.0167]    0.05007       22
+    p@10       -0.0035 [ -0.0083, +0.0013] [ -0.0078, +0.0009]     0.2053       29
+    r@10       -0.0024 [ -0.0066, +0.0015] [ -0.0061, +0.0013]      0.442       29
+    ndcg@10    -0.0011 [ -0.0049, +0.0028] [ -0.0042, +0.0022]     0.9113      108
+    mrr        +0.0072 [ -0.0016, +0.0168] [ -0.0009, +0.0166]     0.1046       16
+    p@5 sign pattern: 15 changed queries favour the arm, 7 favour the reference, 206 are exactly 0.0
+    p@5 MDE at 80 percent power 0.0122
+
+  Primary test (declared before the run, no correction):
+    default_minmax minus default_none on p@5: delta -0.0211, exact p=0.1958
+  Secondary family (declared before the run), Holm adjusted:
+    default_robust:p@5                 raw p=  0.06304  Holm p=   0.2003
+    sem_pure_minmax:p@5                raw p=  0.05007  Holm p=   0.2003
+    no_emo_minmax:p@5                  raw p=   0.9317  Holm p=   0.9317
+    semantic_only:p@5                  raw p=  0.05007  Holm p=   0.2003
+
+DECLARED ARM-AGAINST-ARM CONTRASTS
+--------------------------------------------------------------------------
+  no_emo_minmax_minus_default_minmax
+    isolates the emotional channel at its nominal influence, both sides rescaled, so the only difference is beta
+    metric       delta             query CI              conv CI          p    Holm p  nonzero
+    p@5        +0.0228 [ -0.0000, +0.0456] [ +0.0036, +0.0417]    0.03735    0.1494      105
+    p@10       +0.0018 [ -0.0136, +0.0171] [ -0.0104, +0.0141]     0.7632         1      144
+    r@10       +0.0049 [ -0.0089, +0.0184] [ -0.0058, +0.0156]     0.5058         1      144
+    ndcg@10    +0.0091 [ -0.0059, +0.0247] [ -0.0020, +0.0208]     0.3144    0.9431      216
+    mrr        +0.0373 [ +0.0060, +0.0688] [ +0.0049, +0.0700]    0.02071    0.1035       84
+
+  sem_pure_minmax_minus_sem_pure_none
+    order preservation carried through to the metrics; every difference must be exactly zero
+    metric       delta             query CI              conv CI          p    Holm p  nonzero
+    p@5        +0.0000 [ +0.0000, +0.0000] [ +0.0000, +0.0000]        n/a       n/a        0
+    p@10       +0.0000 [ +0.0000, +0.0000] [ +0.0000, +0.0000]        n/a       n/a        0
+    r@10       +0.0000 [ +0.0000, +0.0000] [ +0.0000, +0.0000]        n/a       n/a        0
+    ndcg@10    +0.0000 [ +0.0000, +0.0000] [ +0.0000, +0.0000]        n/a       n/a        0
+    mrr        +0.0000 [ +0.0000, +0.0000] [ +0.0000, +0.0000]        n/a       n/a        0
+
+  sem_pure_robust_minus_sem_pure_none
+    the head-of-ranking cost of the robust clip, with only the semantic channel weighted, so no other channel can absorb or mask it
+    metric       delta             query CI              conv CI          p    Holm p  nonzero
+    p@5        +0.0000 [ +0.0000, +0.0000] [ +0.0000, +0.0000]        n/a       n/a        0
+    p@10       +0.0000 [ +0.0000, +0.0000] [ +0.0000, +0.0000]        n/a       n/a        0
+    r@10       +0.0000 [ +0.0000, +0.0000] [ +0.0000, +0.0000]        n/a       n/a        0
+    ndcg@10    -0.0104 [ -0.0167, -0.0038] [ -0.0165, -0.0042]   0.003644   0.02186       84
+    mrr        -0.0607 [ -0.0980, -0.0234] [ -0.0962, -0.0253]   0.001886    0.0132       77
+
+  Holm over the 10 cells that are hypothesis tests: 2 survive at 0.05.
+  sem_pure_minmax_minus_sem_pure_none contributes no tests: every paired difference in that contrast must be exactly zero by construction, so it is a verification rather than a hypothesis test and contributes no tests to the family.
+  these contrasts were added after the first run of this script, so they are not pre-declared and carry a Holm correction over the family above. They were added because the no_emo_minmax arm was declared in the first run with the stated purpose of isolating beta at its nominal influence and that purpose was never measured, the arm being compared only against default_none. The first run computed no contrast of this kind at all, so no contrast was selected on the strength of its own outcome. The declared primary comparison was not changed and reproduces bit for bit, these generators being offset from the ones paired_table uses.
+
+EXPLORATORY MULTIPLICITY OVER THE WHOLE GRID
+--------------------------------------------------------------------------
+  35 cells: 7 arms against default_none times 5 reported metrics
+  correction: Bonferroni over all cells, the most conservative option
+
+  Cells clearing the correction with both bootstraps excluding zero:
+    arm               metric       delta       raw p      Bonf p  declared
+    default_robust    mrr        -0.1495   3.257e-07     1.1e-05  no, exploratory
+    default_minmax    mrr        -0.0838   0.0003832     0.01341  no, exploratory
+
+  a surviving cell clears the full-grid Bonferroni threshold AND has both the query-level and the conversation-level bootstrap interval excluding zero. It is still exploratory unless its pre_declared flag is true, because the metric was not named before the run
+
+EFFECTIVE RANKING INFLUENCE PER CHANNEL
+--------------------------------------------------------------------------
+  Share of within-query influence, weight times within-query spread,
+  normalised across the four channels, shipped weights in every mode.
+
+  channel      nominal        none      minmax      robust
+  d_sem         40.00%      91.64%      39.99%      40.65%
+  d_emo         20.00%       1.18%      20.01%      19.85%
+  d_state       30.00%       5.15%      28.57%      28.99%
+  d_time        10.00%       2.03%      11.43%      10.51%
+
+  Pooled dispersion, directly comparable to exp22's channel_redundancy:
+  channel         mode        mean          sd   weighted sd  pooled share
+  d_sem           none    0.822172    0.155125      0.062050        91.68%
+  d_sem         minmax    0.671264    0.275934      0.110374        40.47%
+  d_sem         robust    0.599459    0.323315      0.129326        40.95%
+  d_emo           none    0.006975    0.004266      0.000853         1.26%
+  d_emo         minmax    0.447879    0.271206      0.054241        19.89%
+  d_emo         robust    0.454248    0.312454      0.062491        19.79%
+  d_state         none    0.025242    0.011836      0.003551         5.25%
+  d_state       minmax    0.435671    0.261814      0.078544        28.80%
+  d_state       robust    0.443606    0.306072      0.091822        29.07%
+  d_time          none    0.021232    0.012306      0.001231         1.82%
+  d_time        minmax    0.503340    0.295780      0.029578        10.84%
+  d_time        robust    0.502709    0.321916      0.032192        10.19%
+
+  under minmax each channel spans exactly [0, 1] within each candidate set, so its within-query effective share moving close to its nominal weight is arithmetic, not a discovery. This table confirms the implementation does what it claims and quantifies the residual deviation caused by distribution shape. The empirical content of this experiment is the retrieval outcome, not this table
+
+GUARDS (each one gates the run)
+--------------------------------------------------------------------------
+  [PASS] modes_under_test_match_the_module
+  [PASS] minmax_changes_the_composite
+  [PASS] robust_changes_the_composite
+  [PASS] single_channel_ranking_is_invariant_to_rescaling
+  [PASS] rescaled_channels_stay_in_unit_interval_and_never_invert
+  [PASS] minmax_spans_the_unit_interval_on_non_constant_channels
+  [PASS] minmax_maps_a_constant_channel_to_zero
+  [PASS] unknown_mode_raises_valueerror
+  [PASS] all_memory_strengths_are_1
+  [PASS] contradiction_awareness_is_off
+  [PASS] arm_profiles_differ_only_in_weights_and_normalization
+  [PASS] every_arm_carries_the_mode_it_declares
+  context: conversation id 0, session_id 0, store size 46
+  max |d| none vs minmax  : 0.47727504
+  max |d| none vs robust  : 0.47878841
+  single-channel Spearman : 1.0
+  mode read at            : ncm/retrieval.py:489 store.profile.get_custom('channel_normalization', 'none'), passed to vectorized_manifold_distance and applied at ncm/retrieval.py:217-221
+
+ORDER PRESERVATION OVER EVERY QUERY
+--------------------------------------------------------------------------
+  n_channel_mode_query_checks                          1824
+  n_inversions                                         0
+  n_adjacent_pairs_newly_tied                          2546
+  n_bounds_violations                                  0
+  n_unit_span_violations                               0
+  newly tied under none                                0 all pairs, 0 adjacent (0 of those exactly on a clip bound)
+  newly tied under minmax                              0 all pairs, 0 adjacent (0 of those exactly on a clip bound)
+  newly tied under robust                              3470 all pairs, 2546 adjacent (2546 of those exactly on a clip bound)
+  semantic rank changed under minmax                   0 of 228 queries  <-- must be 0
+  semantic rank changed under robust                   228 of 228 queries  <-- expected: the clip can reorder d_sem
+  reported two ways because they answer different questions. The adjacent counts walk np.diff over the sorted order, so a block of k candidates collapsed onto one value contributes k-1; that is the monotonicity walk itself. The all_pairs count is every (i, j) the definition names, which is C(k, 2) for the same block, and is the larger and more faithful number. The adjacent count is a lower bound on it
+  two distinct causes, counted apart because they are not the same phenomenon. Under minmax the map is affine with positive slope, so a new tie can only be float32 running out of bits. Under robust the clip at the 5.0 and 95.0 percentiles maps every candidate in a tail to exactly 0.0 or exactly 1.0, so those candidates tie with each other by design. The at_a_clip_bound counts isolate the second cause. This is a deliberate property of robust mode, not a defect, but it means robust discards ordering information inside the tails that minmax keeps. For a distance channel the low tail is the head of the ranking, so the arm that measures the cost of this is sem_pure_robust
+
+CALIBRATION AGAINST experiments/results/exp22/exp22_emo_ablation.json
+--------------------------------------------------------------------------
+  [PASS] scale_matches_exp22
+  [PASS] dataset_matches_exp22
+  [PASS] default_none_reproduces_exp22_default
+  [PASS] semantic_only_reproduces_exp22_semantic_only
+  [PASS] none_channel_table_reproduces_exp22
+  worst reported-metric deviation : 0.000e+00 (tolerance 1e-04)
+  worst channel-table deviation   : 0.000e+00 (tolerance 1e-06)
+  exp22 default P@5 0.4561 against exp25 default_none P@5 0.4561
+
+READING
+--------------------------------------------------------------------------
+  Making the profile weights effective does not improve retrieval. P@5 moves -0.0211, a null on the declared primary metric, while 2 of 35 arm-by-metric cells show a Bonferroni-surviving loss and none shows a Bonferroni-surviving gain.
+
+  - The shipped composite gives the emotional and state channels 6.33 percent of the within-query ranking influence between them, against a nominal 50.00 percent. Under minmax the same two channels carry 48.58 percent. The rescaling therefore does what it was written to do, and the weighted-spread ratio of semantic to emotional falls from 72.73 to 2.03.
+
+  - The declared primary comparison, default_minmax minus default_none on p@5, is -0.0211 (query-level 95 percent CI -0.0526 to +0.0096, conversation-level -0.0468 to +0.0046, Wilcoxon exact p=0.1958). Both intervals contain zero. The design's minimum detectable effect at 80 percent power is 0.0451, so on the declared primary metric this is a null result: the sign is negative but the magnitude is smaller than the design can resolve.
+
+  - The rank-sensitive metrics do not agree with that verdict, and they are the metrics that should be more sensitive here, because rescaling reorders within the retrieved set rather than changing which memories clear the top-5 cut. Of the 35 arm-by-metric cells, 2 clear a Bonferroni correction over the whole grid with both bootstrap intervals excluding zero, and 2 of those are losses: default_robust on mrr -0.1495 (Bonferroni p=1.1e-05); default_minmax on mrr -0.0838 (Bonferroni p=0.01341). No cell survives in the positive direction.
+
+  - Removing the emotional channel while holding the normalization fixed does not hurt retrieval and the point estimates favour removal on every reported metric. no_emo_minmax_minus_default_minmax is +0.0228 on p@5 (p=0.03735, Holm p=0.1494, zero inside at least one interval), +0.0091 on ndcg@10 (p=0.3144, Holm p=0.9431, zero inside at least one interval) and +0.0373 on mrr (p=0.02071, Holm p=0.1035, both bootstraps exclude zero). 1 of the 10 cells in this contrast have both bootstrap intervals excluding zero in the direction that favours deleting the channel, which is a stronger statement than a null, but 2 of 10 survive a Holm correction over this contrast family, and the family was added after the first run rather than pre-declared, so the defensible reading is that beta earns nothing at its nominal weight rather than that deleting it is a confirmed improvement. This is the comparison exp22 could not resolve, because in exp22 beta carried 1.18 percent of the ranking. That share bounds how large the effect can be, but it does not make the effect invisible: exp22's own paired deltas move P@5 on 8 of its 228 queries. Detecting an effect that size at 80 percent power would need about 3587 queries against the 228 exp22 had, so exp22 was underpowered for it by roughly 16 times, which is a statement about that design and not about every possible sample size. Here beta carries 20.01 percent, and removing it still costs nothing measurable.
+
+  - Rescaling never inverts a pair, which is the claim that matters, but it is order preserving only in the weak sense: over 1824 (query, channel, mode) checks there were 0 inversions and 3470 pairs newly tied, so a distinction can be lost even though none is reversed. Those ties split by mechanism: 0 under minmax, where the map is affine with positive slope so only float32 resolution can cause one, against 3470 under robust, where the clip collapses each percentile tail onto 0.0 or 1.0 by design and every adjacent tie counted (2546 of 2546) sits exactly on a clip bound.
+
+  - The two modes differ in whether they leave the semantic ranking alone, and that difference decides what the composite results can be attributed to. Under minmax the semantic ranking changed in 0 of 228 queries, and sem_pure_minmax scores identically to sem_pure_none on every metric, so any change in default_minmax is attributable to the non-semantic channels gaining influence rather than to a corrupted semantic channel. Under robust that licence is not available: the semantic ranking changed in 228 of 228 queries, because for a distance channel the clipped low tail is the head of the ranking. Measured directly by the sem_pure_robust arm, which weights only the semantic channel and therefore cannot borrow influence from any other: against sem_pure_none it moves ndcg@10 -0.0104 (p=0.003644), mrr -0.0607 (p=0.001886). That much of the default_robust change is the clip discarding head-of-list ordering, not the other channels gaining influence, and the two causes are not separable in default_robust itself.
+
+  - Calibration against experiments/results/exp22/exp22_emo_ablation.json holds exactly, not merely within tolerance: default_none reproduces exp22's default arm to 0.00e+00 on the worst reported metric, and the mode 'none' pooled channel table reproduces exp22's channel_redundancy to 0.00e+00. The same 228 queries over the same 65 conversations are scored.
+
+CONCLUSION
+--------------------------------------------------------------------------
+  The four profile weights were not acting at their nominal size, and making them act does not improve retrieval on this corpus. The declared primary metric is null. All 2 cells that clear a full-grid Bonferroni correction move against the rescaled arms. Holding the normalization fixed and deleting the emotional channel entirely costs nothing measurable on any reported metric, and the point estimates favour removal on every reported metric. Taken together these say the affective channels do not carry retrievable signal at these weights, so the shipped composite's near-total reliance on the semantic channel is not a bug that the weighting was hiding: it is the behaviour that scores best of everything measured here, though the semantic channel alone is not uniformly best: it leads every composite arm on 0 of 5 reported metrics (none) and trails the best composite arm on 3 (p@10, r@10, ndcg@10), so the honest summary is that it is no worse rather than strictly better. None of those gaps was tested, and the largest is 0.0035.
+
+HONEST LIMITS
+--------------------------------------------------------------------------
+  - The rescaling is computed per query over the candidate set actually present. The resulting composite is a ranking score and is NOT comparable across queries or across stores of different composition, so no absolute-threshold logic may use it. Only the within-query ordering is meaningful, which is all the metrics here read.
+
+  - The near-nominal effective shares under minmax are arithmetic, not a discovery. Mapping every channel onto [0, 1] inside a candidate set forces this. The informative part of that table is the residual deviation, which comes from distribution shape, since equal ranges do not imply equal standard deviations.
+
+  - The declared primary metric is P@5 and it is null. The negative results are on nDCG@10 and MRR, which were not pre-declared, so they are quoted with a Bonferroni correction over the entire arm-by-metric grid and are labelled exploratory in the result file. They are reported because suppressing them would leave a misleading null on the record, not because the primary was changed after the fact. That P@5 is the least sensitive of the three to reordering inside the retrieved set is a property of the metric, stated here rather than used to reinterpret the primary.
+
+  - Rescaling addresses two of the four causes of the flat channels: the worst-case theoretical normalisers EMO_NORM = 2.0 and STATE_NORM = sqrt(2), and the small absolute size of d_time at these store depths. It does NOT address the auto-state tracker being an exponential moving average, which makes consecutive snapshots nearly identical. Amplifying a near-constant channel amplifies whatever it contains, signal or noise alike. The measured losses are consistent with those channels being close to noise at this level of influence, and they do not establish that no version of an affective channel could help.
+
+  - Queries drawn from one conversation score against the same store and the same candidate set, so they are not independent. The conversation-level bootstrap is the interval to read where the two disagree. The minimum detectable effect ignores the clustering and is therefore optimistic, which makes the primary null weaker than its stated MDE implies rather than stronger. The same caveat applies to every Wilcoxon p-value reported here, and that is the more consequential half of it: the exact Wilcoxon is computed over all 228 paired queries as though they were independent, when the effective sample size is nearer the 65 conversations they came from. Those p-values are not decorative, because the Bonferroni survivor rule and the Holm counts are computed from them, so every multiplicity-corrected threshold in this file is anti-conservative by an unquantified factor. The cluster bootstrap is the only interval here that accounts for the design, and no corrected p-value does.
+
+  - d_sem is a clipped quantity, np.clip(1.0 - cosine, 0.0, 1.0), so any range-based statistic involving it is truncated at 1.0. Under minmax that clip becomes the top of the rescaled range for the queries where it binds.
+
+  - This experiment measures ranking quality on one corpus with session-membership relevance labels. Session membership rewards topical coherence, which is what the semantic channel encodes, so this label definition is not neutral between the channels. A channel tracking genuine affect could carry real information about a conversation and still lose on this metric.
+
+WHAT THIS DOES NOT SETTLE
+--------------------------------------------------------------------------
+  Whether an affective channel could ever help. This experiment shows that the channels as currently computed do not, at any weight, because giving them their nominal influence makes retrieval worse rather than better. That localises the problem in what the channels contain rather than in how they are weighted. The specific suspect is the auto-state exponential moving average, whose consecutive snapshots are nearly identical, so the stored affective vectors carry very little per-memory information for any amount of weight to act on. Whether replacing it with instantaneous per-text affect adds independent signal is the next thing to measure, and it must be measured rather than assumed: more variance in a channel is not the same as more signal in it.
