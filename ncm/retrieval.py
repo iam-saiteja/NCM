@@ -85,6 +85,68 @@ CHANNEL_ROBUST_LOW = 5.0
 CHANNEL_ROBUST_HIGH = 95.0
 
 
+# ---------------------------------------------------------------------------
+# TEMPORAL ANCHOR
+#
+# The temporal channel's weakness is not its weight, it is where it is anchored.
+# In "store_end", the shipped behaviour, delta_t is max(0, current_step - ts).
+# current_step is the store's write counter, so within one conversation it is the
+# same number for every query, and the channel therefore emits an identical
+# vector for all of them. It is a static per-memory recency prior with no
+# query-specific content. exp17's recency_only arm scores P@5 0.2851 on the
+# real-world corpus, and the random-guess precision on that same benchmark is
+# 0.2851, so the channel performs at chance. That arm is defined as a sort by
+# MemoryEntry.timestamp descending rather than as the d_time channel itself; the
+# two induce the same ranking because max(0, step - ts) is monotone in ts, so this
+# is an inference from a timestamp sort and not a direct measurement of d_time.
+#
+# The functional form is the second half of the problem. max(0, step - ts) is
+# one-sided and monotone, so the only proposition it can express is "older is
+# further away". Locating a memory near a point in time needs a two-sided kernel
+# peaked at an anchor, which is what abs(anchor - ts) gives. These are different
+# functions and no reweighting turns the first into the second.
+#
+# "semantic_rank1" anchors on the timestamp of the best semantic match and
+# measures abs(anchor - ts), which is the temporal contiguity effect: recalling
+# an item makes items encoded near it in time more accessible. Contiguity is the
+# most reproduced finding in the free-recall literature and is the mechanism
+# behind Howard and Kahana's Temporal Context Model (2002). It uses only the
+# semantic channel and the timestamps already in the store, and reads no label.
+#
+# HONEST LIMITS, to be stated wherever a gain from this is reported. On a
+# benchmark whose relevance label is session membership, and whose sessions are
+# stored as contiguous runs of timestamps, a contiguity kernel is close to
+# optimal by construction. A gain therefore demonstrates that the system can
+# exploit conversational structure; it does not demonstrate better semantics.
+# Attribution requires a contiguity-only arm carrying no semantic weight and an
+# anchor-only arm, so the gain can be split between the kernel and mere block
+# detection. The anchor is also only as good as the rank-1 hit, so this mode
+# inherits and can amplify a semantic error. And because the anchor is chosen from
+# the candidate set, a tag filter that excludes the true rank-1 hit relocates the
+# anchor and so changes every d_time: the temporal rule is the same in both entry
+# points, but the anchor it resolves to is a function of which candidates survive
+# filtering. Under "store_end" a filter cannot move the anchor, since there is
+# nothing to move, so the two modes are not directly comparable under a filter.
+#
+# Profile customs are read by retrieve_top_k and retrieve_top_k_fast only.
+# vectorized_manifold_distance is public API and honours its own keyword
+# arguments, whose defaults are the shipped behaviour, so a caller that invokes it
+# directly gets "store_end" whatever the store's profile says. The novelty probes
+# at experiments/python/run_all_experiments.py:437 and run_fast.py:322 do exactly
+# that, deliberately, measuring against fixed distance parameters.
+TEMPORAL_ANCHOR_MODES = ("store_end", "semantic_rank1")
+
+# Width in turns of the contiguity kernel, used as the rate 1/width. Ignored
+# entirely under "store_end", and required to be positive under "semantic_rank1",
+# where 0.0 therefore means "unset" rather than a usable value. The memory
+# decay_rate cannot serve as a default: it is 0.001, which over a whole 40-turn
+# store spans d_time about 0.039 and cannot separate memories inside an 11-turn
+# session, so defaulting to it would turn a forgotten setting into a measured
+# null. The right width is a property of the conversation length being searched,
+# so the caller states it.
+TEMPORAL_KERNEL_WIDTH_DEFAULT = 0.0
+
+
 def _rescale_channel(d: np.ndarray, mode: str) -> np.ndarray:
     """Rescale one channel's distances so its spread matches the other channels.
 
@@ -149,6 +211,8 @@ def vectorized_manifold_distance(
     contradiction_gate: float = 1.0,         # query-intent gate in [0, 1]
     use_fast_temporal: bool = False,    # opt-in approximation for temporal term
     channel_normalization: str = "none",  # "none" | "minmax" | "robust", see above
+    temporal_anchor: str = "store_end",  # "store_end" | "semantic_rank1", see above
+    temporal_kernel_width: float = TEMPORAL_KERNEL_WIDTH_DEFAULT,  # turns; must be >0 under the anchor
 ) -> np.ndarray:
     """
     Compute manifold distance for ALL memories at once via optimized vectorized numpy.
@@ -183,22 +247,80 @@ def vectorized_manifold_distance(
       d_sem   = 1 - cos(e_sem_m, e_sem_q)           ∈ [0, 1]
       d_emo   = ||e_emo_m - e_emo_q|| / 2.0          ∈ [0, 1]  (projected vs projected)
       d_state = ||s_snap_m - s_current|| / sqrt(2)    ∈ [0, 1]  (positive orthant bound)
-      d_time  = 1 - exp(-λ · Δt)                      ∈ [0, 1]
+      d_time  = 1 - exp(-r · Δt)                      ∈ [0, 1]
+
+      The temporal term's Δt and rate r depend on temporal_anchor:
+
+        "store_end"      Δt = max(0, current_step - ts),  r = decay_rate
+                         The shipped behaviour. One-sided and monotone in age,
+                         and anchored on a number that does not depend on the
+                         query, so it emits the same vector for every query
+                         against one store. See TEMPORAL_ANCHOR_MODES.
+
+        "semantic_rank1" Δt = |ts[argmax(sem_matrix @ query_semantic)] - ts|,
+                         r  = 1/temporal_kernel_width, which must be positive.
+                         Two-sided and peaked at the best semantic match, so it
+                         says "near that memory in time", which is the temporal
+                         contiguity effect. Requires no label and no new input.
+                         Its accuracy is bounded by the rank-1 hit's accuracy.
+                         The anchor comes from the raw similarities rather than
+                         from argmin(d_sem), which is not the same thing once
+                         d_sem has been clipped into [0, 1]; see the branch.
     """
     N = sem_matrix.shape[0]
-    if N == 0:
-        return np.array([], dtype=np.float32)
-
     alpha, beta, gamma, delta = weights.as_tuple()
     lambda_contra = float(np.clip(contradiction_weight, 0.0, 1.0))
     gate = float(np.clip(contradiction_gate, 0.0, 1.0))
     base_scale = 1.0 - lambda_contra
+    # Arguments are validated before the empty-candidate-set shortcut below, so a
+    # typo cannot survive a smoke test that happens to run against an empty store.
     rescale = "none" if channel_normalization is None else str(channel_normalization)
     if rescale not in CHANNEL_NORMALIZATION_MODES:
         raise ValueError(
             "channel_normalization must be one of %r, got %r"
             % (list(CHANNEL_NORMALIZATION_MODES), channel_normalization)
         )
+    anchor_mode = "store_end" if temporal_anchor is None else str(temporal_anchor)
+    if anchor_mode not in TEMPORAL_ANCHOR_MODES:
+        raise ValueError(
+            "temporal_anchor must be one of %r, got %r"
+            % (list(TEMPORAL_ANCHOR_MODES), temporal_anchor)
+        )
+    # The width is validated whatever the mode and whatever delta is, because the
+    # values that would otherwise pass silently are the dangerous ones. A nan width
+    # fails every "> 0" test and would look like a deliberate choice. An inf width
+    # gives rate 0.0, so d_time becomes exactly 0 for every candidate and the
+    # channel is dead while still drawing its weight.
+    kernel_width = TEMPORAL_KERNEL_WIDTH_DEFAULT if temporal_kernel_width is None \
+        else float(temporal_kernel_width)
+    if not np.isfinite(kernel_width):
+        raise ValueError(
+            "temporal_kernel_width must be finite, got %r. nan and inf are "
+            "rejected because they would silently disable the temporal channel "
+            "rather than fail." % (temporal_kernel_width,)
+        )
+    # A non-positive width is refused under "semantic_rank1" rather than silently
+    # falling back to decay_rate. Falling back is what the first draft did, and it
+    # is a trap: at decay_rate the contiguity kernel spans about 0.02 over a
+    # 40-turn store, which is roughly 0.6 percent of the semantic channel's
+    # influence, so enabling the anchor and forgetting the width would measure a
+    # near-inert channel and report a false null. There is no sensible default
+    # here, because the right width is a property of the conversation length being
+    # searched, so the caller has to state it. To anchor at the memory decay rate
+    # deliberately, pass the width that expresses it, 1.0/decay_rate.
+    if anchor_mode == "semantic_rank1" and kernel_width <= 0.0:
+        raise ValueError(
+            "temporal_anchor='semantic_rank1' requires a positive "
+            "temporal_kernel_width in turns, got %r. The width sets the rate as "
+            "1/width; at the default decay_rate of 0.001 the kernel is too flat "
+            "to separate memories inside one session, so there is no safe "
+            "default. Try a width near the session length, for example 4.0, or "
+            "pass 1.0/decay_rate to anchor at the memory decay rate on purpose."
+            % (temporal_kernel_width,)
+        )
+
+    if N == 0:
+        return np.array([], dtype=np.float32)
 
     # OPTIMIZATION: Pre-allocate output
     total = np.zeros(N, dtype=np.float32)
@@ -207,6 +329,7 @@ def vectorized_manifold_distance(
     # rescaling in between sees the whole candidate set. A channel whose weight
     # is negligible is left as None and never computed, as before.
     d_sem = d_emo = d_state = d_time = None
+    sem_sims = None  # kept so the temporal anchor can reuse it, see below
 
     # Semantic: cosine distance via dot product (vectors are L2-normalized)
     if alpha > 1e-8:
@@ -225,17 +348,78 @@ def vectorized_manifold_distance(
 
     # Temporal: exact exponential by default; optional fast approximation is opt-in.
     if delta > 1e-8:
-        delta_t = np.maximum(0, current_step - ts_array).astype(np.float32)
+        if anchor_mode == "semantic_rank1":
+            # The anchor is taken from the raw similarities, not from d_sem, and
+            # not from any rescaled copy. Two reasons. d_sem is clipped into
+            # [0, 1], so a float32 cosine slightly above 1.0 saturates to exactly
+            # 0.0 and can tie with a genuinely worse candidate, and argmin would
+            # then answer on tie order rather than on similarity. And this branch
+            # has to work when alpha is 0, which is the contiguity-only control
+            # arm, where d_sem is never computed at all. Reusing sem_sims when it
+            # exists keeps the common path at one matrix-vector product.
+            if sem_sims is None:
+                sem_sims = sem_matrix @ query_semantic
+            # Non-finite similarities are excluded from the choice of anchor. A
+            # plain argmax returns the index of the first nan, which would centre
+            # the whole channel on one corrupt row: under "store_end" a nan
+            # polluted only its own d_sem, so this mode would otherwise widen the
+            # blast radius of bad input from one memory to all N. An inf would
+            # likewise win the argmax unconditionally. If nothing is finite there
+            # is no anchor to choose and no way to guess one, so that raises.
+            finite_sims = np.isfinite(sem_sims)
+            if bool(finite_sims.all()):
+                anchor_idx = int(np.argmax(sem_sims))
+            elif bool(finite_sims.any()):
+                anchor_idx = int(np.argmax(np.where(finite_sims, sem_sims, -np.inf)))
+            else:
+                raise ValueError(
+                    "temporal_anchor='semantic_rank1' cannot pick an anchor: "
+                    "every one of the %d candidate similarities is nan or inf, "
+                    "which means sem_matrix or query_semantic is corrupt." % N
+                )
+            # Two-sided: distance from the anchor's position in time, in either
+            # direction. This is the whole point of the mode. max(0, step - ts)
+            # can only say "older is worse"; abs(anchor - ts) can say "near this".
+            #
+            # The difference is taken in float64 rather than in ts_array's own
+            # dtype, which matters for two reasons. np.abs is a no-op on an
+            # unsigned dtype, so on a uint array the wraparound in the subtraction
+            # survives it and every memory older than the anchor saturates at
+            # maximum distance, silently restoring the one-sidedness this mode
+            # exists to remove. And a signed subtraction can overflow, scoring the
+            # two most distant memories as adjacent. float64 is exact for integer
+            # timestamps up to 2**53, far beyond any store, and d_time is cast to
+            # float32 afterwards anyway.
+            ts_f = np.asarray(ts_array, dtype=np.float64)
+            delta_t = np.abs(ts_f - ts_f[anchor_idx]).astype(np.float32)
+            # A contiguity kernel needs its own width, which is why a positive one
+            # is required above. At width 4 and on the exact branch, d is 0.0 on
+            # the anchor, 0.6321 four turns away, 0.8647 at eight and 0.9502 at
+            # twelve. Under use_fast_temporal the same width gives 0.0, 0.5,
+            # 0.6667 and 0.75, so the approximation flattens the kernel as well as
+            # cheapening it.
+            #
+            # Degenerate case, stated because the contiguity-only control arm is
+            # where it would hide: if every similarity is equal, argmax returns
+            # index 0 and the kernel becomes a plain age ramp from the oldest
+            # candidate, carrying no query information while still looking like a
+            # working channel.
+            rate = 1.0 / kernel_width
+        else:
+            # Shipped behaviour, bit for bit: one-sided age against the store's
+            # write counter, at the memory decay rate.
+            delta_t = np.maximum(0, current_step - ts_array).astype(np.float32)
+            rate = decay_rate
         if use_fast_temporal:
             # Opt-in approximation: exp(-x) ≈ 1 / (1 + x)
             # Faster but introduces approximation error in the temporal component.
             # Use when large-scale speed is critical and small temporal error is acceptable.
             # This is intentionally opt-in (default = False) so callers must opt into the
             # approximation when they accept the tradeoff.
-            d_time = np.clip(1.0 - 1.0 / (1.0 + decay_rate * delta_t), 0.0, 1.0)
+            d_time = np.clip(1.0 - 1.0 / (1.0 + rate * delta_t), 0.0, 1.0)
         else:
             # Exact temporal term (default): preserves baseline math behavior.
-            d_time = np.clip(1.0 - np.exp(-decay_rate * delta_t), 0.0, 1.0)
+            d_time = np.clip(1.0 - np.exp(-rate * delta_t), 0.0, 1.0)
 
     # Optional: equalize the channels' spreads so the profile weights are the
     # weights that actually act. Off by default, in which case the accumulation
@@ -428,6 +612,45 @@ def _unit(v: np.ndarray) -> np.ndarray:
     return np.asarray(v).astype(np.float32)
 
 
+def _resolve_temporal_options(store: MemoryStore) -> tuple:
+    """Read the temporal anchor and kernel width from the store's profile.
+
+    Both entry points call this, so a store carries its own temporal rule rather
+    than depending on which call site it reached. Absent from a profile, the answer
+    is ("store_end", 0.0), which is the shipped behaviour and computes the same
+    floating-point d_time as the version before the anchor existed.
+
+    Note that the same rule does not mean the same d_time across the two entry
+    points. Under "semantic_rank1" the anchor is chosen from the candidate set, so
+    a tag filter that excludes the true rank-1 hit relocates it, and the
+    tag-filtered path in retrieve_top_k will produce a different temporal channel
+    from the unfiltered fast path on the same query. That is intended, since
+    anchoring on an excluded memory would be worse, but it means the two are not
+    comparable under a filter. See TEMPORAL_ANCHOR_MODES.
+
+    Neither value is validated here; vectorized_manifold_distance raises on an
+    unknown mode and on a width that is non-finite or non-positive under the
+    anchor, so a profile mistake fails loudly at the one place that can name the
+    supported values. The width is converted here rather than passed through, so
+    a profile carrying a non-numeric value names the offending key in the error
+    instead of raising a bare "float() argument must be a string or a real number"
+    from inside the distance function.
+    """
+    anchor = str(store.profile.get_custom("temporal_anchor", "store_end"))
+    raw_width = store.profile.get_custom(
+        "temporal_kernel_width", TEMPORAL_KERNEL_WIDTH_DEFAULT)
+    if raw_width is None:
+        return anchor, TEMPORAL_KERNEL_WIDTH_DEFAULT
+    try:
+        width = float(raw_width)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            "profile custom 'temporal_kernel_width' must be a number of turns, "
+            "got %r" % (raw_width,)
+        ) from exc
+    return anchor, width
+
+
 def retrieve_top_k(
     query_semantic: np.ndarray,
     query_emotional: np.ndarray,  # must be pre-projected via encode_emotional
@@ -505,6 +728,7 @@ def retrieve_top_k(
     # unfiltered retrieval rank by the same rule. Note the candidate set here is
     # the filtered one, which is the correct set to rescale against.
     chan_norm = str(store.profile.get_custom("channel_normalization", "none"))
+    temp_anchor, temp_width = _resolve_temporal_options(store)
 
     distances = vectorized_manifold_distance(
         sem_matrix, emo_matrix, state_matrix, ts_array,
@@ -516,6 +740,8 @@ def retrieve_top_k(
         contradiction_gate=contra_gate,
         use_fast_temporal=use_fast_temporal,
         channel_normalization=chan_norm,
+        temporal_anchor=temp_anchor,
+        temporal_kernel_width=temp_width,
     )
 
     # Adaptive temperature
@@ -607,6 +833,7 @@ def retrieve_top_k_fast(
     # retrieval semantics. Absent from a profile, this is "none" and the
     # composite is byte-for-byte the shipped one.
     chan_norm = str(store.profile.get_custom("channel_normalization", "none"))
+    temp_anchor, temp_width = _resolve_temporal_options(store)
 
     distances = vectorized_manifold_distance(
         store._sem_cache, store._emo_cache, store._auto_state_cache, store._ts_cache,
@@ -618,6 +845,8 @@ def retrieve_top_k_fast(
         contradiction_gate=contra_gate,
         use_fast_temporal=use_fast_temporal,
         channel_normalization=chan_norm,
+        temporal_anchor=temp_anchor,
+        temporal_kernel_width=temp_width,
     )
 
     temp = adaptive_temperature(distances, store.profile.temperature)
