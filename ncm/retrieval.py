@@ -86,9 +86,33 @@ CHANNEL_ROBUST_HIGH = 95.0
 def _rescale_channel(d: np.ndarray, mode: str) -> np.ndarray:
     """Rescale one channel's distances so its spread matches the other channels.
 
-    Returns a channel in [0, 1] whose ordering is identical to the input. A
-    channel that is constant across the candidate set returns all zeros,
-    because it cannot separate candidates and must not be amplified.
+    Returns a channel in [0, 1] that never inverts a pair: if d[i] < d[j] then
+    the output at i is less than or equal to the output at j. The map is order
+    preserving in that weak sense only, because it can lose a distinction:
+
+      * "minmax" is affine with positive slope, so it is strictly increasing in
+        exact arithmetic and can only tie two candidates when float32 runs out
+        of significant bits.
+      * "robust" clips at the CHANNEL_ROBUST_LOW and CHANNEL_ROBUST_HIGH
+        percentiles, so every candidate in a tail is mapped to exactly 0.0 or
+        exactly 1.0 and ties with the rest of that tail by design. That is the
+        point of the mode, but it does discard ordering information inside the
+        tails that "minmax" keeps.
+
+    Measured over 1,824 (query, channel, mode) checks in
+    experiments/results/exp25/exp25_channel_normalization.json: 0 inversions,
+    0 bounds violations, and 0 of 228 queries where "minmax" changed the
+    semantic ranking. Under "robust" the clip newly tied 2,546 adjacent pairs
+    and 3,470 pairs counted over all (i, j), and every one of the adjacent ties
+    sat exactly on a clip bound, so the ties are the clip rather than float32.
+    Because the low tail of a distance channel is the head of the ranking, that
+    lost ordering shows up in the rank-one metric: the sem_pure_robust arm
+    scores MRR 0.7179 against sem_pure_none's 0.7786 on identical weights.
+
+    A channel that is constant across the candidate set returns all zeros,
+    because it cannot separate candidates and must not be amplified. A candidate
+    set with fewer than two members is returned unchanged, since there is no
+    ordering to preserve and no span to divide by.
     """
     if mode == "none" or d is None or d.size < 2:
         return d
@@ -241,14 +265,20 @@ def vectorized_manifold_distance(
         # strength ranges [0, 2], centered at 1.0
         # modulator = 1 - boost * (strength - 1) -> range [1+boost, 1-boost]
         modulator = 1.0 - strength_boost * (strength_array - 1.0)
-        # OPTIMIZATION: Use in-place clip
-        # Rationale: bound the modulator to avoid excessive amplification or
-        # suppression of distances due to outlier strength values. The chosen
-        # bounds [0.5, 1.5] ensure reinforced memories are up to 50% easier to
-        # recall and decayed memories up to 50% harder, while preventing
-        # numerical instability or dominance of the strength term over the
-        # multi-dimensional manifold distance. This is an intentional, tunable
-        # implementation detail (see `README.md` and adjust via code if needed).
+        # Bound the modulator so an outlier strength cannot dominate the
+        # manifold distance.
+        #
+        # WHAT THESE BOUNDS ACTUALLY DO AT THE SHIPPED DEFAULT: nothing. The
+        # modulator spans [1-strength_boost, 1+strength_boost], and
+        # strength_boost defaults to 0.1 with no caller in this repository
+        # overriding it, so the reachable span is [0.9, 1.1] and a memory at
+        # maximum strength is 10% easier to recall, not 50%. ncm/memory.py caps
+        # strength at 2.0, so the clip below binds only when strength_boost
+        # exceeds 0.5. It is retained as a guard for tuned configurations, not
+        # because it is active by default. An earlier version of this comment
+        # read the bounds as the effect size and claimed 50%, which overstated
+        # the default by a factor of five and contradicted the arithmetic given
+        # in this function's own docstring.
         np.clip(modulator, 0.5, 1.5, out=modulator)
         total *= modulator
 
