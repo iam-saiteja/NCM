@@ -33,6 +33,12 @@ from ncm.retrieval import (
     vectorized_manifold_distance,
 )
 from ncm.persistence import NCMFile
+from ncm.persona import (
+    PersonaPayload,
+    build_persona_payload,
+    select_persona_exemplars,
+    persona_evidence_vector,
+)
 from ncm.exceptions import (
     NCMError,
     DimensionMismatchError,
@@ -62,6 +68,11 @@ __all__ = [
     "vectorized_manifold_distance",
     # Persistence
     "NCMFile",
+    # Persona conditioning
+    "PersonaPayload",
+    "build_persona_payload",
+    "select_persona_exemplars",
+    "persona_evidence_vector",
     # Exceptions
     "NCMError",
     "DimensionMismatchError",
