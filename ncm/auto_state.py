@@ -9,7 +9,18 @@ import os
 from typing import Dict, Iterable, Optional, Tuple
 
 import numpy as np
-from sentence_transformers import SentenceTransformer
+
+# sentence_transformers is imported inside _get_model rather than here, and the
+# anchor vectors are encoded on first use rather than in AutoStateTracker's
+# constructor. memory.py imports this module and MemoryStore.__init__ builds a
+# tracker unconditionally, so a module-level import plus an eager anchor encode
+# pulled torch into every process that touched a MemoryStore, including one that
+# only scores pre-computed vectors and never calls update(). The retrieval path
+# is numpy alone and should not have to pay for a deep learning runtime to prove
+# it. ncm/encoder.py already defers its torch import the same way, so this
+# matches the codebase rather than introducing a new pattern. The annotation
+# below stays readable because "from __future__ import annotations" keeps it
+# unevaluated at runtime.
 
 
 DEFAULT_DIMS = ["valence", "arousal", "dominance", "curiosity", "stress"]
@@ -43,9 +54,10 @@ _MODEL = None
 _ANCHOR_VECS = None
 
 
-def _get_model() -> SentenceTransformer:
+def _get_model() -> "SentenceTransformer":
     global _MODEL
     if _MODEL is None:
+        from sentence_transformers import SentenceTransformer
         repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         local_path = os.path.join(repo_root, "models", "all-MiniLM-L6-v2")
         if os.path.exists(local_path):
@@ -86,11 +98,18 @@ class AutoStateTracker:
         self.state = np.full(5, 0.5, dtype=np.float32)
         self.turn = 0
         self._dims = DEFAULT_DIMS
-        self._anchors = _get_anchor_vectors()
+        # The anchors are deliberately NOT resolved here. Encoding them requires
+        # the model, and MemoryStore.__init__ constructs a tracker
+        # unconditionally, so resolving them in the constructor made every
+        # MemoryStore() load torch even in a process that only scores
+        # pre-computed vectors and never calls update(). _get_anchor_vectors
+        # memoizes at module level, so deferring costs one None check per call
+        # and the first update() pays the encode it was going to pay anyway.
 
     def _sigma(self, e_input: np.ndarray, dim: str) -> float:
-        pos = self._anchors[dim]["pos"]
-        neg = self._anchors[dim]["neg"]
+        anchors = _get_anchor_vectors()[dim]
+        pos = anchors["pos"]
+        neg = anchors["neg"]
         return float(np.clip((1.0 + _cosine(e_input, pos) - _cosine(e_input, neg)) / 2.0, 0.0, 1.0))
 
     def update(self, text: str) -> np.ndarray:
