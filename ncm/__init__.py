@@ -23,7 +23,13 @@ __version__ = "1.1.0"
 from ncm.encoder import SentenceEncoder
 from ncm.auto_state import AutoStateTracker
 from ncm.memory import MemoryEntry, MemoryStore
-from ncm.profile import MemoryProfile, RetrievalWeights
+from ncm.profile import (
+    MemoryProfile,
+    RetrievalWeights,
+    PRESETS,
+    list_presets,
+    describe_preset,
+)
 from ncm.retrieval import (
     retrieve_top_k,
     retrieve_top_k_fast,
@@ -59,6 +65,9 @@ __all__ = [
     "MemoryStore",
     "MemoryProfile",
     "RetrievalWeights",
+    "PRESETS",
+    "list_presets",
+    "describe_preset",
     # Retrieval
     "retrieve_top_k",
     "retrieve_top_k_fast",

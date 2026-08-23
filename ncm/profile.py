@@ -124,3 +124,118 @@ class MemoryProfile:
 
     def get_custom(self, key: str, default: Any = None) -> Any:
         return self.custom.get(key, default)
+
+    @classmethod
+    def from_preset(cls, preset: str, **overrides) -> "MemoryProfile":
+        """Build a profile from a named, measured configuration.
+
+        Keyword overrides are applied after the preset, so
+        from_preset("temporal_contiguity", max_size=50000) keeps the measured
+        retrieval behaviour and changes only capacity. Overriding
+        retrieval_weights or custom replaces the preset's value outright rather
+        than merging, because a partially overridden weight vector would silently
+        stop summing to one and a partially overridden custom dict would leave
+        the anchor set with no width to go with it.
+
+        Read describe_preset(preset) first. Every preset beats the shipped
+        default on the task it was measured on, and some are worse elsewhere.
+        """
+        try:
+            spec = PRESETS[preset]
+        except KeyError:
+            raise ProfileError(
+                f"Unknown preset {preset!r}. Available: "
+                f"{', '.join(sorted(PRESETS))}"
+            )
+        kwargs = {
+            "name": preset,
+            "retrieval_weights": RetrievalWeights(*spec["weights"]),
+            # Copied, so a caller mutating profile.custom cannot edit the preset
+            # for every profile built afterwards in the same process.
+            "custom": dict(spec["custom"]),
+        }
+        kwargs.update(overrides)
+        return cls(**kwargs)
+
+
+# ---------------------------------------------------------------------------
+# Named profiles measured on held-out data.
+#
+# A preset exists so a configuration that beats the shipped default on a stated
+# task can be reached in one line without that default moving underneath callers
+# who never asked for it. Every entry carries the measurement that justifies it,
+# the split it was measured on, and the reason it is not the default. A preset
+# with no stated evidence is only a set of magic numbers with a friendly name.
+# ---------------------------------------------------------------------------
+
+PRESETS = {
+    "temporal_contiguity": {
+        "weights": (0.5, 0.0, 0.0, 0.5),
+        "custom": {
+            "temporal_anchor": "semantic_rank1",
+            "temporal_kernel_width": 4.0,
+        },
+        "use_when": (
+            "Retrieving the neighbourhood of a past episode: the memories written "
+            "around the same time as the one the query most resembles. Session "
+            "retrieval, conversation resumption, and 'what were we doing when we "
+            "talked about X' are this shape."
+        ),
+        "measured": (
+            "Multi-Session Chat, held-out test split, 501 conversations, 2505 "
+            "queries, mean store 55.5 memories, random guessing P@5 0.2000. "
+            "P@5 0.5436 against 0.4242 for the shipped default, a gain of "
+            "+0.1194 over 2136 changed queries, Wilcoxon exact p 9.92e-45. "
+            "nDCG@10 0.5106, MRR 0.6114. Attribution is clean: the same weights "
+            "with the default store_end anchor score 0.4255, a null result at "
+            "p 0.82, so the whole gain belongs to the anchor and none of it to "
+            "the reweighting."
+        ),
+        "caveats": (
+            "Two honest limits. First, the benchmark label is session membership "
+            "and a session is a contiguous run of timestamps, so a contiguity "
+            "kernel is favoured by the construction of the label: an arm using "
+            "the kernel alone and ignoring content entirely scores 0.5366, close "
+            "behind the full configuration. Second, MRR falls about 0.10 against "
+            "the default because the rank-1 semantic anchor lands in the correct "
+            "session only 57 percent of the time, and a missed anchor centres the "
+            "kernel on the wrong episode. Prefer the default when the query has "
+            "no episode to sit next to, such as single-fact lookup."
+        ),
+        "notes": (
+            "beta and gamma are zero because both channels measured near-inert "
+            "on this task, the emotional channel at AUC 0.514 with candidate "
+            "spread 0.013 and the state channel at 0.525 with spread 0.040. "
+            "decay_rate is unread under this anchor: the rate is "
+            "1/temporal_kernel_width, so the width in turns is the only temporal "
+            "knob that acts."
+        ),
+    },
+}
+
+
+def list_presets() -> dict:
+    """Preset names paired with the task each was measured on."""
+    return {name: spec["use_when"] for name, spec in PRESETS.items()}
+
+
+def describe_preset(name: str) -> str:
+    """The full record for one preset: what it is for, what it measured, and
+    where it is known to be worse. Meant to be printed before adopting one."""
+    try:
+        spec = PRESETS[name]
+    except KeyError:
+        raise ProfileError(
+            f"Unknown preset {name!r}. Available: {', '.join(sorted(PRESETS))}"
+        )
+    alpha, beta, gamma, delta = spec["weights"]
+    return "\n".join([
+        f"preset: {name}",
+        f"weights: alpha={alpha:.2f} beta={beta:.2f} gamma={gamma:.2f} "
+        f"delta={delta:.2f}",
+        f"custom: {spec['custom']}",
+        f"use when: {spec['use_when']}",
+        f"measured: {spec['measured']}",
+        f"caveats: {spec['caveats']}",
+        f"notes: {spec['notes']}",
+    ])
