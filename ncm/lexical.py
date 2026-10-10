@@ -90,8 +90,38 @@ class BM25:
             if p is None:
                 continue
             docs, tfs = p[0][:p[2]], p[1][:p[2]]
-            # ponytail: df counts removed docs until the next rebuild; ~exact while deletes are rare
-            idf = math.log(1 + (self.n_alive - len(docs) + 0.5) / (len(docs) + 0.5))
+            df = len(docs) if self.n_alive == self.n_docs else int(self._alive[docs].sum())
+            if not df:
+                continue
+            idf = math.log(1 + (self.n_alive - df + 0.5) / (df + 0.5))
             out[docs] += idf * tfs * (self.k1 + 1) / (tfs + norm[docs])
         out[:n][~self._alive[:n]] = 0
         return out
+
+    def export(self, new_id: np.ndarray):
+        """The index as CSR arrays over live docs, renumbered by new_id[doc] (-1 drops a doc)."""
+        terms, indptr, docs, tfs = [], [0], [], []
+        for term, (d, tf, c) in self.postings.items():
+            nid = new_id[d[:c]]
+            keep = nid >= 0
+            if keep.any():
+                terms.append(term)
+                docs.append(nid[keep])
+                tfs.append(tf[:c][keep])
+                indptr.append(indptr[-1] + int(keep.sum()))
+        cat = lambda xs, dt: np.concatenate(xs).astype(dt) if xs else np.zeros(0, dt)  # noqa: E731
+        return terms, np.array(indptr, np.int64), cat(docs, np.int32), cat(tfs, np.float32)
+
+    @classmethod
+    def from_arrays(cls, terms, indptr, docs, tfs, lengths, k1=1.2, b=0.75) -> "BM25":
+        bm = cls(k1, b)
+        n = len(lengths)
+        bm._len = np.zeros(max(64, 2 * n), np.float32)
+        bm._alive = np.zeros(len(bm._len), bool)
+        bm._len[:n], bm._alive[:n] = lengths, True
+        bm.n_docs = bm.n_alive = n
+        bm._total = float(np.sum(lengths))
+        for i, t in enumerate(terms):
+            lo, hi = indptr[i], indptr[i + 1]
+            bm.postings[t] = [docs[lo:hi].copy(), tfs[lo:hi].copy(), int(hi - lo)]
+        return bm

@@ -206,3 +206,16 @@ def test_mood_roundtrips(tmp_path):
     m.add("I'm so happy, this is wonderful news!", time=1)
     m.save(str(tmp_path / "a.ncm"))
     assert Memory(str(tmp_path / "a.ncm"), embedder=bow).mood() == m.mood()
+
+
+def test_scores_identical_after_forget_and_roundtrip(tmp_path):
+    m = mem()
+    ids = m.add_many([f"alpha{i % 7} beta{i % 3} gamma{i}" for i in range(60)], times=range(60))
+    m.forget(ids[5:20])
+    before = m.scores("alpha3 beta1 gamma42")
+    m.save(str(tmp_path / "s.ncm"))
+    m2 = Memory(str(tmp_path / "s.ncm"), embedder=bow)
+    assert np.allclose(m2.scores("alpha3 beta1 gamma42"), before, atol=1e-2)
+    assert m2._bm25.n_docs == len(m2) == 45
+    m2.add("alpha3 brand new", time=100)
+    assert m2.recall("brand new", k=1)[0].text == "alpha3 brand new"

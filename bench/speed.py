@@ -45,7 +45,15 @@ class Table:
         self.q = {}
 
     def __call__(self, texts, query=False):
-        return np.stack([self.q[t] if query else self.t[t.split(": ", 1)[1]] for t in texts])
+        return np.stack([self._get(t, query) for t in texts])
+
+    def _get(self, t, query):
+        if query:
+            return self.q[t]
+        key = t.split(": ", 1)[-1]
+        if key not in self.t:   # e.g. the affect anchor sentences
+            self.t[key] = unit(np.random.default_rng(abs(hash(key)) % 2 ** 32), 1)[0]
+        return self.t[key]
 
 
 def pct(xs):

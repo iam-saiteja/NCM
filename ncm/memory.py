@@ -13,6 +13,7 @@ import math
 import os
 import re
 import threading
+import zlib
 import time as _time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -175,6 +176,8 @@ class Memory:
         if not (len(speakers) == len(times) == len(metas) == n):
             raise ValueError("texts, speakers, times and metas must have the same length")
         with self._lock:
+            if self._index is None:
+                self._index = {(sp, _norm_text(t)): i for i, t, sp in zip(self.ids, self.texts, self.speakers)}
             out = [None] * n
             pending, fresh = {}, []
             for i, (t, sp, tm, me) in enumerate(zip(texts, speakers, times, metas)):
@@ -276,7 +279,8 @@ class Memory:
             for name in ("ids", "texts", "speakers", "metas"):
                 setattr(self, name, [x for x, k in zip(getattr(self, name), keep) if k])
             gone = set(ids)
-            self._index = {k: v for k, v in self._index.items() if v not in gone}
+            if self._index is not None:
+                self._index = {k: v for k, v in self._index.items() if v not in gone}
             self._rows = {m: i for i, m in enumerate(self.ids)}
             if self._bm25.n_docs > 2 * max(len(self), 32):   # mostly tombstones: rebuild
                 self._bm25 = BM25()
@@ -355,16 +359,20 @@ class Memory:
         if not path:
             raise ValueError("no path given")
         with self._lock:
+            new_id = np.full(self._bm25.n_docs, -1, np.int64)
+            new_id[self._doc] = np.arange(len(self))
+            terms, indptr, docs, tfs = self._bm25.export(new_id)
             meta = {"format": "ncm", "version": FORMAT_VERSION, "embedder": self.embedder.name,
                     "config": asdict(self.config), "next_id": self._next_id,
                     "session": self._session, "ids": self.ids, "texts": self.texts,
-                    "speakers": self.speakers, "metas": self.metas}
+                    "speakers": self.speakers, "metas": self.metas, "bm25_terms": terms}
             buf = io.BytesIO()
-            np.savez_compressed(
-                buf, meta=np.frombuffer(json.dumps(meta).encode("utf-8"), dtype=np.uint8),
-                emb=self.embeddings.astype(np.float16), times=self._times,
-                sessions=self._sessions, uses=self._uses, salience=self._salience,
-                valence=self._valence, arousal=self._arousal)
+            # vectors do not compress, so only the JSON (texts) is zlib-ed: 10x faster saves
+            np.savez(buf, meta=np.frombuffer(zlib.compress(json.dumps(meta).encode("utf-8"), 6), np.uint8),
+                     emb=self.embeddings.astype(np.float16), times=self._times,
+                     sessions=self._sessions, uses=self._uses, salience=self._salience,
+                     valence=self._valence, arousal=self._arousal, bm25_indptr=indptr,
+                     bm25_docs=docs, bm25_tfs=tfs, bm25_len=self._bm25._len[self._doc])
             os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
             tmp = f"{path}.tmp"
             with open(tmp, "wb") as f:
@@ -381,7 +389,7 @@ class Memory:
 
     def _load(self, path: str):
         with np.load(path, allow_pickle=False) as z:
-            meta = json.loads(z["meta"].tobytes().decode("utf-8"))
+            meta = json.loads(zlib.decompress(z["meta"].tobytes()).decode("utf-8"))
             if meta.get("format") != "ncm" or meta.get("version") != FORMAT_VERSION:
                 raise ValueError(f"{path} is not an NCM v{FORMAT_VERSION} file "
                                  "(use ncm.legacy.import_v1 for old .ncm files)")
@@ -390,14 +398,14 @@ class Memory:
                                  f"not {self.embedder.name!r}; pass embedder={meta['embedder']!r}")
             cols = {k: np.array(z[k], dtype=dt) for k, dt in _COLS.items() if k != "doc"}
             emb = np.array(z["emb"], dtype=np.float32)
+            bm = [z[k] for k in ("bm25_indptr", "bm25_docs", "bm25_tfs", "bm25_len")]
         if self.config == Config():
             self.config = Config(**meta["config"])
         self.ids, self.texts = meta["ids"], meta["texts"]
         self.speakers, self.metas = meta["speakers"], meta["metas"]
         self._next_id, self._session = meta["next_id"], meta["session"]
         self._rows = {m: i for i, m in enumerate(self.ids)}
+        self._bm25 = BM25.from_arrays(meta["bm25_terms"], *bm)
+        self._index = None                    # dedupe index, rebuilt on the first write
         if self.ids:
-            docs = [self._bm25.add(f"{sp}: {t}") for t, sp in zip(self.texts, self.speakers)]
-            self._buf = {**cols, "emb": emb, "doc": np.array(docs, dtype=np.int64)}
-        for i, t, sp in zip(self.ids, self.texts, self.speakers):
-            self._index[(sp, _norm_text(t))] = i
+            self._buf = {**cols, "emb": emb, "doc": np.arange(len(self.ids), dtype=np.int64)}
