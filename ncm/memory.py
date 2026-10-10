@@ -35,8 +35,8 @@ class Config:
     lexical_weight: float = 0.75     # BM25 weight next to dense, both z-scored per query
     # Contiguity: a strong hit lifts the turns just before it in the same session (the
     # question that led to a matching answer). Measured on LoCoMo and LongMemEval: lifting
-    # the previous turn helps both; lifting following turns helps LoCoMo (+0.06 R@5 at 0.75)
-    # but costs LongMemEval up to -0.16, so lift_next is off by default.
+    # the previous turn helps both; also lifting following turns (0.75, width 3) helps LoCoMo
+    # (+0.04 R@5) but costs LongMemEval -0.14, so lift_next is off by default.
     lift_previous: float = 0.75
     lift_next: float = 0.0
     lift_width: float = 1.0          # turns; kernel exp(-distance / width)
