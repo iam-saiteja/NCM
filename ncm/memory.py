@@ -197,32 +197,33 @@ class Memory:
         metas = list(metas) if metas is not None else [None] * n
         if not (len(speakers) == len(times) == len(metas) == n):
             raise ValueError("texts, speakers, times and metas must have the same length")
-        with self._lock:
+        keys = [_key(sp, t) for t, sp in zip(texts, speakers)]
+        with self._lock:                       # which texts are new? (cheap, under the lock)
             if self._index is None:
                 self._index = {_key(sp, t): i for i, t, sp in zip(self.ids, self.texts, self.speakers)}
-            out = [None] * n
-            pending, fresh = {}, []
-            for i, (t, sp, tm, me) in enumerate(zip(texts, speakers, times, metas)):
-                key = _key(sp, t)
-                if key in self._index:
-                    out[i] = self._index[key]
-                    self._uses[self._rows[out[i]]] += 1
-                elif key in pending:
-                    pending[key].append(i)
+            new = list(dict.fromkeys(k for k in keys if k not in self._index))
+        first = {k: keys.index(k) for k in new}
+        vecs = va = None
+        if new:                                # the model runs without blocking readers or writers
+            vecs = self.embedder([f"{speakers[first[k]]}: {texts[first[k]]}" for k in new])
+            if self._affect is None:
+                self._affect = Affect(self.embedder)
+            va = self._affect(vecs)
+        row_of_new = {k: j for j, k in enumerate(new)}
+        out = []
+        with self._lock:
+            sal = salience(va) if new else None
+            for i, k in enumerate(keys):
+                if k in self._index:           # stored before, or earlier in this batch, or by another thread
+                    mid = self._index[k]
+                    if mid in self._rows:
+                        self._uses[self._rows[mid]] += 1
                 else:
-                    pending[key] = [i]
-                    fresh.append((key, (t, sp, _to_ts(tm), dict(me or {}))))
-            if fresh:
-                vecs = self.embedder([f"{sp}: {t}" for _, (t, sp, _, _) in fresh])
-                if self._affect is None:
-                    self._affect = Affect(self.embedder)
-                va = self._affect(vecs)
-                sal = salience(va)
-                for (key, item), v, e, s_ in zip(fresh, vecs, va, sal):
-                    mid = self._index[key] = self._append(item, v, e, float(item[3].get("salience", s_)))
-                    self._uses[-1] += len(pending[key]) - 1
-                    for i in pending[key]:
-                        out[i] = mid
+                    j = row_of_new[k]
+                    item = (texts[i], speakers[i], _to_ts(times[i]), dict(metas[i] or {}))
+                    mid = self._index[k] = self._append(item, vecs[j], va[j],
+                                                        float(item[3].get("salience", sal[j])))
+                out.append(mid)
             self._forget_overflow()
             return [o if o in self._rows else None for o in out]   # None: forgotten at once, store full
 
@@ -315,41 +316,51 @@ class Memory:
     # ------------------------------------------------------------------- read
     def scores(self, query: str, speaker: str = None) -> np.ndarray:
         """Relevance of every memory to `query` (higher is better), -inf for filtered rows."""
+        if not len(self):
+            return np.zeros(0, dtype=np.float32)
+        q = self.embedder([query], query=True)[0]       # outside the lock: the slow part
         with self._lock:
             if not len(self):
                 return np.zeros(0, dtype=np.float32)
-            q = self.embedder([query], query=True)[0]
-            bm = self._bm25
-            lex = bm.scores(query)
-            if not (bm.n_docs == bm.n_alive == len(self)):          # tombstones: map docs to rows
-                lex = lex[self._doc]
-            s = score(self.embeddings @ q, lex, self._sessions, self.config)
-            if speaker is not None:
-                s = np.where(self._col("speaker") == self._speaker_ids.get(speaker, -1), s, -np.inf)
-            return s
+            return self._score_vector(q, query, speaker)
+
+    def _score_vector(self, q, query, speaker):
+        """scores() for an already-embedded query; call with the lock held."""
+        bm = self._bm25
+        lex = bm.scores(query)
+        if not (bm.n_docs == bm.n_alive == len(self)):          # tombstones: map docs to rows
+            lex = lex[self._doc]
+        s = score(self.embeddings @ q, lex, self._sessions, self.config)
+        if speaker is not None:
+            s = np.where(self._col("speaker") == self._speaker_ids.get(speaker, -1), s, -np.inf)
+        return s
 
     def recall(self, query: str, k: int = 5, speaker: str = None, reinforce: bool = False) -> list:
         """The k memories most relevant to `query`, best first. With a reranker, the first
         stage's top `config.rerank_top` are re-scored by it and `score` is the reranker's."""
+        q = self.embedder([query], query=True)[0] if len(self) else None
         with self._lock:
-            s = self.scores(query, speaker)
+            if not len(self) or q is None:
+                return []
+            s = self._score_vector(q, query, speaker)
             n_ok = int(np.isfinite(s).sum())
-            depth = max(k, self.config.rerank_top) if self.reranker else k
-            m = min(depth, n_ok)
+            m = min(max(k, self.config.rerank_top) if self.reranker else k, n_ok)
             if min(k, n_ok) <= 0:
                 return []
             top = np.argpartition(-s, m - 1)[:m] if m < len(s) else np.arange(len(s))
             top = top[np.argsort(-s[top], kind="stable")]
-            if self.reranker:
-                rs = np.asarray(self.reranker(query, [f"{self.speakers[r]}: {self.texts[r]}" for r in top]),
-                                dtype=np.float32)
-                order = np.argsort(-rs, kind="stable")
-                top, s = top[order], s.copy()
-                s[top] = rs[order]
-            top = top[:k]
-            if reinforce:
-                self._uses[top] += 1
-            return [self._recalled(int(r), float(s[r])) for r in top]
+            hits = [self._recalled(int(r), float(s[r])) for r in top]
+        if self.reranker:                      # slow: score a snapshot without holding the lock
+            rs = np.asarray(self.reranker(query, [f"{h.speaker}: {h.text}" for h in hits]), np.float32)
+            hits = [hits[i] for i in np.argsort(-rs, kind="stable")]
+            for h, sc in zip(hits, np.sort(rs)[::-1]):
+                h.score = float(sc)
+        hits = hits[:k]
+        if reinforce:
+            with self._lock:
+                rows = [self._rows[h.id] for h in hits if h.id in self._rows]
+                self._uses[rows] += 1
+        return hits
 
     def _recalled(self, row: int, sc: float = 0.0) -> Recalled:
         return Recalled(self.ids[row], self.texts[row], self.speakers[row], float(self._times[row]),
@@ -368,11 +379,13 @@ class Memory:
         model can tell which of two conflicting statements is the latest. Lines spoken by
         `self_name` (the agent itself) are shown as "you"."""
         from ncm.persona import persona
+        hits = self.recall(query, k=k, reinforce=True)
         with self._lock:
-            hits = self.recall(query, k=k, reinforce=True)
             rows = set()
             for h in hits:
-                r = self._row(h.id)
+                if h.id not in self._rows:     # forgotten while the reranker ran
+                    continue
+                r = self._rows[h.id]
                 for o in range(-window, window + 1):
                     if 0 <= r + o < len(self) and self._sessions[r + o] == self._sessions[r]:
                         rows.add(r + o)
@@ -426,10 +439,10 @@ class Memory:
             return path
 
     @classmethod
-    def load(cls, path: str, embedder=None, config: Config = None) -> "Memory":
+    def load(cls, path: str, embedder=None, config: Config = None, reranker=None) -> "Memory":
         if not os.path.exists(path):
             raise FileNotFoundError(path)
-        return cls(path, embedder=embedder, config=config)
+        return cls(path, embedder=embedder, config=config, reranker=reranker)
 
     def _load(self, path: str):
         with open(path, "rb") as f:

@@ -37,10 +37,9 @@ def r(a, b):
 
 
 def auc(pos, neg):
-    """P(score of a positive > score of a negative), ties counted half."""
-    allv = np.concatenate([pos, neg])
-    ranks = np.empty(len(allv))
-    ranks[np.argsort(allv, kind="stable")] = np.arange(1, len(allv) + 1)
+    """P(score of a positive > score of a negative), ties counted half (average ranks)."""
+    from scipy.stats import rankdata
+    ranks = rankdata(np.concatenate([pos, neg]))
     return float((ranks[:len(pos)].sum() - len(pos) * (len(pos) + 1) / 2) / (len(pos) * len(neg)))
 
 
@@ -85,7 +84,10 @@ def scores(Wv, Wa, eb, ge, split):
     pv = G @ Wv
     return {"emobank_r_valence": r(X @ Wv, Y[:, 0]), "emobank_r_arousal": r(X @ Wa, Y[:, 1]),
             "goemotions_auc_pos_vs_neg": auc(pv[g > 0], pv[g < 0]),
-            "goemotions_r_valence": r(pv, g)}
+            "goemotions_r_valence": r(pv, g),
+            # where 0 sits: the probe's mean on neutral chat and on average EmoBank text
+            "goemotions_neutral_mean_valence": float(pv[g == 0].mean()),
+            "emobank_mean_valence": float((X @ Wv).mean())}
 
 
 def main():
@@ -94,12 +96,15 @@ def main():
     zv = (eb["train"][1][:, 0] - mu[0]) / sd[0]
     za = (eb["train"][1][:, 1] - mu[1]) / sd[1]
     Xe, Xg, yg = eb["train"][0], ge["train"][0], ge["train"][1]
+    # no intercept in the ridge, so centre each corpus's targets: 0 stays "emotionally average"
+    yg = yg - yg.mean()
     out = {"n": {k: {s: len(v[s][0]) for s in v} for k, v in (("emobank", eb), ("goemotions", ge))},
-           "candidates": {}}
+           "candidates": {}, "test": {}}
     best = None
+    arousal = {lam: ridge(Xe, za, lam) for lam in LAMBDAS}
     for name in ("emobank-only", "emobank+goemotions"):
         for lam in LAMBDAS:
-            Wa = ridge(Xe, za, lam)
+            Wa = arousal[lam]
             if name == "emobank-only":
                 Wv = ridge(Xe, zv, lam)
             else:
@@ -111,9 +116,15 @@ def main():
             if best is None or sel > best[0]:
                 best = (sel, name, lam, Wv, Wa)
             if lam == 1.0:        # the previously shipped setting, for comparison on test
-                out.setdefault("test", {})[name] = scores(Wv, Wa, eb, ge, "test")
+                out["test"][name] = scores(Wv, Wa, eb, ge, "test")
     _, name, lam, Wv, Wa = best
     out["shipped"] = {"probe": name, "lambda": lam, "test": scores(Wv, Wa, eb, ge, "test")}
+    # the store embeds "speaker: text", so score the shipped probe on that input too
+    rows = [x for x in csv.DictReader(open(os.path.join(DATA_DIR, "emobank", "emobank.csv"), encoding="utf-8"))
+            if x["split"] == "test"]
+    Xp = embed(["user: " + x["text"] for x in rows], "minilm", "doc", tag="emobank")
+    out["shipped"]["test_with_speaker_prefix"] = {"emobank_r_valence": r(Xp @ Wv, eb["test"][1][:, 0]),
+                                                  "emobank_r_arousal": r(Xp @ Wa, eb["test"][1][:, 1])}
 
     from ncm.affect import ANCHORS
     axes = []

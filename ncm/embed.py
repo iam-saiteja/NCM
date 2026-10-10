@@ -62,7 +62,11 @@ class Reranker:
 
     def __call__(self, query: str, texts) -> np.ndarray:
         if self._model is None:
-            from sentence_transformers import CrossEncoder
+            try:
+                from sentence_transformers import CrossEncoder
+            except ImportError as e:
+                raise ImportError("the default reranker needs sentence-transformers: pip install "
+                                  "'ncm[embed]', or pass reranker=fn(query, texts) -> scores") from e
             self._model = CrossEncoder(self.name, device=self.device, max_length=256)
         pairs = [(query, t[:self.max_chars]) for t in texts]
         return np.asarray(self._model.predict(pairs, batch_size=64, show_progress_bar=False), np.float32)

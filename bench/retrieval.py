@@ -62,13 +62,14 @@ def methods():
     return m
 
 
-def rerank_method(cfg, top=30):
-    """What Memory(reranker=True).recall does: the reranker re-orders the first stage's top 30."""
+def rerank_method(cfg):
+    """What Memory(reranker=True).recall does: the reranker re-orders the first stage's top
+    cfg.rerank_top. Returns scores whose descending order is the final ranking."""
     rr = Reranker()
 
     def run(c, q):
         s = score(c["D"] @ q["v"], c["bm25"].scores(q["text"]), c["sess"], cfg)
-        head = np.argsort(-s, kind="stable")[:top]
+        head = np.argsort(-s, kind="stable")[:cfg.rerank_top]
         r = rr(q["text"], [c["texts"][i] for i in head])
         out = s - s.max() - 1.0                       # everything else stays below the shortlist
         out[head[np.argsort(-r, kind="stable")]] = np.arange(len(head), 0, -1)
@@ -88,7 +89,8 @@ def main():
 
     hays, queries = LOADERS[a.dataset]() if a.limit is None else LOADERS[a.dataset](limit=a.limit)
     all_m = methods()
-    chosen = [s for s in a.methods.split(",") if s] or list(all_m)
+    # the reranker needs a model download and ~0.1 s per query, so it runs only when named
+    chosen = [s for s in a.methods.split(",") if s] or [m for m in all_m if m != "ncm-v2-rerank"]
     t0 = time.time()
     doc_texts = [t for h in hays for t in h.texts]
     if a.strip_speaker:
@@ -111,6 +113,9 @@ def main():
 
     rows = {m: [] for m in chosen}
     lat = {m: 0.0 for m in chosen}
+    q0 = queries[0]
+    for m in chosen:                       # warm-up outside the timer: model loads, caches
+        all_m[m](ctx[q0.haystack], {"v": Q_all[0], "text": q0.question, "time": q0.time})
     for q, v in zip(queries, Q_all):
         c = ctx[q.haystack]
         qd = {"v": v, "text": q.question, "time": q.time}

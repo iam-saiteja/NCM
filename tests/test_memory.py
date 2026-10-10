@@ -292,3 +292,27 @@ def test_emotional_and_used_memories_outlive_neutral_ones_at_capacity():
     assert {ids[0], ids[1], ids[2]} <= kept      # oldest, but emotional
     assert ids[5] in kept                        # old, but recalled twice
     assert ids[3] not in kept                    # old, neutral, never used: faded
+
+
+def test_models_run_outside_the_lock():
+    """A slow embedder or reranker must not block other threads' reads and writes."""
+    import time as t
+    gate = threading.Event()
+
+    def slow_rerank(query, texts):
+        gate.wait(2)                       # held until the writer below has finished
+        return np.arange(len(texts), dtype=np.float32)
+
+    m = Memory(embedder=bow, reranker=slow_rerank)
+    m.add_many([f"note {i}" for i in range(5)], times=range(5))
+    out = {}
+    reader = threading.Thread(target=lambda: out.setdefault("hits", m.recall("note", k=2)))
+    reader.start()
+    t.sleep(0.1)
+    start = t.perf_counter()
+    m.add("written while the reranker runs", time=10)
+    out["write_s"] = t.perf_counter() - start
+    gate.set()
+    reader.join()
+    assert out["write_s"] < 1.0 and len(out["hits"]) == 2
+    assert Memory.load is not None and "reranker" in Memory.load.__code__.co_varnames

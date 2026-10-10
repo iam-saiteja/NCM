@@ -184,17 +184,20 @@ accuracy sat at chance. Its true-positive rates still ordered the arms the same 
 The valence/arousal probe is a 384x2 ridge regression on MiniLM embeddings. Valence
 is fitted on EmoBank (Buechel and Hahn 2017; ratings of news, fiction and letters) plus
 GoEmotions (Demszky et al. 2020; Reddit comments, using the dataset's own
-positive / negative / neutral grouping), each corpus weighted equally; arousal on
-EmoBank alone. The ridge penalty was picked on both dev splits. Test splits:
+positive / negative / neutral grouping, centred), each corpus weighted equally;
+arousal on EmoBank alone. The ridge penalty was picked on both dev splits. Test splits:
 
 | estimator | EmoBank valence r | EmoBank arousal r | GoEmotions AUC (positive vs negative) |
 |---|---|---|---|
 | v1 `AutoStateTracker` anchor words | 0.42 | 0.10 | - |
 | v2 anchor sentences (fallback for non-MiniLM embedders) | 0.45 | 0.16 | 0.855 |
 | v2 probe, EmoBank only | 0.62 | 0.44 | 0.884 |
-| **v2 probe, EmoBank + GoEmotions (shipped)** | **0.62** | **0.44** | **0.905** |
+| **v2 probe, EmoBank + GoEmotions (shipped)** | **0.62** | **0.44** | **0.906** |
 
-Embedding with the store's "user: " prefix changes EmoBank r by under 0.01.
+Embedding with the store's "user: " prefix changes EmoBank r by under 0.01
+(0.626 / 0.434). Zero means "emotionally average": the shipped probe puts average
+EmoBank text at +0.01 and neutral Reddit comments at -0.17, inside the +-0.4 band
+that `mood()` labels neutral.
 v1's arousal dimension was essentially noise. The probe reads tone but topic words
 can fool it: on the v1 sample files, "I feel overwhelmed trying to memorize dozens of
 formulas" scores slightly positive. Treat `mood()` as a soft, relative signal. Affect is not used for ranking:
