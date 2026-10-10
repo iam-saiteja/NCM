@@ -1,0 +1,68 @@
+{
+ "model": "qwen2.5:3b",
+ "items": 960,
+ "arms": {
+  "none": {
+   "accuracy": 0.5010416666666667,
+   "true_positive_rate": 0.0020833333333333333,
+   "true_negative_rate": 1.0,
+   "prompt_chars": 131.47604166666667,
+   "vs_recent": {
+    "delta": -0.005208333333333333,
+    "ci95": [
+     -0.011458333333333333,
+     0.0
+    ],
+    "p": 0.0652
+   }
+  },
+  "recent": {
+   "accuracy": 0.50625,
+   "true_positive_rate": 0.0125,
+   "true_negative_rate": 1.0,
+   "prompt_chars": 1812.1010416666666
+  },
+  "ncm-recall": {
+   "accuracy": 0.5510416666666667,
+   "true_positive_rate": 0.10208333333333333,
+   "true_negative_rate": 1.0,
+   "prompt_chars": 924.2875,
+   "vs_recent": {
+    "delta": 0.04479166666666667,
+    "ci95": [
+     0.030208333333333334,
+     0.059375
+    ],
+    "p": 0.0001
+   }
+  },
+  "ncm-persona": {
+   "accuracy": 0.5302083333333333,
+   "true_positive_rate": 0.06458333333333334,
+   "true_negative_rate": 0.9958333333333333,
+   "prompt_chars": 1007.3802083333334,
+   "vs_recent": {
+    "delta": 0.023958333333333335,
+    "ci95": [
+     0.011458333333333333,
+     0.0375
+    ],
+    "p": 0.0004
+   }
+  },
+  "ncm-context": {
+   "accuracy": 0.5572916666666666,
+   "true_positive_rate": 0.11666666666666667,
+   "true_negative_rate": 0.9979166666666667,
+   "prompt_chars": 2420.116666666667,
+   "vs_recent": {
+    "delta": 0.051041666666666666,
+    "ci95": [
+     0.036458333333333336,
+     0.06666666666666667
+    ],
+    "p": 0.0001
+   }
+  }
+ }
+}

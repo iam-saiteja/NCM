@@ -115,8 +115,9 @@ def render(h, rows, clip=None):
 
 
 class Cached:
-    """Library-compatible embedder serving the shared benchmark cache from memory."""
-    name = "minilm"
+    """Library-compatible embedder serving the shared benchmark cache from memory.
+    Named like the real model so the store uses the shipped MiniLM affect probe."""
+    name = "sentence-transformers/all-MiniLM-L6-v2"
 
     def __init__(self, table, tag):
         self.table, self.tag = table, tag
@@ -165,7 +166,7 @@ def main():
         table = {}
         m = Memory(embedder=Cached(table, ds))
         for s in sorted(set(h.sessions)):
-            rows = [i for i, x in enumerate(h.sessions) if x == s]
+            rows = [i for i, x in enumerate(h.sessions) if x == s and h.texts[i].split(": ", 1)[1].strip()]
             texts = [flat(h.texts[i].split(": ", 1)[1], clip) for i in rows]
             for i, t in zip(rows, texts):
                 table[(False, f"{h.speakers[i]}: {t}")] = docs[h.id][i]

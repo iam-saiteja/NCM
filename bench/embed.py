@@ -18,6 +18,7 @@ MODELS = {
 }
 
 _loaded = {}
+_tables = {}   # path -> {sha1: vector}, read from disk once per process
 
 
 def model(name):
@@ -36,10 +37,12 @@ def embed(texts, name, kind="doc", tag="misc", batch_size=128):
     prefix = MODELS[name][1] if kind == "query" else MODELS[name][2]
     os.makedirs(CACHE, exist_ok=True)
     path = os.path.join(CACHE, f"{tag}-{kind}-{name}.npz")
-    table = {}
-    if os.path.exists(path):
-        z = np.load(path)
-        table = dict(zip(z["keys"].tolist(), z["emb"]))
+    if path not in _tables:
+        _tables[path] = {}
+        if os.path.exists(path):
+            z = np.load(path)
+            _tables[path] = dict(zip(z["keys"].tolist(), z["emb"]))
+    table = _tables[path]
     keys = [_key(t) for t in texts]
     missing = sorted({k: t for k, t in zip(keys, texts) if k not in table}.items())
     if missing:

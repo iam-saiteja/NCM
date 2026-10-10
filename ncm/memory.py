@@ -23,11 +23,14 @@ import numpy as np
 from ncm.affect import Affect, label, salience
 from ncm.embed import as_embedder
 from ncm.lexical import BM25
+from ncm.persona import evidence, statements
 
 FORMAT_VERSION = 3
 LIFT_ANCHORS = 1024
 _COLS = {"times": np.float64, "sessions": np.int64, "uses": np.int32, "salience": np.float32,
-         "valence": np.float32, "arousal": np.float32, "doc": np.int64, "speaker": np.int32}
+         "valence": np.float32, "arousal": np.float32, "evidence": np.float32, "stmt_words": np.int32,
+         "doc": np.int64, "speaker": np.int32}
+_DERIVED = ("doc", "speaker")              # rebuilt on load, not saved
 
 
 @dataclass
@@ -99,8 +102,9 @@ def _to_ts(t) -> float:
     return float(t)
 
 
-def _norm_text(t: str) -> str:
-    return re.sub(r"\W+", " ", t.lower()).strip()
+def _key(speaker: str, t: str) -> tuple:
+    """Dedupe key: case and punctuation do not matter, unless that is all there is ("!!!", emoji)."""
+    return speaker, re.sub(r"\W+", " ", t.lower()).strip() or t.strip()
 
 
 class Memory:
@@ -145,6 +149,13 @@ class Memory:
     _doc = property(lambda self: self._col("doc"))
     _valence = property(lambda self: self._col("valence"))
     _arousal = property(lambda self: self._col("arousal"))
+    _evidence = property(lambda self: self._col("evidence"))
+
+    def rows_of(self, speaker: str = None) -> np.ndarray:
+        """Row indices of one speaker's memories (all rows for None), oldest first."""
+        if speaker is None:
+            return np.arange(len(self))
+        return np.flatnonzero(self._col("speaker") == self._speaker_ids.get(speaker, -1))
 
     @property
     def embeddings(self) -> np.ndarray:
@@ -185,11 +196,11 @@ class Memory:
             raise ValueError("texts, speakers, times and metas must have the same length")
         with self._lock:
             if self._index is None:
-                self._index = {(sp, _norm_text(t)): i for i, t, sp in zip(self.ids, self.texts, self.speakers)}
+                self._index = {_key(sp, t): i for i, t, sp in zip(self.ids, self.texts, self.speakers)}
             out = [None] * n
             pending, fresh = {}, []
             for i, (t, sp, tm, me) in enumerate(zip(texts, speakers, times, metas)):
-                key = (sp, _norm_text(t))
+                key = _key(sp, t)
                 if key in self._index:
                     out[i] = self._index[key]
                     self._uses[self._rows[out[i]]] += 1
@@ -211,7 +222,7 @@ class Memory:
                     for i in pending[key]:
                         out[i] = mid
             self._forget_overflow()
-            return out
+            return [o if o in self._rows else None for o in out]   # None: forgotten at once, store full
 
     def _append(self, item, vec, va=(0.0, 0.0)) -> int:
         text, speaker, ts, meta = item
@@ -230,6 +241,7 @@ class Memory:
         b["emb"][n], b["times"][n], b["sessions"][n] = vec, ts, self._session
         b["uses"][n], b["salience"][n] = 0, float(meta.get("salience", 0.0))
         b["valence"][n], b["arousal"][n] = va
+        b["evidence"][n], b["stmt_words"][n] = evidence(text), len(" ".join(statements(text)).split())
         b["speaker"][n] = self._speaker_ids.setdefault(speaker, len(self._speaker_ids))
         b["doc"][n] = self._bm25.add(f"{speaker}: {text}")
         mid = self._next_id
@@ -260,10 +272,9 @@ class Memory:
         """Emotional tone of the most recent statements (optionally of one speaker),
         recency-weighted: {"valence": v, "arousal": a, "label": "positive, calm"}.
         Questions and one-word turns are skipped: asking about feelings is not feeling."""
-        from ncm.persona import statements
-        rows = [r for r in range(len(self)) if (speaker is None or self.speakers[r] == speaker)
-                and len(" ".join(statements(self.texts[r])).split()) >= 3][-last:]   # skip asks and "hi"
-        if not rows:
+        rows = self.rows_of(speaker)
+        rows = rows[self._col("stmt_words")[rows] >= 3][-last:]   # skip questions and "hi"
+        if not len(rows):
             return {"valence": 0.0, "arousal": 0.0, "label": "neutral"}
         w = 0.5 ** (np.arange(len(rows))[::-1] / half_life)
         v = float(w @ self._valence[rows] / w.sum())
@@ -390,7 +401,8 @@ class Memory:
             np.savez(buf, meta=np.frombuffer(zlib.compress(json.dumps(meta).encode("utf-8"), 6), np.uint8),
                      emb=self.embeddings.astype(np.float16), times=self._times,
                      sessions=self._sessions, uses=self._uses, salience=self._salience,
-                     valence=self._valence, arousal=self._arousal, bm25_indptr=indptr,
+                     valence=self._valence, arousal=self._arousal, evidence=self._evidence,
+                     stmt_words=self._col("stmt_words"), bm25_indptr=indptr,
                      bm25_docs=docs, bm25_tfs=tfs, bm25_len=self._bm25._len[self._doc])
             os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
             tmp = f"{path}.tmp"
@@ -407,6 +419,12 @@ class Memory:
         return cls(path, embedder=embedder, config=config)
 
     def _load(self, path: str):
+        with open(path, "rb") as f:
+            head = f.read(4)
+        if head == b"NCM\x02":
+            raise ValueError(f"{path} is an NCM v1 file: import it with ncm.legacy.import_v1({path!r})")
+        if head != b"PK\x03\x04":
+            raise ValueError(f"{path} is not an NCM file")
         with np.load(path, allow_pickle=False) as z:
             meta = json.loads(zlib.decompress(z["meta"].tobytes()).decode("utf-8"))
             if meta.get("format") != "ncm" or meta.get("version") != FORMAT_VERSION:
@@ -415,7 +433,7 @@ class Memory:
             if meta["embedder"] != self.embedder.name:
                 raise ValueError(f"{path} was embedded with {meta['embedder']!r}, "
                                  f"not {self.embedder.name!r}; pass embedder={meta['embedder']!r}")
-            cols = {k: np.array(z[k], dtype=dt) for k, dt in _COLS.items() if k not in ("doc", "speaker")}
+            cols = {k: np.array(z[k], dtype=dt) for k, dt in _COLS.items() if k not in _DERIVED}
             emb = np.array(z["emb"], dtype=np.float32)
             bm = [z[k] for k in ("bm25_indptr", "bm25_docs", "bm25_tfs", "bm25_len")]
         if self.config == Config():

@@ -2,7 +2,8 @@
 
 A selection over the whole store: first-person statements of durable facts,
 preferences, plans and habits score high; questions and small talk score low;
-MMR keeps the picks from repeating each other. No model call.
+MMR keeps the picks from repeating each other. No model call: each memory's
+evidence score is computed once, when it is stored.
 """
 
 import re
@@ -26,11 +27,9 @@ _PLAN = re.compile(
 _HABIT = re.compile(
     r"\b(?:i\s+(?:always|never|usually|often|rarely)|i\s+tend\s+to|"
     r"every\s+(?:day|week|morning|evening|night|weekend))\b", re.I)
-
-
 _SENT = re.compile(r"(?<=[.!?])\s+")
 _ASK = re.compile(r"^\s*(?:what|where|when|why|who|whom|which|how|do|does|did|is|are|was|were|"
-                  r"can|could|would|will|should|have|has|tell\s+me)", re.I)
+                  r"can|could|would|will|should|have|has|tell\s+me)\b", re.I)
 
 
 def is_question(sentence: str) -> bool:
@@ -55,21 +54,18 @@ def evidence(text: str) -> float:
 
 def persona(mem, speaker: str = "user", k: int = 6, diversity: float = 0.5) -> list:
     """Up to k statements that best describe `speaker`, most telling first."""
-    rows = [r for r, sp in enumerate(mem.speakers) if sp == speaker]
-    rel = np.array([evidence(mem.texts[r]) for r in rows], dtype=np.float32)
-    keep = rel > 0
-    rows, rel = [r for r, m in zip(rows, keep) if m], rel[keep]
-    if not rows:
+    rows = mem.rows_of(speaker)
+    rows = rows[mem._evidence[rows] > 0]
+    if not len(rows) or k <= 0:
         return []
     # newer statements win ties: facts change, and the latest one is the true one
-    rel = rel + 1e-3 * np.linspace(0, 1, len(rows), dtype=np.float32)
+    rel = mem._evidence[rows] + 1e-3 * np.linspace(0, 1, len(rows), dtype=np.float32)
     emb = mem.embeddings[rows]
-    sim = emb @ emb.T
     chosen = [int(np.argmax(rel))]
-    penalty = sim[chosen[0]].copy()
+    penalty = emb @ emb[chosen[0]]
     while len(chosen) < min(k, len(rows)):
         s = (1 - diversity) * rel - diversity * penalty
         s[chosen] = -np.inf
         chosen.append(int(np.argmax(s)))
-        penalty = np.maximum(penalty, sim[chosen[-1]])
+        penalty = np.maximum(penalty, emb @ emb[chosen[-1]])
     return [mem.texts[rows[i]] for i in chosen]

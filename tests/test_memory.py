@@ -161,6 +161,7 @@ def test_persona_prefers_self_disclosure():
     assert evidence("I work as a nurse") > evidence("what do you do?") == 0
     assert evidence("do I have a dog?") == 0 and evidence("I have two dogs. Do you?") > 0
     assert evidence("lol yeah") == 0
+    assert evidence("do I have a dog") == 0             # a question without "?" is still a question
     m = mem()
     m.add_many(["lol yeah", "I work as a nurse", "how about you?", "I love hiking on weekends"],
                times=[1, 2, 3, 4])
@@ -230,3 +231,33 @@ def test_import_v1_file_if_present():
     m = import_v1(p, embedder=bow)
     assert len(m) > 0 and set(m.speakers) <= {"user", "assistant"}
     assert all(not t.startswith("user: ") for t in m.texts)
+
+
+def test_add_many_returns_none_for_memories_forgotten_at_once():
+    m = mem(max_items=10)
+    ids = m.add_many([f"old note {i}" for i in range(30)], times=range(30),
+                     metas=[{"salience": 0.0}] * 30)
+    assert len(ids) == 30 and len(m) == 10
+    assert all(i is None or i in m.ids for i in ids) and sum(i is not None for i in ids) == 10
+
+
+def test_punctuation_and_emoji_only_messages_stay_distinct():
+    m = mem()
+    a, b, c = m.add_many(["!!!", "???", "!!!"], times=[1, 2, 3])
+    assert a != b and a == c and len(m) == 2
+
+
+def test_opening_a_v1_file_points_to_import_v1(tmp_path):
+    p = tmp_path / "old.ncm"
+    p.write_bytes(b"NCM\x02" + bytes(40))
+    with pytest.raises(ValueError, match="import_v1"):
+        Memory(str(p), embedder=bow)
+
+
+def test_mood_skips_questions_and_persona_scales():
+    m = mem()
+    m.add_many(["I'm so sad, this is terrible news.", "what makes me happy and joyful and great"],
+               times=[1, 2])
+    assert m.mood()["valence"] == m._valence[0]        # the question did not count
+    m.add_many([f"I have hobby number {i}" for i in range(3000)], times=range(3, 3003))
+    assert len(persona(m, k=5)) == 5                    # no N x N matrix needed

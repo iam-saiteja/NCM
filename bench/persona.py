@@ -19,6 +19,7 @@ import argparse
 import json
 import os
 import random
+import re
 import sys
 import time
 
@@ -43,8 +44,9 @@ SYSTEM = {
 
 
 class Cached:
-    """Serves MiniLM vectors from one up-front batch; embeds anything new on demand."""
-    name = "minilm"
+    """Serves MiniLM vectors from one up-front batch; embeds anything new on demand.
+    Named like the real model so the store uses the shipped MiniLM affect probe."""
+    name = "sentence-transformers/all-MiniLM-L6-v2"
 
     def __init__(self, table):
         self.table = table
@@ -159,8 +161,11 @@ def main():
                 out.write(json.dumps(cache[key]) + "\n")
                 out.flush()
             r = cache[key]
-            got = r["answer"].strip().upper()[:1] if a.mode == "choice" else \
-                r["answer"].strip().lower().startswith("yes")
+            if a.mode == "choice":   # first standalone A or B: "Answer: B", "**B**", "B." all parse
+                letter = re.search(r"\b([AB])\b", r["answer"].upper())
+                got = letter.group(1) if letter else None
+            else:
+                got = r["answer"].strip().lower().startswith("yes")
             res[arm].append({"correct": float(got == label), "label": label, "chars": r["chars"]})
         if n % 50 == 0:
             print(f"{n}/{len(items)} {time.time()-t0:.0f}s " + " ".join(

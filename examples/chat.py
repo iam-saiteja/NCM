@@ -72,6 +72,7 @@ class Character:
         for prefix in ("assistant\n", f"{self.name}:"):   # small models sometimes echo a role
             if answer.lower().startswith(prefix.lower()):
                 answer = answer[len(prefix):].strip()
+        answer = answer or "..."                         # an empty reply must not lose the user's turn
         self.recent += [{"role": "user", "content": user_msg}, {"role": "assistant", "content": answer}]
         self.mem.add_many([user_msg, answer], speakers=["user", self.name])
         self.mem.save()
