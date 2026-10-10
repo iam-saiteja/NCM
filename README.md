@@ -34,13 +34,15 @@ Relevant memories (oldest first):
   than plain vector search**. Add one line, `Memory(reranker=True)`, for an
   accuracy mode that reaches **2.4x v1** ([results](docs/RESULTS.md)).
 - **Better answers from the same LLM.** On LoCoMo, a 3B local model answers with
-  F1 **RESULT_QA_V2** from NCM's memories, against **RESULT_QA_DENSE** from vector
-  search and **RESULT_QA_V1** from NCM v1.
-- **Gives a character a person to remember.** `persona()` distils who the user is
-  from their own statements, `mood()` tracks the emotional tone, and emotional
-  memories fade more slowly (ACT-R activation plus salience).
+  F1 **0.289** from NCM's memories, against **0.214** from vector
+  search and **0.184** from NCM v1.
+- **Gives a character a person to remember.** Asked which of two statements is true
+  of someone after five sessions, a 3B model is right 79% of the time with NCM's
+  `context()` and 50% (chance) with the last 10 turns a sliding-window bot keeps.
+  `persona()` distils who the user is from their own statements, `mood()` tracks the
+  emotional tone, and emotional memories fade more slowly (ACT-R activation plus salience).
 - **Small and fast.** Pure numpy at query time, no LLM calls inside the memory.
-  Recall takes RESULT_SPEED_1K ms at 1k memories and RESULT_SPEED_100K ms at 100k
+  Recall takes 0.6 ms at 1k memories and 12 ms at 100k
   on a laptop CPU. Default embedder: all-MiniLM-L6-v2 (22M parameters).
 - **Safe to persist.** One `.ncm` file, atomic writes, no pickle. Old v1 files
   import with `ncm.legacy.import_v1`.

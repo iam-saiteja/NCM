@@ -29,6 +29,7 @@ from bench.data import load_locomo, load_longmemeval     # noqa: E402
 from bench.embed import embed                            # noqa: E402
 from bench.metrics import paired_bootstrap               # noqa: E402
 from ncm import Config, Memory                           # noqa: E402
+from ncm.embed import Reranker                           # noqa: E402
 from ncm.lexical import BM25                             # noqa: E402
 from ncm.memory import score                             # noqa: E402
 
@@ -183,6 +184,7 @@ def main():
     out = open(cache_path, "a", encoding="utf-8")
 
     results = {arm: [] for arm in arms}
+    reranker = Reranker()
     t0 = time.time()
     for qi, q in enumerate(queries):
         h = hmap[q.haystack]
@@ -205,6 +207,11 @@ def main():
                               Config(lift_previous=0))
                     ctx = render(h, np.argsort(-(s + 0.75 * neighbour_max(s, np.asarray(h.sessions), 3.0)),
                                                kind="stable")[:a.k], clip)
+                elif arm == "ncm-v2-rerank":             # Memory(reranker=True): reranker orders the top 30
+                    s = score(docs[h.id] @ qv, bms[h.id].scores(q.question), np.asarray(h.sessions), Config())
+                    head = np.argsort(-s, kind="stable")[:30]
+                    rr = reranker(q.question, [h.texts[i] for i in head])
+                    ctx = render(h, head[np.argsort(-rr, kind="stable")][:a.k], clip)
                 elif arm == "ncm-v2-context":            # the shipped Memory.context(), ~same turn budget
                     ctx = mems[h.id].context(q.question, k=max(1, a.k * 2 // 5), persona_of=None)
                 else:

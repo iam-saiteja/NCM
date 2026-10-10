@@ -107,11 +107,77 @@ hybrid 0.545 (MiniLM) vs 0.563 (bge-small). MiniLM stays the default; use
 
 ## 2. End-to-end: do the answers get better?
 
-QA_SECTION
+A local model reads each arm's memories and answers; nothing else differs between
+arms. Reader: qwen2.5:3b (Q4, Ollama, temperature 0). Metric: SQuAD-style token F1
+against the gold answer, the LoCoMo paper's metric. Every arm shows 10 memories,
+dated and in time order (`context()` shows 4 hits plus their neighbouring turns, a
+similar budget). Raw answers: `bench/results/qa-cache.jsonl`.
+
+| answer F1 | LoCoMo (400 q) | vs v1 | LongMemEval (200 q) | vs v1 |
+|---|---|---|---|---|
+| no memory | 0.043 | | 0.095 | |
+| NCM v1 | 0.184 | | 0.217 | |
+| cosine (MiniLM) | 0.214 | +0.030 [-0.000, 0.061] | 0.224 | +0.007 [-0.045, 0.059] |
+| NCM v2 `recall()` | 0.273 | **+0.089** [0.055, 0.122] | 0.271 | +0.054 [-0.001, 0.108] |
+| **NCM v2 `context()`** | **0.289** | **+0.105** [0.069, 0.140] | **0.293** | **+0.076** [0.021, 0.134] |
+| NCM v2 + reranker | 0.273 | +0.089 [0.057, 0.121] | 0.280 | +0.063 [0.010, 0.117] |
+| NCM v2, dialogue mode (`lift_next=0.75`) | **0.305** | +0.121 [0.087, 0.154] | | |
+
+- On both datasets **NCM v1 gave the reader worse memories than plain vector search**,
+  and v2 gives it better ones. `context()`, the call an integration would use, is the
+  best default arm on both: +57% (LoCoMo) and +35% (LongMemEval) relative to v1.
+- **The reranker does not change answers at this budget.** It reorders the top of the
+  list, but `context()` shows memories in time order and 10 of them, so the reader
+  cannot see the better order and the set barely changes. With a tight budget it does help: at 3 memories per question, LoCoMo F1 is
+  0.278 with the reranker against 0.241 without (+0.037 [0.005, 0.069]). That is the
+  same answer quality as the default with 10 memories (0.273) from a prompt 2.7x
+  smaller (736 vs 1,959 characters): the reranker spends ~30 ms of GPU to save LLM
+  tokens. At k=3, v1 scores 0.135 and cosine 0.172 (`qa-locomo-qwen2.5_3b-k3.json`).
+- **Dialogue mode** (forward lift) is the best arm on LoCoMo, a dialogue between two
+  people, and is off by default only because it hurts user/assistant chat retrieval
+  (section 1).
+- Earlier `context()` runs printed ISO dates (`2023-05-07`); the reader copied them
+  into answers and token F1 scored them zero against "7 May 2023" (temporal F1 0.135
+  vs 0.254). Dates now read "7 May 2023, 13:56", which fixed it. Those runs remain in
+  the cache under `hybrid-context-*-isodate`.
+- LongMemEval runs skip single-session-preference (rubric answers) and clip every
+  turn to 400 characters in every arm, so a 3B model can read ten of them.
+- The local runtime (Ollama, qwen2.5:3b Q4) occasionally stutters inside a word
+  ("Joleneene", "Paintinging"): 4-6% of answers in every arm, which lowers F1 for
+  all arms alike. Comparisons stand; absolute F1 is a little pessimistic.
 
 ## 3. Personalisation: does it know who the person is?
 
-PERSONA_SECTION
+The question a character has to answer: after many conversations, who is this
+person? Data: Multi-Session Chat (Xu et al. 2022), test split, 120 conversations of
+5 sessions each. Both speakers' human-written persona lines are the ground truth;
+no memory arm ever sees them. For each speaker, two true persona lines are paired
+with two distractors: persona lines of other people, kept only if no true line is a
+near-paraphrase (cosine < 0.6). The reader (qwen2.5:3b) is asked which of the two
+statements is true of the speaker, A or B, with positions shuffled. 480 pairs; chance
+is 50%.
+
+| context given to the model | accuracy | vs last-10-turns window |
+|---|---|---|
+| no memory | 0.477 | |
+| the last 10 turns (what a sliding-window chatbot keeps) | 0.504 | |
+| plain vector search: 6 memories of that speaker by cosine | 0.762 | +0.258 [0.202, 0.317] |
+| NCM `persona()` only: 6 self-describing statements, no query | 0.621 | +0.117 [0.056, 0.177] |
+| NCM `recall()`, 6 memories of that speaker | 0.785 | +0.281 [0.221, 0.340] |
+| **NCM `context()`**: persona + recalled memories in context | **0.790** | **+0.285** [0.229, 0.340] |
+
+A sliding window is at chance on who the person is: what they said three sessions
+ago is gone. Long-term memory gets four answers in five right. On this task NCM's
+ranking is level with plain vector search (`context()` vs cosine +0.027
+[-0.023, 0.079], not significant): the win here is remembering at all, and NCM's
+retrieval advantage shows on the conversation benchmarks above. The query-free `persona()` block,
+six lines that are always in the prompt, already recovers part of that (0.62).
+
+An earlier yes/no version of this test ("is this statement true of them?") was
+uninformative: the 3B model answered "no" to 94-100% of statements in every arm, so
+accuracy sat at chance. Its true-positive rates still ordered the arms the same way
+(window 0.013, NCM recall 0.102, NCM context 0.117); results are kept in
+`bench/results/persona-yesno-msc-qwen2.5_3b.json`.
 
 ## 4. Affect
 
@@ -137,4 +203,29 @@ salience, so emotional memories survive capacity eviction longer, and feeds `moo
 
 ## 5. Speed and size
 
-SPEED_SECTION
+All on a laptop CPU (no GPU involved in NCM itself), store of synthetic Zipf-text
+memories with random 384-d vectors, so these numbers are NCM's own cost; embedding is
+listed separately below. `bench/results/speed.json`.
+
+| memories | v1 recall p50 | **v2 recall p50** | v2 recall p95 | v2 add, per memory | v2 save / load | file |
+|---|---|---|---|---|---|---|
+| 1,000 | 0.92 ms | **0.56 ms** | 4.1 ms | 0.14 ms | 0.12 s / 0.05 s | 1.1 MB |
+| 10,000 | 5.6 ms | **1.3 ms** | 6.0 ms | 0.15 ms | 0.40 s / 0.14 s | 9.4 MB |
+| 100,000 | 49 ms | **11.6 ms** | 18.7 ms | 0.16 ms | 2.3 s / 0.54 s | 91 MB |
+| 1,000,000 | - | 117 ms | 139 ms | 0.14 ms | 24 s / 6.0 s | 907 MB |
+
+v2 is 1.6-4.3x faster to recall than v1 while also running BM25. A v2 add costs
+0.14 ms on top of embedding (indexing, affect, persona evidence); a v1 add embedded
+the text twice (once for the memory, once more for its auto-state tracker). Memory
+is ~1.5 KB per memory in RAM for the vectors, plus text.
+
+Model costs (single query, p50; batched per item in brackets):
+
+| model | CPU | GPU (RTX 3050 laptop) |
+|---|---|---|
+| all-MiniLM-L6-v2 (default embedder) | 21 ms (5.9 ms) | 16 ms (0.57 ms) |
+| bge-small-en-v1.5 | 38 ms (11.8 ms) | 26 ms (1.1 ms) |
+| reranker, 30 pairs (accuracy mode) | 229 ms | 31 ms |
+
+So a recall over 10,000 memories costs ~23 ms on a laptop CPU, embedding included,
+and accuracy mode adds ~30 ms on a GPU or ~230 ms on a CPU.

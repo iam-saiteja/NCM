@@ -150,6 +150,18 @@ def encoder_cost():
             res[f"{name.split('/')[-1]}@{device}"] = {
                 "single": pct(one), "batch_per_item_ms": 1e3 * (time.perf_counter() - t1) / len(texts)}
             print(res, flush=True)
+    from sentence_transformers import CrossEncoder
+    query = "what did she say about the trip last week?"
+    for device in ("cpu", "cuda"):
+        ce = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2", device=device, max_length=256)
+        ce.predict([(query, t) for t in texts[:30]])
+        runs = []
+        for i in range(10):
+            t1 = time.perf_counter()
+            ce.predict([(query, t) for t in texts[i * 30:(i + 1) * 30]], batch_size=64)
+            runs.append(time.perf_counter() - t1)
+        res[f"reranker-30-pairs@{device}"] = pct(runs)
+        print(res, flush=True)
     return res
 
 
