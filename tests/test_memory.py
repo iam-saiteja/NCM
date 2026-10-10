@@ -277,3 +277,18 @@ def test_reranker_reorders_the_first_stage_shortlist():
     assert calls == [3] and len(top) == 2
     assert top[0].text == "cat sat on the mat today" and top[0].score > top[1].score
     assert Memory(embedder=bow).reranker is None   # off by default
+
+
+def test_emotional_and_used_memories_outlive_neutral_ones_at_capacity():
+    m = mem(max_items=20)
+    day = 86400.0
+    ids = m.add_many([f"neutral fact {i}" for i in range(20)], times=[i * day for i in range(20)],
+                     metas=[{"salience": 1.5 if i < 3 else 0.0} for i in range(20)])
+    m.recall("neutral fact 5", k=1, reinforce=True)
+    m.recall("neutral fact 5", k=1, reinforce=True)
+    m.add_many([f"new thing {i}" for i in range(5)], times=[(30 + i) * day for i in range(5)],
+               metas=[{"salience": 0.0}] * 5)
+    kept = set(m.ids)
+    assert {ids[0], ids[1], ids[2]} <= kept      # oldest, but emotional
+    assert ids[5] in kept                        # old, but recalled twice
+    assert ids[3] not in kept                    # old, neutral, never used: faded
