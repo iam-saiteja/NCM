@@ -361,7 +361,7 @@ class Memory:
     def all(self) -> list:
         return [self._recalled(r) for r in range(len(self))]
 
-    def context(self, query: str, k: int = 8, persona_of: str = "user", persona_k: int = 6,
+    def context(self, query: str, k: int = 4, persona_of: str = "user", persona_k: int = 6,
                 window: int = 1, self_name: str = None) -> str:
         """A prompt-ready block: who the person is, then the memories relevant to `query`
         (each with `window` turns of surrounding context), oldest first and dated so a

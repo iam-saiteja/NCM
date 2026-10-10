@@ -107,7 +107,7 @@ Every piece was kept only if it measured well. What was dropped, and why, is in
 | `add_messages(messages)` | OpenAI-style `[{"role", "content"}]` |
 | `new_session()` | mark a conversation boundary (otherwise: 30 min of silence) |
 | `recall(query, k=5, speaker=None, reinforce=False)` | the k most relevant memories, as `Recalled` objects |
-| `context(query, k=8, persona_of="user", window=1, self_name=None)` | prompt-ready block |
+| `context(query, k=4, persona_of="user", window=1, self_name=None)` | prompt-ready block: persona, mood, the k best memories with their neighbouring turns |
 | `persona(mem, speaker="user", k=6)` (in `ncm.persona`) | statements that describe the speaker |
 | `mood(speaker=None)` | `{"valence", "arousal", "label"}` of recent statements |
 | `forget(id or ids)`, `get(id)`, `all()`, `len(mem)` | housekeeping |

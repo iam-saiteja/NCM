@@ -57,7 +57,7 @@ class Character:
         self.recent = []                            # this session's turns, short-term memory
 
     def system_prompt(self, user_msg):
-        memory = self.mem.context(user_msg, k=6, persona_of="user", self_name=self.name)
+        memory = self.mem.context(user_msg, persona_of="user", self_name=self.name)
         tone = self.mem.mood()["label"]
         return "\n\n".join([
             f"You are {self.name}, {self.card['persona']}. Style: {self.card['style']}.",

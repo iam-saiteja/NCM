@@ -92,7 +92,7 @@ def main():
     ap.add_argument("--convs", type=int, default=120)
     ap.add_argument("--per", type=int, default=2, help="true (and as many false) statements per speaker")
     ap.add_argument("--model", default="qwen2.5:3b")
-    ap.add_argument("--arms", default="none,recent,ncm-recall,ncm-persona,ncm-context")
+    ap.add_argument("--arms", default="none,recent,cosine-recall,ncm-recall,ncm-persona,ncm-context")
     ap.add_argument("--mode", default="choice", choices=("choice", "yesno"))
     a = ap.parse_args()
 
@@ -143,6 +143,11 @@ def main():
                     ctx = ""
                 elif arm == "recent":   # sliding window: the last 10 turns, what most bots keep
                     ctx = lines(m, range(max(0, len(m) - 10), len(m)), "Recent conversation")
+                elif arm == "cosine-recall":   # plain vector search, same k and speaker filter
+                    qv = m.embedder([query], query=True)[0]
+                    rows = m.rows_of(sp)
+                    top = rows[np.argsort(-(m.embeddings[rows] @ qv), kind="stable")[:6]]
+                    ctx = lines(m, top, "Memories")
                 elif arm == "ncm-recall":
                     ctx = lines(m, [m._row(h.id) for h in m.recall(query, k=6, speaker=sp)], "Memories")
                 elif arm == "ncm-persona":
