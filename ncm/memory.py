@@ -25,8 +25,9 @@ from ncm.embed import as_embedder
 from ncm.lexical import BM25
 
 FORMAT_VERSION = 3
+LIFT_ANCHORS = 1024
 _COLS = {"times": np.float64, "sessions": np.int64, "uses": np.int32, "salience": np.float32,
-         "valence": np.float32, "arousal": np.float32, "doc": np.int64}
+         "valence": np.float32, "arousal": np.float32, "doc": np.int64, "speaker": np.int32}
 
 
 @dataclass
@@ -73,13 +74,19 @@ def score(dense, lexical, sessions, cfg: Config) -> np.ndarray:
     if cfg.lexical_weight and lexical is not None:
         s = s + cfg.lexical_weight * _z(lexical.astype(np.float32))
     if (cfg.lift_previous or cfg.lift_next) and len(s) > 1:
-        lift = np.maximum(s, 0)
+        # Only the strongest hits lift their neighbours (a weak hit's lift could never reach the
+        # top); with <= LIFT_ANCHORS memories this is every positive score, i.e. exact.
+        n = len(s)
+        a = np.flatnonzero(s > 0) if n <= LIFT_ANCHORS else np.argpartition(-s, LIFT_ANCHORS)[:LIFT_ANCHORS]
+        a = a[s[a] > 0]
         prev, nxt = np.zeros_like(s), np.zeros_like(s)
-        for o in range(1, min(len(s) - 1, int(math.ceil(3 * cfg.lift_width))) + 1):
-            same = sessions[o:] == sessions[:-o]
+        for o in range(1, int(math.ceil(3 * cfg.lift_width)) + 1):
             w = math.exp(-o / cfg.lift_width)
-            np.maximum(prev[:-o], np.where(same, lift[o:] * w, 0), out=prev[:-o])   # i+o lifts i
-            np.maximum(nxt[o:], np.where(same, lift[:-o] * w, 0), out=nxt[o:])      # i lifts i+o
+            for out, tgt in ((prev, a - o), (nxt, a + o)):           # i+o lifts i / i lifts i+o
+                ok = (tgt >= 0) & (tgt < n)
+                src, tgt = a[ok], tgt[ok]
+                ok = sessions[tgt] == sessions[src]
+                np.maximum.at(out, tgt[ok], s[src[ok]] * w)
         s = s + cfg.lift_previous * prev + cfg.lift_next * nxt
     return s
 
@@ -126,6 +133,7 @@ class Memory:
         self._session = 0
         self._new_session = False
         self._affect = None
+        self._speaker_ids = {}                 # speaker name -> small int, for fast filtering
 
     def _col(self, name):
         return self._buf[name][:len(self)] if self._buf else np.zeros(0, _COLS[name])
@@ -222,6 +230,7 @@ class Memory:
         b["emb"][n], b["times"][n], b["sessions"][n] = vec, ts, self._session
         b["uses"][n], b["salience"][n] = 0, float(meta.get("salience", 0.0))
         b["valence"][n], b["arousal"][n] = va
+        b["speaker"][n] = self._speaker_ids.setdefault(speaker, len(self._speaker_ids))
         b["doc"][n] = self._bm25.add(f"{speaker}: {text}")
         mid = self._next_id
         self._next_id += 1
@@ -296,9 +305,13 @@ class Memory:
             if not len(self):
                 return np.zeros(0, dtype=np.float32)
             q = self.embedder([query], query=True)[0]
-            s = score(self.embeddings @ q, self._bm25.scores(query)[self._doc], self._sessions, self.config)
+            bm = self._bm25
+            lex = bm.scores(query)
+            if not (bm.n_docs == bm.n_alive == len(self)):          # tombstones: map docs to rows
+                lex = lex[self._doc]
+            s = score(self.embeddings @ q, lex, self._sessions, self.config)
             if speaker is not None:
-                s = np.where(np.asarray(self.speakers) == speaker, s, -np.inf)
+                s = np.where(self._col("speaker") == self._speaker_ids.get(speaker, -1), s, -np.inf)
             return s
 
     def recall(self, query: str, k: int = 5, speaker: str = None, reinforce: bool = False) -> list:
@@ -325,10 +338,11 @@ class Memory:
         return [self._recalled(r) for r in range(len(self))]
 
     def context(self, query: str, k: int = 8, persona_of: str = "user", persona_k: int = 6,
-                window: int = 1) -> str:
+                window: int = 1, self_name: str = None) -> str:
         """A prompt-ready block: who the person is, then the memories relevant to `query`
         (each with `window` turns of surrounding context), oldest first and dated so a
-        model can tell which of two conflicting statements is the latest."""
+        model can tell which of two conflicting statements is the latest. Lines spoken by
+        `self_name` (the agent itself) are shown as "you"."""
         from ncm.persona import persona
         with self._lock:
             hits = self.recall(query, k=k, reinforce=True)
@@ -349,8 +363,10 @@ class Memory:
                 for r in sorted(rows, key=lambda r: (self._times[r], r)):
                     if last is not None and self._sessions[r] != self._sessions[last]:
                         lines.append("")
-                    day = datetime.fromtimestamp(self._times[r], tz=timezone.utc).strftime("%Y-%m-%d %H:%M")
-                    lines.append(f"[{day}] {self.speakers[r]}: {self.texts[r]}")
+                    dt = datetime.fromtimestamp(self._times[r], tz=timezone.utc)
+                    day = f"{dt.day} {dt:%B %Y}, {dt:%H:%M}"   # "7 May 2023": how people (and LLMs) say dates
+                    who = "you" if self.speakers[r] == self_name else self.speakers[r]
+                    lines.append(f"[{day}] {who}: {self.texts[r]}")
                     last = r
                 parts.append("Relevant memories (oldest first):\n" + "\n".join(lines))
             return "\n\n".join(parts)
@@ -399,7 +415,7 @@ class Memory:
             if meta["embedder"] != self.embedder.name:
                 raise ValueError(f"{path} was embedded with {meta['embedder']!r}, "
                                  f"not {self.embedder.name!r}; pass embedder={meta['embedder']!r}")
-            cols = {k: np.array(z[k], dtype=dt) for k, dt in _COLS.items() if k != "doc"}
+            cols = {k: np.array(z[k], dtype=dt) for k, dt in _COLS.items() if k not in ("doc", "speaker")}
             emb = np.array(z["emb"], dtype=np.float32)
             bm = [z[k] for k in ("bm25_indptr", "bm25_docs", "bm25_tfs", "bm25_len")]
         if self.config == Config():
@@ -411,4 +427,6 @@ class Memory:
         self._bm25 = BM25.from_arrays(meta["bm25_terms"], *bm)
         self._index = None                    # dedupe index, rebuilt on the first write
         if self.ids:
-            self._buf = {**cols, "emb": emb, "doc": np.arange(len(self.ids), dtype=np.int64)}
+            self._speaker_ids = {sp: i for i, sp in enumerate(dict.fromkeys(self.speakers))}
+            spk = np.array([self._speaker_ids[sp] for sp in self.speakers], dtype=np.int32)
+            self._buf = {**cols, "emb": emb, "doc": np.arange(len(self.ids), dtype=np.int64), "speaker": spk}
