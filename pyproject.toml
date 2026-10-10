@@ -18,5 +18,8 @@ dev = ["pytest>=7", "sentence-transformers>=3.0", "scipy", "matplotlib"]
 [tool.setuptools]
 packages = ["ncm"]
 
+[tool.setuptools.package-data]
+ncm = ["*.npy"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

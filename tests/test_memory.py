@@ -60,15 +60,16 @@ def test_sessions_split_on_gap_and_explicitly():
     assert list(m._sessions) == [0, 0, 1, 2]
 
 
-def test_neighbour_spreading_lifts_adjacent_turns_only_within_session():
+def test_lift_reaches_previous_turns_only_by_default_and_never_across_sessions():
     dense = np.array([0.0, 0.0, 1.0, 0.0, 0.0])
-    sessions = np.array([0, 0, 0, 1, 1])
-    plain = score(dense, None, sessions, Config(lexical_weight=0, neighbour_weight=0))
-    spread = score(dense, None, sessions, Config(lexical_weight=0, neighbour_weight=0.75))
-    lift = spread - plain
-    assert lift[1] > 0 and lift[0] > 0 and lift[1] > lift[0]
-    assert lift[3] == 0 and lift[4] == 0          # different session
-    assert np.argmax(spread) == 2                  # the hit itself stays first
+    sessions = np.array([0, 0, 0, 0, 1])
+    off = Config(lexical_weight=0, lift_previous=0)
+    plain = score(dense, None, sessions, off)
+    lift = score(dense, None, sessions, Config(lexical_weight=0)) - plain
+    assert lift[1] > lift[0] > 0 and lift[3] == 0 and lift[4] == 0
+    both = score(dense, None, sessions, Config(lexical_weight=0, lift_next=0.75)) - plain
+    assert both[3] > 0 and both[4] == 0              # next turn lifted, other session untouched
+    assert np.argmax(plain + lift) == 2               # the hit itself stays first
 
 
 def test_speaker_filter():
@@ -90,6 +91,7 @@ def test_save_load_roundtrip(tmp_path):
     assert np.allclose(m2.embeddings, m.embeddings, atol=1e-2)
     assert m2.recall("Jeep", k=1)[0].text == "I drive a red Jeep"
     assert m2.add("I live in Paris", time=6e8) == m.ids[0]   # dedupe index survives
+    assert len(m2.add_many(["new one", "new two"], times=[7e8, 7e8 + 1])) == 2 and len(m2) == 4
     assert not os.path.exists(p + ".tmp")
 
 
@@ -163,3 +165,44 @@ def test_persona_prefers_self_disclosure():
                times=[1, 2, 3, 4])
     p = persona(m, k=5)
     assert set(p) == {"I work as a nurse", "I love hiking on weekends"}
+
+
+def test_capacity_eviction_is_batched_and_index_stays_consistent():
+    m = mem(max_items=40)
+    for i in range(100):
+        m.add(f"note {i} about topic{i}", time=i * 86400.0, meta={"salience": 0.0})
+    assert 38 <= len(m) <= 40
+    assert len(m._bm25) == len(m) and m.embeddings.shape[0] == len(m)
+    last = m.recall("topic99", k=1)[0]
+    assert last.text == "note 99 about topic99"
+    gone = [i for i in range(100) if f"note {i} about topic{i}" not in m.texts]
+    assert gone and max(gone) < 60                 # the oldest unused ones faded
+
+
+def test_forget_many_then_bm25_rebuild():
+    m = mem()
+    ids = m.add_many([f"word{i} filler" for i in range(100)], times=range(100))
+    m.forget(ids[:90])
+    assert len(m) == 10 and m._bm25.n_docs == 10   # tombstones were compacted away
+    assert m.recall("word95", k=1)[0].text == "word95 filler"
+
+
+def test_affect_mood_and_salience():
+    from ncm.affect import Affect, label
+    m = mem()
+    m.add_many(["I'm so happy, this is wonderful news!", "What a great day, I love this."], times=[1, 2])
+    md = m.mood()
+    assert md["valence"] > 0 and md["label"].startswith("positive")
+    assert (m._salience > 0).all()
+    m.add("plain note", time=3, meta={"salience": 0.0})
+    assert m._salience[-1] == 0.0                      # explicit salience wins
+    assert label(-1, 1) == "negative, energetic" and label(0, 0) == "neutral"
+    a = Affect(type("E", (), {"name": "sentence-transformers/all-MiniLM-L6-v2"})())
+    assert a.W.shape == (384, 2)                        # shipped probe loads
+
+
+def test_mood_roundtrips(tmp_path):
+    m = mem()
+    m.add("I'm so happy, this is wonderful news!", time=1)
+    m.save(str(tmp_path / "a.ncm"))
+    assert Memory(str(tmp_path / "a.ncm"), embedder=bow).mood() == m.mood()

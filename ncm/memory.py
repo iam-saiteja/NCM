@@ -1,9 +1,10 @@
 """NCM Memory: episodic memory for conversational agents.
 
-Ranking is relevance only: dense similarity fused with BM25, then spread to the
-turns around each strong hit in the same session (temporal contiguity). What is
-*kept* is decided separately, by an ACT-R style activation (use count, age,
-emotional salience), so forgetting never distorts ranking.
+Ranking is relevance only: dense similarity fused with BM25. What is *kept* is
+decided separately, by an ACT-R style activation (use count, age, emotional
+salience), so forgetting never distorts ranking. context() turns a query into a
+prompt block: who the person is, plus the relevant memories with the turns around
+them, dated and in order.
 """
 
 import io
@@ -18,23 +19,27 @@ from datetime import datetime, timezone
 
 import numpy as np
 
+from ncm.affect import Affect, label, salience
 from ncm.embed import as_embedder
 from ncm.lexical import BM25
 
 FORMAT_VERSION = 3
+_COLS = {"times": np.float64, "sessions": np.int64, "uses": np.int32, "salience": np.float32,
+         "valence": np.float32, "arousal": np.float32, "doc": np.int64}
 
 
 @dataclass
 class Config:
     lexical_weight: float = 0.75     # BM25 weight next to dense, both z-scored per query
-    # Contiguity spreading: a strong hit lifts the turns around it in the ranking. Helps when
-    # evidence spans adjacent dialogue turns (LoCoMo R@5 +0.055 at 0.75/3.0) and hurts when it
-    # sits in single turns between long replies (LongMemEval -0.050), so it is off by default;
-    # context() shows each hit's neighbouring turns instead.
-    neighbour_weight: float = 0.0
-    neighbour_width: float = 3.0     # turns; kernel exp(-distance / width)
+    # Contiguity: a strong hit lifts the turns just before it in the same session (the
+    # question that led to a matching answer). Measured on LoCoMo and LongMemEval: lifting
+    # the previous turn helps both; lifting following turns helps LoCoMo (+0.06 R@5 at 0.75)
+    # but costs LongMemEval up to -0.16, so lift_next is off by default.
+    lift_previous: float = 0.75
+    lift_next: float = 0.0
+    lift_width: float = 1.0          # turns; kernel exp(-distance / width)
     session_gap: float = 1800.0      # seconds of silence that start a new session
-    max_items: int = 0               # 0 = unlimited; above it the least active memory fades
+    max_items: int = 0               # 0 = unlimited; when full, the least active 5% fade
     decay: float = 0.5               # ACT-R base-level decay d
 
 
@@ -66,15 +71,15 @@ def score(dense, lexical, sessions, cfg: Config) -> np.ndarray:
     s = _z(dense.astype(np.float32))
     if cfg.lexical_weight and lexical is not None:
         s = s + cfg.lexical_weight * _z(lexical.astype(np.float32))
-    if cfg.neighbour_weight and len(s) > 1:
+    if (cfg.lift_previous or cfg.lift_next) and len(s) > 1:
         lift = np.maximum(s, 0)
-        nb = np.zeros_like(s)
-        for o in range(1, min(len(s), int(math.ceil(3 * cfg.neighbour_width))) + 1):
+        prev, nxt = np.zeros_like(s), np.zeros_like(s)
+        for o in range(1, min(len(s) - 1, int(math.ceil(3 * cfg.lift_width))) + 1):
             same = sessions[o:] == sessions[:-o]
-            w = math.exp(-o / cfg.neighbour_width)
-            np.maximum(nb[:-o], np.where(same, lift[o:] * w, 0), out=nb[:-o])
-            np.maximum(nb[o:], np.where(same, lift[:-o] * w, 0), out=nb[o:])
-        s = s + cfg.neighbour_weight * nb
+            w = math.exp(-o / cfg.lift_width)
+            np.maximum(prev[:-o], np.where(same, lift[o:] * w, 0), out=prev[:-o])   # i+o lifts i
+            np.maximum(nxt[o:], np.where(same, lift[:-o] * w, 0), out=nxt[o:])      # i lifts i+o
+        s = s + cfg.lift_previous * prev + cfg.lift_next * nxt
     return s
 
 
@@ -112,27 +117,35 @@ class Memory:
     # ------------------------------------------------------------------ state
     def _reset(self):
         self.ids, self.texts, self.speakers, self.metas = [], [], [], []
-        self._emb = None                       # (capacity, dim) buffer
-        self._times = np.zeros(0)
-        self._sessions = np.zeros(0, dtype=np.int64)
-        self._uses = np.zeros(0, dtype=np.int32)
-        self._salience = np.zeros(0, dtype=np.float32)
+        self._buf = {}                         # column -> (capacity, ...) array
         self._bm25 = BM25()
         self._index = {}                       # (speaker, normalised text) -> id
         self._rows = {}                        # id -> row
         self._next_id = 0
         self._session = 0
         self._new_session = False
+        self._affect = None
+
+    def _col(self, name):
+        return self._buf[name][:len(self)] if self._buf else np.zeros(0, _COLS[name])
+
+    _times = property(lambda self: self._col("times"))
+    _sessions = property(lambda self: self._col("sessions"))
+    _uses = property(lambda self: self._col("uses"))
+    _salience = property(lambda self: self._col("salience"))
+    _doc = property(lambda self: self._col("doc"))
+    _valence = property(lambda self: self._col("valence"))
+    _arousal = property(lambda self: self._col("arousal"))
+
+    @property
+    def embeddings(self) -> np.ndarray:
+        return self._buf["emb"][:len(self)] if self._buf else np.zeros((0, 0), np.float32)
 
     def __len__(self):
         return len(self.ids)
 
     def __repr__(self):
         return f"Memory({len(self)} memories, {self._session + 1} sessions, embedder={self.embedder.name!r})"
-
-    @property
-    def embeddings(self) -> np.ndarray:
-        return self._emb[:len(self)] if self._emb is not None else np.zeros((0, 0), np.float32)
 
     def _row(self, mid: int) -> int:
         try:
@@ -173,34 +186,40 @@ class Memory:
                     pending[key].append(i)
                 else:
                     pending[key] = [i]
-                    fresh.append((key, (t, sp, _to_ts(tm), me or {})))
+                    fresh.append((key, (t, sp, _to_ts(tm), dict(me or {}))))
             if fresh:
                 vecs = self.embedder([f"{sp}: {t}" for _, (t, sp, _, _) in fresh])
-                for (key, item), v in zip(fresh, vecs):
-                    mid = self._index[key] = self._append(item, v)
+                if self._affect is None:
+                    self._affect = Affect(self.embedder)
+                va = self._affect(vecs)
+                sal = salience(va)
+                for (key, item), v, e, s_ in zip(fresh, vecs, va, sal):
+                    item[3].setdefault("salience", float(s_))
+                    mid = self._index[key] = self._append(item, v, e)
                     self._uses[-1] += len(pending[key]) - 1
                     for i in pending[key]:
                         out[i] = mid
             self._forget_overflow()
             return out
 
-    def _append(self, item, vec) -> int:
+    def _append(self, item, vec, va=(0.0, 0.0)) -> int:
         text, speaker, ts, meta = item
         n = len(self)
         if n and (self._new_session or ts - self._times[-1] > self.config.session_gap):
             self._session += 1
         self._new_session = False
-        if self._emb is None:
-            self._emb = np.zeros((64, len(vec)), dtype=np.float32)
-        elif len(vec) != self._emb.shape[1]:
-            raise ValueError(f"embedding size {len(vec)} != store size {self._emb.shape[1]}")
-        if n == len(self._emb):
-            self._emb = np.concatenate([self._emb, np.zeros_like(self._emb)])
-        self._emb[n] = vec
-        self._times = np.append(self._times, ts)
-        self._sessions = np.append(self._sessions, self._session)
-        self._uses = np.append(self._uses, 0).astype(np.int32)
-        self._salience = np.append(self._salience, np.float32(meta.get("salience", 0.0)))
+        if not self._buf:
+            self._buf = {k: np.zeros(64, dt) for k, dt in _COLS.items()}
+            self._buf["emb"] = np.zeros((64, len(vec)), np.float32)
+        elif len(vec) != self._buf["emb"].shape[1]:
+            raise ValueError(f"embedding size {len(vec)} != store size {self._buf['emb'].shape[1]}")
+        if n == len(self._buf["emb"]):
+            self._buf = {k: np.concatenate([v, np.zeros_like(v)]) for k, v in self._buf.items()}
+        b = self._buf
+        b["emb"][n], b["times"][n], b["sessions"][n] = vec, ts, self._session
+        b["uses"][n], b["salience"][n] = 0, float(meta.get("salience", 0.0))
+        b["valence"][n], b["arousal"][n] = va
+        b["doc"][n] = self._bm25.add(f"{speaker}: {text}")
         mid = self._next_id
         self._next_id += 1
         self._rows[mid] = n
@@ -208,7 +227,6 @@ class Memory:
         self.texts.append(text)
         self.speakers.append(speaker)
         self.metas.append(meta)
-        self._bm25.add(f"{speaker}: {text}")
         return mid
 
     def add_messages(self, messages, time=None) -> list:
@@ -226,27 +244,43 @@ class Memory:
         age_days = np.maximum((now - self._times) / 86400.0, 1.0 / 1440)
         return np.log((self._uses + 1) / (1 - d)) - d * np.log(age_days) + self._salience
 
+    def mood(self, speaker: str = None, last: int = 20, half_life: float = 5.0) -> dict:
+        """Emotional tone of the most recent memories (optionally of one speaker),
+        recency-weighted: {"valence": v, "arousal": a, "label": "positive, calm"}."""
+        rows = [r for r in range(len(self)) if speaker is None or self.speakers[r] == speaker][-last:]
+        if not rows:
+            return {"valence": 0.0, "arousal": 0.0, "label": "neutral"}
+        w = 0.5 ** (np.arange(len(rows))[::-1] / half_life)
+        v = float(w @ self._valence[rows] / w.sum())
+        a = float(w @ self._arousal[rows] / w.sum())
+        return {"valence": v, "arousal": a, "label": label(v, a)}
+
     def _forget_overflow(self):
         cap = self.config.max_items
-        while cap and len(self) > cap:
-            self.forget(self.ids[int(np.argmin(self.activation()))])
+        if cap and len(self) > cap:
+            drop = len(self) - (cap - cap // 20)   # batch it: one compaction per 5% of capacity
+            order = np.argsort(self.activation(), kind="stable")[:drop]
+            self.forget([self.ids[r] for r in order])
 
-    def forget(self, mid: int) -> None:
-        """Delete one memory permanently."""
+    def forget(self, ids) -> None:
+        """Delete one memory id, or a list of them, permanently."""
+        ids = [ids] if isinstance(ids, (int, np.integer)) else list(ids)
         with self._lock:
-            row = self._row(mid)
-            keep = np.arange(len(self)) != row
-            emb = self.embeddings[keep]
-            self._emb[:len(emb)] = emb
-            self._times, self._sessions = self._times[keep], self._sessions[keep]
-            self._uses, self._salience = self._uses[keep], self._salience[keep]
-            for lst in (self.ids, self.texts, self.speakers, self.metas):
-                del lst[row]
-            self._index = {k: v for k, v in self._index.items() if v != mid}
+            rows = {self._row(m) for m in ids}
+            for r in rows:
+                self._bm25.remove(int(self._doc[r]))
+            keep = np.array([r not in rows for r in range(len(self))])
+            n_new = int(keep.sum())
+            for k, v in self._buf.items():
+                v[:n_new] = v[:len(self)][keep]
+            for name in ("ids", "texts", "speakers", "metas"):
+                setattr(self, name, [x for x, k in zip(getattr(self, name), keep) if k])
+            gone = set(ids)
+            self._index = {k: v for k, v in self._index.items() if v not in gone}
             self._rows = {m: i for i, m in enumerate(self.ids)}
-            self._bm25 = BM25()
-            for t, sp in zip(self.texts, self.speakers):
-                self._bm25.add(f"{sp}: {t}")  # ponytail: O(N) rebuild per delete; fine below ~1e5 deletes
+            if self._bm25.n_docs > 2 * max(len(self), 32):   # mostly tombstones: rebuild
+                self._bm25 = BM25()
+                self._doc[:] = [self._bm25.add(f"{sp}: {t}") for t, sp in zip(self.texts, self.speakers)]
 
     # ------------------------------------------------------------------- read
     def scores(self, query: str, speaker: str = None) -> np.ndarray:
@@ -255,7 +289,7 @@ class Memory:
             if not len(self):
                 return np.zeros(0, dtype=np.float32)
             q = self.embedder([query], query=True)[0]
-            s = score(self.embeddings @ q, self._bm25.scores(query), self._sessions, self.config)
+            s = score(self.embeddings @ q, self._bm25.scores(query)[self._doc], self._sessions, self.config)
             if speaker is not None:
                 s = np.where(np.asarray(self.speakers) == speaker, s, -np.inf)
             return s
@@ -264,9 +298,9 @@ class Memory:
         """The k memories most relevant to `query`, best first."""
         with self._lock:
             s = self.scores(query, speaker)
-            if not len(s):
-                return []
             k = min(k, int(np.isfinite(s).sum()))
+            if k <= 0:
+                return []
             top = np.argpartition(-s, k - 1)[:k] if k < len(s) else np.arange(len(s))
             top = top[np.argsort(-s[top], kind="stable")]
             if reinforce:
@@ -300,7 +334,9 @@ class Memory:
             parts = []
             facts = persona(self, speaker=persona_of, k=persona_k) if persona_of else []
             if facts:
-                parts.append(f"What you know about {persona_of}:\n" + "\n".join(f"- {f}" for f in facts))
+                tone = self.mood(persona_of)["label"]
+                parts.append(f"What you know about {persona_of}:\n" + "\n".join(f"- {f}" for f in facts)
+                             + (f"\nTheir mood lately: {tone}" if tone != "neutral" else ""))
             if rows:
                 lines, last = [], None
                 for r in sorted(rows, key=lambda r: (self._times[r], r)):
@@ -327,7 +363,8 @@ class Memory:
             np.savez_compressed(
                 buf, meta=np.frombuffer(json.dumps(meta).encode("utf-8"), dtype=np.uint8),
                 emb=self.embeddings.astype(np.float16), times=self._times,
-                sessions=self._sessions, uses=self._uses, salience=self._salience)
+                sessions=self._sessions, uses=self._uses, salience=self._salience,
+                valence=self._valence, arousal=self._arousal)
             os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
             tmp = f"{path}.tmp"
             with open(tmp, "wb") as f:
@@ -351,16 +388,16 @@ class Memory:
             if meta["embedder"] != self.embedder.name:
                 raise ValueError(f"{path} was embedded with {meta['embedder']!r}, "
                                  f"not {self.embedder.name!r}; pass embedder={meta['embedder']!r}")
-            emb = z["emb"].astype(np.float32)
-            self._times, self._sessions = z["times"], z["sessions"]
-            self._uses, self._salience = z["uses"], z["salience"]
+            cols = {k: np.array(z[k], dtype=dt) for k, dt in _COLS.items() if k != "doc"}
+            emb = np.array(z["emb"], dtype=np.float32)
         if self.config == Config():
             self.config = Config(**meta["config"])
         self.ids, self.texts = meta["ids"], meta["texts"]
         self.speakers, self.metas = meta["speakers"], meta["metas"]
         self._next_id, self._session = meta["next_id"], meta["session"]
-        self._emb = emb if len(emb) else None
         self._rows = {m: i for i, m in enumerate(self.ids)}
+        if self.ids:
+            docs = [self._bm25.add(f"{sp}: {t}") for t, sp in zip(self.texts, self.speakers)]
+            self._buf = {**cols, "emb": emb, "doc": np.array(docs, dtype=np.int64)}
         for i, t, sp in zip(self.ids, self.texts, self.speakers):
-            self._bm25.add(f"{sp}: {t}")
             self._index[(sp, _norm_text(t))] = i
