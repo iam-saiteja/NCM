@@ -87,6 +87,8 @@ laptop GPU while it was shared with Ollama, against under 1 ms for the default p
 | spread from the top 3/5/10 hits only | LoCoMo up to +0.069, LongMemEval -0.04 to -0.10 |
 | spread into same-speaker turns only (weight 0.75) | +0.039 LoCoMo, -0.047 LongMemEval |
 | forward lift gated by turn shortness (short replies need context) | LoCoMo +0.036, LongMemEval -0.016 to -0.076 |
+| contextual turn embeddings ("turn (in reply to: previous turn)"), same cost | +0.014 [0.004, 0.023] LoCoMo, -0.008 [-0.019, 0.003] LongMemEval |
+| session-diverse top-k (penalise a second hit from the same session) | -0.015 / -0.024 LoCoMo (weight 0.3 / 0.6), +-0.003 LongMemEval |
 | embed without the "speaker:" prefix | LoCoMo dense R@5 0.360 -> 0.216 |
 | 128-d random projection (v1) | part of v1's loss; v2 keeps the full vector |
 

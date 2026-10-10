@@ -23,7 +23,11 @@ class Embedder:
 
     def _load(self):
         if self._model is None:
-            from sentence_transformers import SentenceTransformer
+            try:
+                from sentence_transformers import SentenceTransformer
+            except ImportError as e:
+                raise ImportError("the default embedder needs sentence-transformers: "
+                                  "pip install 'ncm[embed]', or pass Memory(embedder=your_fn)") from e
             self._model = SentenceTransformer(self.name, device=self.device)
         return self._model
 
