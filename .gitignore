@@ -65,3 +65,4 @@ experiments/python/exp21_multihop_reasoning.py
 bench/.cache/
 bench/logs/
 *.ncm.tmp
+bench/results/rows-*.json
