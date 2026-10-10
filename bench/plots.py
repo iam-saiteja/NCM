@@ -17,6 +17,7 @@ OUT = os.path.join(HERE, "..", "docs", "img")
 
 SURFACE, INK, MUTED_INK, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e4e3df"
 BASE, V1, V2 = "#b9b8b2", "#eb6834", "#2a78d6"     # baselines gray, v1 orange, v2 blue
+V2X = "#184f95"                                      # v2 accuracy mode: darker step of the same blue
 plt.rcParams.update({"font.size": 10, "axes.edgecolor": GRID, "axes.labelcolor": MUTED_INK,
                      "xtick.color": MUTED_INK, "ytick.color": MUTED_INK, "text.color": INK,
                      "figure.facecolor": SURFACE, "axes.facecolor": SURFACE})
@@ -43,8 +44,8 @@ def hbars(ax, labels, values, colors, title, fmt="{:.3f}"):
 
 def retrieval():
     arms = [("NCM v1", "ncm-v1", V1), ("cosine (MiniLM)", "dense", BASE), ("BM25", "bm25", BASE),
-            ("NCM v2", "ncm-v2", V2)]
-    fig, axes = plt.subplots(1, 2, figsize=(9, 2.6))
+            ("NCM v2", "ncm-v2", V2), ("NCM v2 + reranker", "ncm-v2-rerank", V2X)]
+    fig, axes = plt.subplots(1, 2, figsize=(9.6, 3.0))
     for ax, (ds, title) in zip(axes, (("locomo", "LoCoMo"), ("longmemeval", "LongMemEval-S"))):
         m = load(f"retrieval-{ds}-minilm.json")["methods"]
         hbars(ax, [a for a, _, _ in arms], [m[k]["all"]["recall@5"] for _, k, _ in arms],
@@ -56,7 +57,8 @@ def retrieval():
 def qa():
     d = load("qa-locomo-qwen2.5_3b.json")["arms"]
     arms = [("no memory", "none", BASE), ("NCM v1", "ncm-v1", V1), ("cosine (MiniLM)", "dense", BASE),
-            ("NCM v2 recall", "ncm-v2", V2), ("NCM v2 context()", "ncm-v2-context", V2)]
+            ("NCM v2 recall", "ncm-v2", V2), ("NCM v2 context()", "ncm-v2-context", V2),
+            ("NCM v2 + reranker", "ncm-v2-rerank", V2X)]
     arms = [a for a in arms if a[1] in d]
     fig, ax = plt.subplots(figsize=(6.4, 2.7))
     hbars(ax, [a for a, _, _ in arms], [d[k]["f1"] for _, k, _ in arms], [c for _, _, c in arms],

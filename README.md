@@ -31,7 +31,8 @@ Relevant memories (oldest first):
 - **Finds the right memory.** Hybrid dense + keyword ranking with a
   conversational contiguity prior. On two public long-conversation benchmarks it
   retrieves the evidence **1.5-2x as often as NCM v1** and **28-54% more often
-  than plain vector search** ([results](docs/RESULTS.md)).
+  than plain vector search**. Add one line, `Memory(reranker=True)`, for an
+  accuracy mode that reaches **2.4x v1** ([results](docs/RESULTS.md)).
 - **Better answers from the same LLM.** On LoCoMo, a 3B local model answers with
   F1 **RESULT_QA_V2** from NCM's memories, against **RESULT_QA_DENSE** from vector
   search and **RESULT_QA_V1** from NCM v1.
@@ -100,7 +101,7 @@ Every piece was kept only if it measured well. What was dropped, and why, is in
 
 | call | does |
 |---|---|
-| `Memory(path=None, embedder=None, config=None)` | open or create a memory |
+| `Memory(path=None, embedder=None, config=None, reranker=None)` | open or create a memory; `reranker=True` turns on accuracy mode |
 | `add(text, speaker="user", time=None, meta=None)` | store one utterance, returns its id |
 | `add_many(texts, speakers, times, metas)` | batched, one embedding call |
 | `add_messages(messages)` | OpenAI-style `[{"role", "content"}]` |
@@ -117,6 +118,11 @@ name (`Memory(embedder="BAAI/bge-small-en-v1.5")`) or any callable
 `fn(list[str]) -> array (n, d)`, such as an API client. An object with a `name`
 attribute and `__call__(texts, query=False)` can embed queries differently.
 
+**Accuracy mode.** `Memory(reranker=True)` re-scores the top 30 hits with a small
+cross-encoder (ms-marco-MiniLM-L-6-v2, 22M parameters): recall@5 +0.10 on LoCoMo
+and +0.08 on LongMemEval, for ~0.1-0.2 s per query on a laptop GPU. Any
+`fn(query, texts) -> scores` works as a reranker too.
+
 **Config** (`ncm.Config`):
 
 | field | default | meaning |
@@ -127,6 +133,7 @@ attribute and `__call__(texts, query=False)` can embed queries differently.
 | `lift_width` | 1.0 | how far the lift reaches, in turns |
 | `session_gap` | 1800 | seconds of silence that start a new session |
 | `max_items` | 0 | capacity; 0 = unlimited |
+| `rerank_top` | 30 | with a reranker: how many first-stage hits it re-scores |
 | `decay` | 0.5 | ACT-R decay for forgetting |
 
 ## Results
@@ -156,9 +163,9 @@ python -m bench.speed && python -m bench.plots
 ## Limits
 
 - Benchmarks are English, and the persona and question detectors are English regexes.
-- The affect probe reads valence well (r 0.62 against human ratings on EmoBank)
-  and arousal moderately (r 0.44). It was trained on news and fiction, so treat
-  `mood()` as a soft signal.
+- The affect probe reads valence well (r 0.62 against human ratings, AUC 0.91 on
+  Reddit comments) and arousal moderately (r 0.44). Topic words can fool it, so
+  treat `mood()` as a soft, relative signal.
 - Contradictions are not resolved inside the memory: `context()` dates (in UTC) and
   orders memories so the reader can tell which statement is newer.
 - More context is not better for small models: with a 3B reader, fewer and better

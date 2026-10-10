@@ -1,9 +1,11 @@
 """Valence and arousal read off the embedding the store already has: no extra model call.
 
-For the default MiniLM model a linear probe fitted on EmoBank human ratings is used
-(test Pearson r: valence 0.62, arousal 0.44; see bench/affect_fit.py). Any other
-embedder falls back to anchor sentences (valence r 0.45, arousal r 0.16 with MiniLM).
-Outputs are roughly z-scores: 0 is an emotionally average sentence, +-1 is strong.
+For the default MiniLM model a linear probe is used, fitted on human labels: EmoBank
+ratings (valence and arousal) plus GoEmotions Reddit comments (valence). Test scores:
+valence r 0.62 on EmoBank and AUC 0.91 positive-vs-negative on GoEmotions, arousal r 0.44
+(bench/affect_fit.py). Other embedders fall back to anchor sentences (with MiniLM:
+valence r 0.45 / AUC 0.85, arousal r 0.16). Outputs are roughly z-scores: 0 is an
+emotionally average sentence, +-1 is strong. It reads tone, and topic words can fool it.
 """
 
 import os

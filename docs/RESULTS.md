@@ -23,6 +23,7 @@ them. A hit is a turn annotated as evidence for the answer.
 | cosine (MiniLM) | 0.360 | 0.445 | 0.304 | 0.291 | 0.575 | 0.735 | 0.539 | 0.543 |
 | BM25 | 0.506 | 0.578 | 0.442 | 0.429 | 0.683 | 0.794 | 0.650 | 0.657 |
 | **NCM v2** | **0.555** | **0.643** | **0.480** | **0.461** | **0.735** | **0.853** | **0.696** | **0.702** |
+| **NCM v2 + reranker** (accuracy mode) | **0.657** | **0.711** | **0.611** | **0.618** | **0.812** | **0.903** | **0.759** | **0.752** |
 
 NCM v2 minus cosine, R@5: LoCoMo **+0.195** [0.170, 0.220], LongMemEval **+0.159**
 [0.126, 0.192]. Minus v1: **+0.276** [0.251, 0.302] and **+0.238** [0.202, 0.274].
@@ -42,6 +43,15 @@ v2 is ahead of v1 and of cosine in **every question category** on both datasets:
 | LongMemEval knowledge-update (72) | 0.528 | 0.583 | **0.812** |
 | LongMemEval multi-session (125) | 0.359 | 0.442 | **0.588** |
 | LongMemEval temporal-reasoning (132) | 0.414 | 0.457 | **0.698** |
+
+### Accuracy mode: a cross-encoder over the top 30
+
+`Memory(reranker=True)` re-scores NCM's top 30 with cross-encoder/ms-marco-MiniLM-L-6-v2
+(22M parameters) and keeps the reranker's order. R@5: LoCoMo +0.102 [0.085, 0.120],
+LongMemEval +0.077 [0.052, 0.103]; MRR +0.157 and +0.049. Fusing the reranker's score
+with the first-stage score did worse than the reranker alone (0.626 and 0.802).
+Cost: 92 ms (LoCoMo) and 222 ms (LongMemEval, long assistant turns) per query on the
+laptop GPU while it was shared with Ollama, against under 1 ms for the default path.
 
 ### What each part contributes (ablations, R@5 / nDCG@10)
 
@@ -103,18 +113,23 @@ PERSONA_SECTION
 
 ## 4. Affect
 
-The valence/arousal probe is a 384x2 ridge regression on MiniLM embeddings,
-trained on EmoBank (Buechel and Hahn 2017; 8,062 train, 1,000 dev for the ridge
-penalty, 1,000 test). Pearson r on the test split:
+The valence/arousal probe is a 384x2 ridge regression on MiniLM embeddings. Valence
+is fitted on EmoBank (Buechel and Hahn 2017; ratings of news, fiction and letters) plus
+GoEmotions (Demszky et al. 2020; Reddit comments, using the dataset's own
+positive / negative / neutral grouping), each corpus weighted equally; arousal on
+EmoBank alone. The ridge penalty was picked on both dev splits. Test splits:
 
-| estimator | valence | arousal |
-|---|---|---|
-| v1 `AutoStateTracker` anchor words | 0.42 | 0.10 |
-| v2 anchor sentences (fallback for non-MiniLM embedders) | 0.45 | 0.16 |
-| **v2 probe (default)** | **0.62** | **0.44** |
-| v2 probe on "user: <text>" (how the store embeds) | 0.63 | 0.43 |
+| estimator | EmoBank valence r | EmoBank arousal r | GoEmotions AUC (positive vs negative) |
+|---|---|---|---|
+| v1 `AutoStateTracker` anchor words | 0.42 | 0.10 | - |
+| v2 anchor sentences (fallback for non-MiniLM embedders) | 0.45 | 0.16 | 0.855 |
+| v2 probe, EmoBank only | 0.62 | 0.44 | 0.884 |
+| **v2 probe, EmoBank + GoEmotions (shipped)** | **0.62** | **0.44** | **0.905** |
 
-v1's arousal dimension was essentially noise. Affect is not used for ranking:
+Embedding with the store's "user: " prefix changes EmoBank r by under 0.01.
+v1's arousal dimension was essentially noise. The probe reads tone but topic words
+can fool it: on the v1 sample files, "I feel overwhelmed trying to memorize dozens of
+formulas" scores slightly positive. Treat `mood()` as a soft, relative signal. Affect is not used for ranking:
 Phase 2 showed it carries no retrievable signal (see HISTORY.md). It sets
 salience, so emotional memories survive capacity eviction longer, and feeds `mood()`.
 
