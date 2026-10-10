@@ -100,10 +100,15 @@ held-out set remains for it.
 
 ### Embedding model
 
-On LoCoMo, bge-small-en-v1.5 (33M parameters, 3x MiniLM's encoding cost) raises
-dense R@5 from 0.360 to 0.478, but after BM25 fusion the gap almost closes:
-hybrid 0.545 (MiniLM) vs 0.563 (bge-small). MiniLM stays the default; use
-`Memory(embedder="BAAI/bge-small-en-v1.5")` for the extra ~2 points.
+| R@5 | LoCoMo cosine | LoCoMo NCM v2 | LongMemEval cosine | LongMemEval NCM v2 |
+|---|---|---|---|---|
+| all-MiniLM-L6-v2 (default; 22M parameters) | 0.360 | 0.555 | 0.575 | 0.735 |
+| bge-small-en-v1.5 (33M; ~1.8x the encoding cost) | 0.478 | 0.565 | 0.706 | 0.759 |
+
+A stronger encoder lifts plain vector search a lot (+0.12 / +0.13), but once BM25 is
+fused in the gap nearly closes (+0.010 / +0.024). MiniLM stays the default for its
+cost; `Memory(embedder="BAAI/bge-small-en-v1.5")` buys the extra 1-2 points. The
+backward lift helps with bge too (LongMemEval R@5 +0.016, MRR +0.027).
 
 ## 2. End-to-end: do the answers get better?
 
