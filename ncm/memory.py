@@ -248,9 +248,12 @@ class Memory:
         return np.log((self._uses + 1) / (1 - d)) - d * np.log(age_days) + self._salience
 
     def mood(self, speaker: str = None, last: int = 20, half_life: float = 5.0) -> dict:
-        """Emotional tone of the most recent memories (optionally of one speaker),
-        recency-weighted: {"valence": v, "arousal": a, "label": "positive, calm"}."""
-        rows = [r for r in range(len(self)) if speaker is None or self.speakers[r] == speaker][-last:]
+        """Emotional tone of the most recent statements (optionally of one speaker),
+        recency-weighted: {"valence": v, "arousal": a, "label": "positive, calm"}.
+        Questions and one-word turns are skipped: asking about feelings is not feeling."""
+        from ncm.persona import statements
+        rows = [r for r in range(len(self)) if (speaker is None or self.speakers[r] == speaker)
+                and len(" ".join(statements(self.texts[r])).split()) >= 3][-last:]   # skip asks and "hi"
         if not rows:
             return {"valence": 0.0, "arousal": 0.0, "label": "neutral"}
         w = 0.5 ** (np.arange(len(rows))[::-1] / half_life)

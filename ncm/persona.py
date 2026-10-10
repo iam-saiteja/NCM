@@ -28,14 +28,29 @@ _HABIT = re.compile(
     r"every\s+(?:day|week|morning|evening|night|weekend))\b", re.I)
 
 
+_SENT = re.compile(r"(?<=[.!?])\s+")
+_ASK = re.compile(r"^\s*(?:what|where|when|why|who|whom|which|how|do|does|did|is|are|was|were|"
+                  r"can|could|would|will|should|have|has|tell\s+me)", re.I)
+
+
+def is_question(sentence: str) -> bool:
+    return sentence.rstrip().endswith("?") or bool(_ASK.match(sentence))
+
+
+def statements(text: str) -> list:
+    """The non-question sentences of a turn."""
+    return [s for s in _SENT.split(text.strip()) if s and not is_question(s)]
+
+
+def _sentence_evidence(s: str) -> float:
+    fact = 1.0 if _FACT.search(s) else 0.6 if _LEAD.search(s) else 0.0
+    other = sum(bool(p.search(s)) for p in (_PREF, _PLAN, _HABIT))
+    return min(1.0, 0.6 * fact + 0.3 * other + 0.1) if fact or other else 0.0
+
+
 def evidence(text: str) -> float:
-    """How much a sentence says about its speaker, 0..1."""
-    fact = 1.0 if _FACT.search(text) else 0.6 if _LEAD.search(text) else 0.0
-    other = sum(bool(p.search(text)) for p in (_PREF, _PLAN, _HABIT))
-    if not fact and not other:
-        return 0.0
-    score = min(1.0, 0.6 * fact + 0.3 * other + 0.1)
-    return score * (0.5 if "?" in text else 1.0)
+    """How much a turn says about its speaker, 0..1. Questions say nothing."""
+    return max((_sentence_evidence(s) for s in statements(text)), default=0.0)
 
 
 def persona(mem, speaker: str = "user", k: int = 6, diversity: float = 0.5) -> list:

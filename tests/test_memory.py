@@ -158,7 +158,8 @@ def test_bm25_ranks_rare_term():
 
 
 def test_persona_prefers_self_disclosure():
-    assert evidence("I work as a nurse") > evidence("what do you do?")
+    assert evidence("I work as a nurse") > evidence("what do you do?") == 0
+    assert evidence("do I have a dog?") == 0 and evidence("I have two dogs. Do you?") > 0
     assert evidence("lol yeah") == 0
     m = mem()
     m.add_many(["lol yeah", "I work as a nurse", "how about you?", "I love hiking on weekends"],
@@ -219,3 +220,13 @@ def test_scores_identical_after_forget_and_roundtrip(tmp_path):
     assert m2._bm25.n_docs == len(m2) == 45
     m2.add("alpha3 brand new", time=100)
     assert m2.recall("brand new", k=1)[0].text == "alpha3 brand new"
+
+
+def test_import_v1_file_if_present():
+    p = os.path.join(os.path.dirname(__file__), "..", "..", "ncm-data", "v1files", "memory_store.ncm")
+    if not os.path.exists(p):
+        pytest.skip("no v1 sample file")
+    from ncm.legacy import import_v1
+    m = import_v1(p, embedder=bow)
+    assert len(m) > 0 and set(m.speakers) <= {"user", "assistant"}
+    assert all(not t.startswith("user: ") for t in m.texts)
