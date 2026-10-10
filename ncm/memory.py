@@ -1,497 +1,366 @@
-"""
-NCM - Memory storage for episodic experiences.
+"""NCM Memory: episodic memory for conversational agents.
 
-Each memory is a multi-field geometric object covering semantic, emotional,
-state, temporal, and strength dimensions.
+Ranking is relevance only: dense similarity fused with BM25, then spread to the
+turns around each strong hit in the same session (temporal contiguity). What is
+*kept* is decided separately, by an ACT-R style activation (use count, age,
+emotional salience), so forgetting never distorts ranking.
 """
 
-import uuid
-from dataclasses import dataclass, field
-from typing import Optional, List
+import io
+import json
+import math
+import os
 import re
+import threading
+import time as _time
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, timezone
 
 import numpy as np
 
-from ncm.auto_state import AutoStateTracker
-from ncm.exceptions import (
-    DimensionMismatchError,
-    MemoryNotFoundError,
-    EmptyStoreError,
-)
-from ncm.profile import MemoryProfile
+from ncm.embed import as_embedder
+from ncm.lexical import BM25
+
+FORMAT_VERSION = 3
 
 
 @dataclass
-class MemoryEntry:
-    """
-    A single episodic memory as a geometric object.
-    
-    Fields define position in the multi-component retrieval space:
-      e_semantic:  semantic embedding (what happened)
-      e_emotional: emotional projection via W_emo (how it felt)
-      s_snapshot:  L2-normalized state copy (who you were)
-      timestamp:   step number (when it happened)
-      strength:    reinforcement accumulator with bounded growth
-      auto_state_snapshot: 5D auto-state at write time
-    """
-    e_semantic: np.ndarray
-    e_emotional: np.ndarray
-    s_snapshot: np.ndarray
-    timestamp: int
-    strength: float = 1.0
-    text: str = ""
-    id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    tags: list = field(default_factory=list)
-    auto_state_snapshot: Optional[np.ndarray] = None
-    contradicted_by: Optional[str] = None
-    is_conflict_trace: bool = False
+class Config:
+    lexical_weight: float = 0.75     # BM25 weight next to dense, both z-scored per query
+    # Contiguity spreading: a strong hit lifts the turns around it in the ranking. Helps when
+    # evidence spans adjacent dialogue turns (LoCoMo R@5 +0.055 at 0.75/3.0) and hurts when it
+    # sits in single turns between long replies (LongMemEval -0.050), so it is off by default;
+    # context() shows each hit's neighbouring turns instead.
+    neighbour_weight: float = 0.0
+    neighbour_width: float = 3.0     # turns; kernel exp(-distance / width)
+    session_gap: float = 1800.0      # seconds of silence that start a new session
+    max_items: int = 0               # 0 = unlimited; above it the least active memory fades
+    decay: float = 0.5               # ACT-R base-level decay d
 
-    def to_dict(self) -> dict:
-        return {
-            "id": self.id,
-            "e_semantic": self.e_semantic.tolist(),
-            "e_emotional": self.e_emotional.tolist(),
-            "s_snapshot": self.s_snapshot.tolist(),
-            "timestamp": self.timestamp,
-            "strength": float(self.strength),
-            "text": self.text,
-            "tags": self.tags,
-            "auto_state_snapshot": (
-                self.auto_state_snapshot.tolist()
-                if self.auto_state_snapshot is not None
-                else None
-            ),
-            "contradicted_by": self.contradicted_by,
-            "is_conflict_trace": bool(self.is_conflict_trace),
-        }
+
+@dataclass
+class Recalled:
+    id: int
+    text: str
+    speaker: str
+    time: float
+    session: int
+    score: float
+    meta: dict = field(default_factory=dict)
+
+    @property
+    def when(self) -> datetime:
+        return datetime.fromtimestamp(self.time, tz=timezone.utc)
+
+
+def _z(x: np.ndarray) -> np.ndarray:
+    sd = x.std()
+    return (x - x.mean()) / sd if sd > 1e-9 else np.zeros_like(x)
+
+
+def score(dense, lexical, sessions, cfg: Config) -> np.ndarray:
+    """Relevance of every memory to one query. Higher is better.
+
+    dense, lexical: (N,) similarities; sessions: (N,) session id per row, rows in time order.
+    """
+    s = _z(dense.astype(np.float32))
+    if cfg.lexical_weight and lexical is not None:
+        s = s + cfg.lexical_weight * _z(lexical.astype(np.float32))
+    if cfg.neighbour_weight and len(s) > 1:
+        lift = np.maximum(s, 0)
+        nb = np.zeros_like(s)
+        for o in range(1, min(len(s), int(math.ceil(3 * cfg.neighbour_width))) + 1):
+            same = sessions[o:] == sessions[:-o]
+            w = math.exp(-o / cfg.neighbour_width)
+            np.maximum(nb[:-o], np.where(same, lift[o:] * w, 0), out=nb[:-o])
+            np.maximum(nb[o:], np.where(same, lift[:-o] * w, 0), out=nb[o:])
+        s = s + cfg.neighbour_weight * nb
+    return s
+
+
+def _to_ts(t) -> float:
+    if t is None:
+        return _time.time()
+    if isinstance(t, datetime):
+        return (t if t.tzinfo else t.replace(tzinfo=timezone.utc)).timestamp()
+    return float(t)
+
+
+def _norm_text(t: str) -> str:
+    return re.sub(r"\W+", " ", t.lower()).strip()
+
+
+class Memory:
+    """Long-term memory for one agent (or one user, or one character).
+
+        mem = Memory("alice.ncm")
+        mem.add("I adopted a beagle called Max", speaker="user")
+        mem.recall("what is my dog's name?")
+        prompt_block = mem.context("what is my dog's name?")
+        mem.save()
+    """
+
+    def __init__(self, path: str = None, embedder=None, config: Config = None):
+        self.path = path
+        self.embedder = as_embedder(embedder)
+        self.config = config or Config()
+        self._lock = threading.RLock()
+        self._reset()
+        if path and os.path.exists(path):
+            self._load(path)
+
+    # ------------------------------------------------------------------ state
+    def _reset(self):
+        self.ids, self.texts, self.speakers, self.metas = [], [], [], []
+        self._emb = None                       # (capacity, dim) buffer
+        self._times = np.zeros(0)
+        self._sessions = np.zeros(0, dtype=np.int64)
+        self._uses = np.zeros(0, dtype=np.int32)
+        self._salience = np.zeros(0, dtype=np.float32)
+        self._bm25 = BM25()
+        self._index = {}                       # (speaker, normalised text) -> id
+        self._rows = {}                        # id -> row
+        self._next_id = 0
+        self._session = 0
+        self._new_session = False
+
+    def __len__(self):
+        return len(self.ids)
+
+    def __repr__(self):
+        return f"Memory({len(self)} memories, {self._session + 1} sessions, embedder={self.embedder.name!r})"
+
+    @property
+    def embeddings(self) -> np.ndarray:
+        return self._emb[:len(self)] if self._emb is not None else np.zeros((0, 0), np.float32)
+
+    def _row(self, mid: int) -> int:
+        try:
+            return self._rows[mid]
+        except KeyError:
+            raise KeyError(f"no memory with id {mid}") from None
+
+    # ------------------------------------------------------------------ write
+    def new_session(self):
+        """Mark the next memory as the start of a new conversation."""
+        self._new_session = True
+
+    def add(self, text: str, speaker: str = "user", time=None, meta: dict = None) -> int:
+        """Store one utterance. Returns its id. Exact repeats by the same speaker
+        reinforce the existing memory instead of storing a copy."""
+        return self.add_many([text], speakers=[speaker], times=[time], metas=[meta])[0]
+
+    def add_many(self, texts, speakers=None, times=None, metas=None) -> list:
+        """Store many utterances with one batched embedding call (much faster)."""
+        texts = list(texts)
+        if not all(isinstance(t, str) and t.strip() for t in texts):
+            raise ValueError("every memory needs non-empty text")
+        n = len(texts)
+        speakers = list(speakers) if speakers is not None else ["user"] * n
+        times = list(times) if times is not None else [None] * n
+        metas = list(metas) if metas is not None else [None] * n
+        if not (len(speakers) == len(times) == len(metas) == n):
+            raise ValueError("texts, speakers, times and metas must have the same length")
+        with self._lock:
+            out = [None] * n
+            pending, fresh = {}, []
+            for i, (t, sp, tm, me) in enumerate(zip(texts, speakers, times, metas)):
+                key = (sp, _norm_text(t))
+                if key in self._index:
+                    out[i] = self._index[key]
+                    self._uses[self._rows[out[i]]] += 1
+                elif key in pending:
+                    pending[key].append(i)
+                else:
+                    pending[key] = [i]
+                    fresh.append((key, (t, sp, _to_ts(tm), me or {})))
+            if fresh:
+                vecs = self.embedder([f"{sp}: {t}" for _, (t, sp, _, _) in fresh])
+                for (key, item), v in zip(fresh, vecs):
+                    mid = self._index[key] = self._append(item, v)
+                    self._uses[-1] += len(pending[key]) - 1
+                    for i in pending[key]:
+                        out[i] = mid
+            self._forget_overflow()
+            return out
+
+    def _append(self, item, vec) -> int:
+        text, speaker, ts, meta = item
+        n = len(self)
+        if n and (self._new_session or ts - self._times[-1] > self.config.session_gap):
+            self._session += 1
+        self._new_session = False
+        if self._emb is None:
+            self._emb = np.zeros((64, len(vec)), dtype=np.float32)
+        elif len(vec) != self._emb.shape[1]:
+            raise ValueError(f"embedding size {len(vec)} != store size {self._emb.shape[1]}")
+        if n == len(self._emb):
+            self._emb = np.concatenate([self._emb, np.zeros_like(self._emb)])
+        self._emb[n] = vec
+        self._times = np.append(self._times, ts)
+        self._sessions = np.append(self._sessions, self._session)
+        self._uses = np.append(self._uses, 0).astype(np.int32)
+        self._salience = np.append(self._salience, np.float32(meta.get("salience", 0.0)))
+        mid = self._next_id
+        self._next_id += 1
+        self._rows[mid] = n
+        self.ids.append(mid)
+        self.texts.append(text)
+        self.speakers.append(speaker)
+        self.metas.append(meta)
+        self._bm25.add(f"{speaker}: {text}")
+        return mid
+
+    def add_messages(self, messages, time=None) -> list:
+        """Store OpenAI-style [{"role": ..., "content": ...}] messages (system ones skipped)."""
+        msgs = [m for m in messages if m.get("role") != "system" and str(m.get("content", "")).strip()]
+        return self.add_many([m["content"] for m in msgs], speakers=[m["role"] for m in msgs],
+                             times=[time] * len(msgs))
+
+    # ------------------------------------------------------------ forgetting
+    def activation(self, now: float = None) -> np.ndarray:
+        """ACT-R base-level activation per memory: ln((uses+1)/(1-d)) - d*ln(age), plus
+        emotional salience. High = easy to keep. Decides forgetting, not ranking."""
+        now = _time.time() if now is None else now
+        d = self.config.decay
+        age_days = np.maximum((now - self._times) / 86400.0, 1.0 / 1440)
+        return np.log((self._uses + 1) / (1 - d)) - d * np.log(age_days) + self._salience
+
+    def _forget_overflow(self):
+        cap = self.config.max_items
+        while cap and len(self) > cap:
+            self.forget(self.ids[int(np.argmin(self.activation()))])
+
+    def forget(self, mid: int) -> None:
+        """Delete one memory permanently."""
+        with self._lock:
+            row = self._row(mid)
+            keep = np.arange(len(self)) != row
+            emb = self.embeddings[keep]
+            self._emb[:len(emb)] = emb
+            self._times, self._sessions = self._times[keep], self._sessions[keep]
+            self._uses, self._salience = self._uses[keep], self._salience[keep]
+            for lst in (self.ids, self.texts, self.speakers, self.metas):
+                del lst[row]
+            self._index = {k: v for k, v in self._index.items() if v != mid}
+            self._rows = {m: i for i, m in enumerate(self.ids)}
+            self._bm25 = BM25()
+            for t, sp in zip(self.texts, self.speakers):
+                self._bm25.add(f"{sp}: {t}")  # ponytail: O(N) rebuild per delete; fine below ~1e5 deletes
+
+    # ------------------------------------------------------------------- read
+    def scores(self, query: str, speaker: str = None) -> np.ndarray:
+        """Relevance of every memory to `query` (higher is better), -inf for filtered rows."""
+        with self._lock:
+            if not len(self):
+                return np.zeros(0, dtype=np.float32)
+            q = self.embedder([query], query=True)[0]
+            s = score(self.embeddings @ q, self._bm25.scores(query), self._sessions, self.config)
+            if speaker is not None:
+                s = np.where(np.asarray(self.speakers) == speaker, s, -np.inf)
+            return s
+
+    def recall(self, query: str, k: int = 5, speaker: str = None, reinforce: bool = False) -> list:
+        """The k memories most relevant to `query`, best first."""
+        with self._lock:
+            s = self.scores(query, speaker)
+            if not len(s):
+                return []
+            k = min(k, int(np.isfinite(s).sum()))
+            top = np.argpartition(-s, k - 1)[:k] if k < len(s) else np.arange(len(s))
+            top = top[np.argsort(-s[top], kind="stable")]
+            if reinforce:
+                self._uses[top] += 1
+            return [self._recalled(int(r), float(s[r])) for r in top]
+
+    def _recalled(self, row: int, sc: float = 0.0) -> Recalled:
+        return Recalled(self.ids[row], self.texts[row], self.speakers[row], float(self._times[row]),
+                        int(self._sessions[row]), sc, self.metas[row])
+
+    def get(self, mid: int) -> Recalled:
+        return self._recalled(self._row(mid))
+
+    def all(self) -> list:
+        return [self._recalled(r) for r in range(len(self))]
+
+    def context(self, query: str, k: int = 8, persona_of: str = "user", persona_k: int = 6,
+                window: int = 1) -> str:
+        """A prompt-ready block: who the person is, then the memories relevant to `query`
+        (each with `window` turns of surrounding context), oldest first and dated so a
+        model can tell which of two conflicting statements is the latest."""
+        from ncm.persona import persona
+        with self._lock:
+            hits = self.recall(query, k=k, reinforce=True)
+            rows = set()
+            for h in hits:
+                r = self._row(h.id)
+                for o in range(-window, window + 1):
+                    if 0 <= r + o < len(self) and self._sessions[r + o] == self._sessions[r]:
+                        rows.add(r + o)
+            parts = []
+            facts = persona(self, speaker=persona_of, k=persona_k) if persona_of else []
+            if facts:
+                parts.append(f"What you know about {persona_of}:\n" + "\n".join(f"- {f}" for f in facts))
+            if rows:
+                lines, last = [], None
+                for r in sorted(rows, key=lambda r: (self._times[r], r)):
+                    if last is not None and self._sessions[r] != self._sessions[last]:
+                        lines.append("")
+                    day = datetime.fromtimestamp(self._times[r], tz=timezone.utc).strftime("%Y-%m-%d %H:%M")
+                    lines.append(f"[{day}] {self.speakers[r]}: {self.texts[r]}")
+                    last = r
+                parts.append("Relevant memories (oldest first):\n" + "\n".join(lines))
+            return "\n\n".join(parts)
+
+    # ------------------------------------------------------------ persistence
+    def save(self, path: str = None) -> str:
+        """Write everything to one file, atomically. No pickle: safe to load untrusted files."""
+        path = path or self.path
+        if not path:
+            raise ValueError("no path given")
+        with self._lock:
+            meta = {"format": "ncm", "version": FORMAT_VERSION, "embedder": self.embedder.name,
+                    "config": asdict(self.config), "next_id": self._next_id,
+                    "session": self._session, "ids": self.ids, "texts": self.texts,
+                    "speakers": self.speakers, "metas": self.metas}
+            buf = io.BytesIO()
+            np.savez_compressed(
+                buf, meta=np.frombuffer(json.dumps(meta).encode("utf-8"), dtype=np.uint8),
+                emb=self.embeddings.astype(np.float16), times=self._times,
+                sessions=self._sessions, uses=self._uses, salience=self._salience)
+            os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+            tmp = f"{path}.tmp"
+            with open(tmp, "wb") as f:
+                f.write(buf.getvalue())
+            os.replace(tmp, path)
+            self.path = path
+            return path
 
     @classmethod
-    def from_dict(cls, d: dict) -> "MemoryEntry":
-        return cls(
-            id=d["id"],
-            e_semantic=np.array(d["e_semantic"], dtype=np.float32),
-            e_emotional=np.array(d["e_emotional"], dtype=np.float32),
-            s_snapshot=np.array(d["s_snapshot"], dtype=np.float32),
-            timestamp=int(d["timestamp"]),
-            strength=float(d["strength"]),
-            text=d.get("text", ""),
-            tags=d.get("tags", []),
-            auto_state_snapshot=(
-                np.array(d["auto_state_snapshot"], dtype=np.float32)
-                if d.get("auto_state_snapshot") is not None
-                else None
-            ),
-            contradicted_by=d.get("contradicted_by"),
-            is_conflict_trace=bool(d.get("is_conflict_trace", False)),
-        )
+    def load(cls, path: str, embedder=None, config: Config = None) -> "Memory":
+        if not os.path.exists(path):
+            raise FileNotFoundError(path)
+        return cls(path, embedder=embedder, config=config)
 
-
-class MemoryStore:
-    """
-    Storage and lifecycle management for episodic memories.
-    
-    Strength bounds:
-      Max strength = 2.0 (prevents unbounded reinforcement growth)
-      Math justification: In Hebbian learning, synaptic weights are bounded
-      to prevent runaway excitation. Analogously, memory strength must be
-      bounded to keep the reinforcement signal meaningful.
-      
-      Decay rate = 0.999 per tick (half-life ≈ 693 steps)
-      Math: 0.999^693 ≈ 0.500
-    """
-
-    def __init__(self, profile: Optional[MemoryProfile] = None):
-        self.profile = profile or MemoryProfile()
-        self._memories: dict = {}
-        self.step: int = 0
-        self.auto_state = AutoStateTracker()
-        # Vectorized cache for fast retrieval
-        self._sem_cache = None
-        self._emo_cache = None
-        self._state_cache = None
-        self._auto_state_cache = None
-        self._ts_cache = None
-        self._str_cache = None
-        self._contra_cache = None
-        self._id_order = []
-        self._cache_dirty = True
-
-    @staticmethod
-    def _normalize_state(state: np.ndarray) -> np.ndarray:
-        v = np.asarray(state, dtype=np.float32)
-        norm = float(np.linalg.norm(v))
-        if norm < 1e-8:
-            return v.copy()
-        return (v / norm).astype(np.float32)
-
-    def _invalidate_cache(self):
-        self._cache_dirty = True
-
-    def _contra_feature_enabled(self) -> bool:
-        # Contradiction/CADP defaults (conservative):
-        # - enable_contradiction_awareness: False (disabled by default)
-        # - contradiction_requires_marker: True (corrections must include markers like "correction" by default)
-        # - contradiction_similarity_threshold: 0.85 (semantic similarity threshold)
-        # These keys are configurable via `MemoryProfile.set_custom()`.
-        return bool(self.profile.get_custom("enable_contradiction_awareness", False))
-
-    def _contra_similarity_threshold(self) -> float:
-        return float(self.profile.get_custom("contradiction_similarity_threshold", 0.85))
-
-    def _write_conflict_trace_enabled(self) -> bool:
-        return bool(self.profile.get_custom("write_conflict_trace", False))
-
-    def _requires_correction_marker(self) -> bool:
-        return bool(self.profile.get_custom("contradiction_requires_marker", True))
-
-    @staticmethod
-    def _extract_subject(text: str) -> Optional[str]:
-        if not isinstance(text, str):
-            return None
-        patterns = [
-            r"\bmy\s+([a-z0-9][a-z0-9_\-\s]{1,40}?)\s+is\b",
-            r"\bthe\s+([a-z0-9][a-z0-9_\-\s]{1,40}?)\s+is\b",
-            r"\b([a-z0-9][a-z0-9_\-\s]{1,40}?)\s+is\b",
-        ]
-        cleaned = " ".join(text.lower().split())
-        for p in patterns:
-            m = re.search(p, cleaned)
-            if m:
-                return m.group(1).strip()
-        return None
-
-    def _is_correction_pair(self, old_text: str, new_text: str, sim: float) -> bool:
-        if not isinstance(old_text, str) or not isinstance(new_text, str):
-            return False
-
-        new_l = new_text.lower()
-        old_l = old_text.lower()
-
-        if self._requires_correction_marker():
-            markers = ["correction", "update", "actually", "instead", "now", "revised"]
-            if not any(m in new_l for m in markers):
-                return False
-
-        if old_l == new_l:
-            return False
-
-        old_subject = self._extract_subject(old_l)
-        new_subject = self._extract_subject(new_l)
-        threshold = self._contra_similarity_threshold()
-
-        # Subject-aligned correction statements can be trusted with lower semantic threshold.
-        if old_subject and new_subject and old_subject == new_subject:
-            return sim >= min(threshold, 0.55)
-
-        if sim < threshold:
-            return False
-
-        if old_subject and new_subject and old_subject != new_subject:
-            return False
-
-        return True
-
-    def _make_conflict_trace(self, old_memory: MemoryEntry, new_memory: MemoryEntry) -> MemoryEntry:
-        trace_text = (
-            f"[UPDATE] Was: '{old_memory.text}' -> Now: '{new_memory.text}'"
-        )
-        return MemoryEntry(
-            e_semantic=new_memory.e_semantic.copy(),
-            e_emotional=new_memory.e_emotional.copy(),
-            s_snapshot=new_memory.s_snapshot.copy(),
-            timestamp=new_memory.timestamp,
-            text=trace_text,
-            tags=list(set(list(new_memory.tags) + ["conflict_trace"])),
-            auto_state_snapshot=(
-                new_memory.auto_state_snapshot.copy()
-                if new_memory.auto_state_snapshot is not None
-                else None
-            ),
-            is_conflict_trace=True,
-        )
-
-    def _apply_contradiction_links(self, new_memory: MemoryEntry) -> None:
-        if not self._contra_feature_enabled() or not self._memories:
-            return
-
-        matched_old_memories: list[MemoryEntry] = []
-
-        for old_mem in self._memories.values():
-            if old_mem.id == new_memory.id:
-                continue
-            if old_mem.timestamp >= new_memory.timestamp:
-                continue
-            if old_mem.is_conflict_trace:
-                continue
-
-            sim = float(np.dot(old_mem.e_semantic, new_memory.e_semantic))
-            if not self._is_correction_pair(old_mem.text, new_memory.text, sim):
-                continue
-
-            old_mem.contradicted_by = new_memory.id
-            matched_old_memories.append(old_mem)
-
-        if self._write_conflict_trace_enabled():
-            for old_mem in matched_old_memories:
-                trace = self._make_conflict_trace(old_mem, new_memory)
-                if len(self._memories) >= self.profile.max_size:
-                    self._evict_weakest()
-                self._memories[trace.id] = trace
-
-    def _rebuild_cache(self):
-        """Build numpy arrays for vectorized retrieval."""
-        if not self._cache_dirty:
-            return
-        if not self._memories:
-            self._sem_cache = np.zeros((0, self.profile.semantic_dim), dtype=np.float32)
-            self._emo_cache = np.zeros((0, self.profile.emotional_dim), dtype=np.float32)
-            self._state_cache = np.zeros((0, self.profile.state_dim), dtype=np.float32)
-            self._auto_state_cache = np.zeros((0, 5), dtype=np.float32)
-            self._ts_cache = np.zeros(0, dtype=np.int64)
-            self._str_cache = np.zeros(0, dtype=np.float32)
-            self._contra_cache = np.zeros(0, dtype=np.float32)
-            self._id_order = []
-            self._cache_dirty = False
-            return
-
-        self._id_order = list(self._memories.keys())
-        mems = [self._memories[mid] for mid in self._id_order]
-        self._sem_cache = np.array([m.e_semantic for m in mems], dtype=np.float32)
-        self._emo_cache = np.array([m.e_emotional for m in mems], dtype=np.float32)
-        self._state_cache = np.array([m.s_snapshot for m in mems], dtype=np.float32)
-        self._auto_state_cache = np.array([
-            self._normalize_state(m.auto_state_snapshot)
-            if m.auto_state_snapshot is not None
-            else self._normalize_state(np.asarray(m.s_snapshot[:5], dtype=np.float32))
-            for m in mems
-        ], dtype=np.float32)
-        self._ts_cache = np.array([m.timestamp for m in mems], dtype=np.int64)
-        self._str_cache = np.array([m.strength for m in mems], dtype=np.float32)
-        self._contra_cache = np.array([
-            1.0 if m.contradicted_by is not None else 0.0 for m in mems
-        ], dtype=np.float32)
-        self._cache_dirty = False
-
-    def add(
-        self,
-        memory: MemoryEntry,
-        gate_check: bool = False,
-        update_auto_state: bool = True,
-        contradiction_check: bool = True,
-    ) -> MemoryEntry:
-        """
-        Add a memory to the store.
-        
-        Args:
-            memory: MemoryEntry to add
-            gate_check: If True, only add if the memory is novel enough
-                        (encoding gate > write_threshold from profile).
-                        This is a design choice: NCM does not store every
-                        experience, on the assumption that storage is a
-                        limited resource. No empirical result is claimed
-                        for this behaviour.
-        """
-        expected_sem = self.profile.semantic_dim
-        if memory.e_semantic.shape != (expected_sem,):
-            raise DimensionMismatchError(
-                expected=(expected_sem,), got=memory.e_semantic.shape, context="e_semantic"
-            )
-
-        # Selective encoding gate (joint semantic + state novelty)
-        if gate_check and self._memories:
-            self._rebuild_cache()
-
-            # Semantic closeness in [0, 1]
-            sem_sims = self._sem_cache @ memory.e_semantic
-            sem_closeness = np.clip(sem_sims, 0.0, 1.0)
-
-            # State closeness in [0, 1] using normalized state distance
-            state_dists = np.linalg.norm(
-                self._state_cache - memory.s_snapshot[np.newaxis, :], axis=1
-            ) / np.sqrt(2.0)
-            state_closeness = 1.0 - np.clip(state_dists, 0.0, 1.0)
-
-            # High overlap means likely duplicate in both content and context
-            overlap = sem_closeness * state_closeness
-            novelty = 1.0 - float(np.max(overlap)) if len(overlap) > 0 else 1.0
-            if novelty < self.profile.write_threshold:
-                return memory  # too predictable, skip storing
-
-        if len(self._memories) >= self.profile.max_size:
-            self._evict_weakest()
-
-        if update_auto_state:
-            text_for_state = memory.text if isinstance(memory.text, str) and memory.text.strip() else f"memory-{memory.id}"
-            auto_state = self.auto_state.update(text_for_state)
-            memory.auto_state_snapshot = auto_state.astype(np.float32).copy()
-        elif memory.auto_state_snapshot is None:
-            memory.auto_state_snapshot = self.auto_state.get_current_state().astype(np.float32).copy()
-
-        if contradiction_check:
-            self._apply_contradiction_links(memory)
-
-        self._memories[memory.id] = memory
-        self._invalidate_cache()
-        return memory
-
-    def _evict_weakest(self) -> None:
-        """
-        Evict the least valuable memory using vectorized operations.
-        
-        Score = strength * recency_factor
-        where recency_factor = exp(-0.001 * age)
-        
-        OPTIMIZATION: Compute all scores at once instead of looping,
-        allowing numpy/BLAS to use SIMD vectorization. For large stores,
-        this is ~10-50x faster than min(key=...) approach.
-        
-        This means a recent weak memory can survive over an old strong one
-        that hasn't been accessed. Combines Hebbian reinforcement with
-        temporal relevance.
-        """
-        if not self._memories:
-            return
-        
-        # Rebuild cache if needed to ensure consistency
-        self._rebuild_cache()
-        
-        # Vectorized score computation
-        ages = np.maximum(0, self.step - self._ts_cache).astype(np.float32)
-        recency = np.exp(-0.001 * ages)
-        scores = self._str_cache * recency
-        
-        # Find minimum score index
-        weakest_idx = int(np.argmin(scores))
-        weakest_id = self._id_order[weakest_idx]
-        
-        del self._memories[weakest_id]
-        self._invalidate_cache()
-
-    def get(self, memory_id: str) -> MemoryEntry:
-        if memory_id not in self._memories:
-            raise MemoryNotFoundError(memory_id)
-        return self._memories[memory_id]
-
-    def get_all(self) -> List[MemoryEntry]:
-        if not self._memories:
-            raise EmptyStoreError("Cannot retrieve from empty MemoryStore")
-        return list(self._memories.values())
-
-    def get_all_safe(self) -> List[MemoryEntry]:
-        return list(self._memories.values())
-
-    def reinforce(self, memory_id: str, amount: float = 0.1) -> None:
-        memory = self.get(memory_id)
-        memory.strength = min(memory.strength + amount, 2.0)
-        self._invalidate_cache()
-
-    def decay_all(self) -> None:
-        for memory in self._memories.values():
-            memory.strength *= 0.999
-        self._invalidate_cache()
-
-    def filter_by_tag(self, tag: str) -> List[MemoryEntry]:
-        return [m for m in self._memories.values() if tag in m.tags]
-
-    def tick(self) -> None:
-        self.step += 1
-        self.decay_all()
-
-    def summary(self) -> dict:
-        if not self._memories:
-            return {"count": 0, "step": self.step, "avg_strength": 0.0,
-                    "min_strength": 0.0, "max_strength": 0.0, "profile_name": self.profile.name}
-        strengths = [m.strength for m in self._memories.values()]
-        return {
-            "count": len(self._memories), "step": self.step,
-            "avg_strength": float(np.mean(strengths)),
-            "min_strength": float(np.min(strengths)),
-            "max_strength": float(np.max(strengths)),
-            "profile_name": self.profile.name,
-        }
-
-    def get_semantic_matrix(self) -> np.ndarray:
-        """Return (N, semantic_dim) matrix of all semantic vectors. For fast retrieval."""
-        self._rebuild_cache()
-        return self._sem_cache
-
-    def consolidate(self, similarity_threshold: float = 0.95) -> int:
-        """
-        Memory consolidation: merge highly similar memories with vectorized detection.
-        
-        Inspired by hippocampal replay during sleep (Diekelmann & Born, 2010).
-        When two memories are semantically near-identical (cosine sim > threshold),
-        the weaker one is absorbed into the stronger:
-          - Stronger memory's strength increases
-          - Weaker memory is removed
-          - This prevents redundant storage and strengthens core memories
-        
-        OPTIMIZATION: Instead of nested loop over all pairs (O(N²) comparisons),
-        use numpy's fast threshold detection on upper triangle of similarity matrix.
-        For N=1000, this is ~5-10x faster and uses less memory.
-        
-        Returns number of memories consolidated.
-        """
-        if len(self._memories) < 2:
-            return 0
-        
-        self._rebuild_cache()
-        N = self._sem_cache.shape[0]
-        
-        if N < 2:
-            return 0
-        
-        # Compute pairwise cosine similarities (vectorized)
-        sims = self._sem_cache @ self._sem_cache.T
-        
-        # OPTIMIZATION: Use numpy's upper triangle indexing to find similar pairs
-        # Get indices where similarity > threshold (excluding diagonal)
-        upper_idx = np.triu_indices(N, k=1)
-        similar_pairs = np.where(sims[upper_idx] > similarity_threshold)[0]
-        
-        if len(similar_pairs) == 0:
-            return 0
-        
-        to_remove = set()
-        consolidated = 0
-        
-        # Process similar pairs in order
-        for pair_idx in similar_pairs:
-            i, j = upper_idx[0][pair_idx], upper_idx[1][pair_idx]
-            
-            if self._id_order[i] in to_remove or self._id_order[j] in to_remove:
-                continue
-            
-            mem_i = self._memories[self._id_order[i]]
-            mem_j = self._memories[self._id_order[j]]
-            
-            # Keep stronger, absorb weaker
-            if mem_i.strength >= mem_j.strength:
-                mem_i.strength = min(mem_i.strength + 0.05, 2.0)
-                to_remove.add(self._id_order[j])
-            else:
-                mem_j.strength = min(mem_j.strength + 0.05, 2.0)
-                to_remove.add(self._id_order[i])
-            
-            consolidated += 1
-        
-        for mid in to_remove:
-            if mid in self._memories:
-                del self._memories[mid]
-        
-        if to_remove:
-            self._invalidate_cache()
-        
-        return consolidated
-
-    def remove(self, memory_id: str) -> None:
-        """Remove a specific memory by ID."""
-        if memory_id in self._memories:
-            del self._memories[memory_id]
-            self._invalidate_cache()
-
-    def __len__(self) -> int:
-        return len(self._memories)
-
-    def __repr__(self) -> str:
-        return f"MemoryStore(name='{self.profile.name}', size={len(self)}, step={self.step})"
+    def _load(self, path: str):
+        with np.load(path, allow_pickle=False) as z:
+            meta = json.loads(z["meta"].tobytes().decode("utf-8"))
+            if meta.get("format") != "ncm" or meta.get("version") != FORMAT_VERSION:
+                raise ValueError(f"{path} is not an NCM v{FORMAT_VERSION} file "
+                                 "(use ncm.legacy.import_v1 for old .ncm files)")
+            if meta["embedder"] != self.embedder.name:
+                raise ValueError(f"{path} was embedded with {meta['embedder']!r}, "
+                                 f"not {self.embedder.name!r}; pass embedder={meta['embedder']!r}")
+            emb = z["emb"].astype(np.float32)
+            self._times, self._sessions = z["times"], z["sessions"]
+            self._uses, self._salience = z["uses"], z["salience"]
+        if self.config == Config():
+            self.config = Config(**meta["config"])
+        self.ids, self.texts = meta["ids"], meta["texts"]
+        self.speakers, self.metas = meta["speakers"], meta["metas"]
+        self._next_id, self._session = meta["next_id"], meta["session"]
+        self._emb = emb if len(emb) else None
+        self._rows = {m: i for i, m in enumerate(self.ids)}
+        for i, t, sp in zip(self.ids, self.texts, self.speakers):
+            self._bm25.add(f"{sp}: {t}")
+            self._index[(sp, _norm_text(t))] = i

@@ -1,95 +1,18 @@
-"""
-NCM (Native Cognitive Memory)
-Tensor-based episodic memory with state-conditioned retrieval for AI systems.
+"""NCM - Native Cognitive Memory.
 
-Quick start:
-    from ncm import SentenceEncoder, MemoryStore, MemoryEntry, retrieve_top_k
+Long-term memory for conversational AI: remembers what was said, recalls what is
+relevant, knows who the person is, and forgets what stopped mattering.
 
-    encoder = SentenceEncoder()
-    store = MemoryStore()
-
-    state = [0.7, 0.8, 0.2, 0.8, 0.3, 0.7, 0.2]
-    mem = MemoryEntry(
-        e_semantic=encoder.encode("something happened"),
-        e_emotional=encoder.encode_emotional(state),
-        s_snapshot=encoder.encode_state(state),
-        timestamp=0,
-    )
-    store.add(mem)
+    from ncm import Memory
+    mem = Memory("alice.ncm")
+    mem.add("I adopted a beagle called Max", speaker="user")
+    print(mem.context("what's my dog called?"))
+    mem.save()
 """
 
-__version__ = "1.1.0"
+__version__ = "2.0.0"
 
-from ncm.encoder import SentenceEncoder
-from ncm.auto_state import AutoStateTracker
-from ncm.memory import MemoryEntry, MemoryStore
-from ncm.profile import (
-    MemoryProfile,
-    RetrievalWeights,
-    PRESETS,
-    list_presets,
-    describe_preset,
-)
-from ncm.retrieval import (
-    retrieve_top_k,
-    retrieve_top_k_fast,
-    retrieve_semantic_only,
-    retrieve_semantic_emotional,
-    retrieval_entropy,
-    vectorized_manifold_distance,
-)
-from ncm.persistence import NCMFile
-from ncm.persona import (
-    PersonaPayload,
-    build_persona_payload,
-    select_persona_exemplars,
-    persona_evidence_vector,
-)
-from ncm.exceptions import (
-    NCMError,
-    DimensionMismatchError,
-    MemoryNotFoundError,
-    EmptyStoreError,
-    EncoderNotInitializedError,
-    PersistenceError,
-    InvalidStateVectorError,
-    CorruptFileError,
-    ProfileError,
-)
+from ncm.embed import Embedder, FunctionEmbedder
+from ncm.memory import Config, Memory, Recalled
 
-__all__ = [
-    # Core
-    "SentenceEncoder",
-    "AutoStateTracker",
-    "MemoryEntry",
-    "MemoryStore",
-    "MemoryProfile",
-    "RetrievalWeights",
-    "PRESETS",
-    "list_presets",
-    "describe_preset",
-    # Retrieval
-    "retrieve_top_k",
-    "retrieve_top_k_fast",
-    "retrieve_semantic_only",
-    "retrieve_semantic_emotional",
-    "retrieval_entropy",
-    "vectorized_manifold_distance",
-    # Persistence
-    "NCMFile",
-    # Persona conditioning
-    "PersonaPayload",
-    "build_persona_payload",
-    "select_persona_exemplars",
-    "persona_evidence_vector",
-    # Exceptions
-    "NCMError",
-    "DimensionMismatchError",
-    "MemoryNotFoundError",
-    "EmptyStoreError",
-    "EncoderNotInitializedError",
-    "PersistenceError",
-    "InvalidStateVectorError",
-    "CorruptFileError",
-    "ProfileError",
-]
+__all__ = ["Memory", "Config", "Recalled", "Embedder", "FunctionEmbedder"]

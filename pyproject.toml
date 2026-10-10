@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ncm"
+version = "2.0.0"
+description = "Native Cognitive Memory: fast, small, human-like long-term memory for conversational AI"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "Thanniru Sai Teja", email = "iamsaitejathanniru@gmail.com" }]
+dependencies = ["numpy>=1.24"]
+
+[project.optional-dependencies]
+embed = ["sentence-transformers>=3.0"]
+dev = ["pytest>=7", "sentence-transformers>=3.0", "scipy", "matplotlib"]
+
+[tool.setuptools]
+packages = ["ncm"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
