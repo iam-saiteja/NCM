@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 import numpy as np
 
 from ncm.affect import Affect, label, salience
-from ncm.embed import as_embedder
+from ncm.embed import as_embedder, as_reranker
 from ncm.lexical import BM25
 from ncm.persona import evidence, statements
 
@@ -45,6 +45,7 @@ class Config:
     lift_width: float = 1.0          # turns; kernel exp(-distance / width)
     session_gap: float = 1800.0      # seconds of silence that start a new session
     max_items: int = 0               # 0 = unlimited; when full, the least active 5% fade
+    rerank_top: int = 30             # with a reranker: how many first-stage hits it re-scores
     decay: float = 0.5               # ACT-R base-level decay d
 
 
@@ -117,9 +118,11 @@ class Memory:
         mem.save()
     """
 
-    def __init__(self, path: str = None, embedder=None, config: Config = None):
+    def __init__(self, path: str = None, embedder=None, config: Config = None, reranker=None):
         self.path = path
         self.embedder = as_embedder(embedder)
+        # optional second stage, e.g. reranker=True or a cross-encoder name: sharper, slower
+        self.reranker = as_reranker(reranker)
         self.config = config or Config()
         self._lock = threading.RLock()
         self._reset()
@@ -326,14 +329,24 @@ class Memory:
             return s
 
     def recall(self, query: str, k: int = 5, speaker: str = None, reinforce: bool = False) -> list:
-        """The k memories most relevant to `query`, best first."""
+        """The k memories most relevant to `query`, best first. With a reranker, the first
+        stage's top `config.rerank_top` are re-scored by it and `score` is the reranker's."""
         with self._lock:
             s = self.scores(query, speaker)
-            k = min(k, int(np.isfinite(s).sum()))
-            if k <= 0:
+            n_ok = int(np.isfinite(s).sum())
+            depth = max(k, self.config.rerank_top) if self.reranker else k
+            m = min(depth, n_ok)
+            if min(k, n_ok) <= 0:
                 return []
-            top = np.argpartition(-s, k - 1)[:k] if k < len(s) else np.arange(len(s))
+            top = np.argpartition(-s, m - 1)[:m] if m < len(s) else np.arange(len(s))
             top = top[np.argsort(-s[top], kind="stable")]
+            if self.reranker:
+                rs = np.asarray(self.reranker(query, [f"{self.speakers[r]}: {self.texts[r]}" for r in top]),
+                                dtype=np.float32)
+                order = np.argsort(-rs, kind="stable")
+                top, s = top[order], s.copy()
+                s[top] = rs[order]
+            top = top[:k]
             if reinforce:
                 self._uses[top] += 1
             return [self._recalled(int(r), float(s[r])) for r in top]

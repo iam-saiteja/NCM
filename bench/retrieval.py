@@ -20,6 +20,7 @@ from bench.data import LOADERS                           # noqa: E402
 from bench.embed import embed                            # noqa: E402
 from bench.metrics import aggregate, paired_bootstrap, score_query  # noqa: E402
 from ncm.lexical import BM25                             # noqa: E402
+from ncm.embed import Reranker                           # noqa: E402
 from ncm.memory import Config, score                     # noqa: E402
 
 RESULTS = os.path.join(os.path.dirname(__file__), "results")
@@ -57,7 +58,22 @@ def methods():
         configs[f"ncm-v2-lex{lw}"] = Config(lexical_weight=lw)
     for name, cfg in configs.items():
         m[name] = (lambda cfg: lambda c, q: score(c["D"] @ q["v"], c["bm25"].scores(q["text"]), c["sess"], cfg))(cfg)
+    m["ncm-v2-rerank"] = rerank_method(Config())
     return m
+
+
+def rerank_method(cfg, top=30):
+    """What Memory(reranker=True).recall does: the reranker re-orders the first stage's top 30."""
+    rr = Reranker()
+
+    def run(c, q):
+        s = score(c["D"] @ q["v"], c["bm25"].scores(q["text"]), c["sess"], cfg)
+        head = np.argsort(-s, kind="stable")[:top]
+        r = rr(q["text"], [c["texts"][i] for i in head])
+        out = s - s.max() - 1.0                       # everything else stays below the shortlist
+        out[head[np.argsort(-r, kind="stable")]] = np.arange(len(head), 0, -1)
+        return out
+    return run
 
 
 def main():
@@ -89,7 +105,7 @@ def main():
         bm = BM25()
         for t in h.texts:
             bm.add(t)
-        ctx[h.id] = {"D": D_all[off:off + n], "bm25": bm, "sess": sess,
+        ctx[h.id] = {"D": D_all[off:off + n], "bm25": bm, "sess": sess, "texts": h.texts,
                      "times": np.asarray(h.times)}
         off += n
 

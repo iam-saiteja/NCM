@@ -261,3 +261,18 @@ def test_mood_skips_questions_and_persona_scales():
     assert m.mood()["valence"] == m._valence[0]        # the question did not count
     m.add_many([f"I have hobby number {i}" for i in range(3000)], times=range(3, 3003))
     assert len(persona(m, k=5)) == 5                    # no N x N matrix needed
+
+
+def test_reranker_reorders_the_first_stage_shortlist():
+    calls = []
+
+    def by_length(query, texts):          # a stand-in cross-encoder: prefers longer texts
+        calls.append(len(texts))
+        return np.array([len(t) for t in texts], dtype=np.float32)
+
+    m = Memory(embedder=bow, reranker=by_length, config=Config(rerank_top=3))
+    m.add_many(["cat", "cat sat", "cat sat on the mat today", "dog"], times=[1, 2, 3, 4])
+    top = m.recall("cat", k=2)
+    assert calls == [3] and len(top) == 2
+    assert top[0].text == "cat sat on the mat today" and top[0].score > top[1].score
+    assert Memory(embedder=bow).reranker is None   # off by default
