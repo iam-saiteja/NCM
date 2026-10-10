@@ -198,6 +198,7 @@ def test_affect_mood_and_salience():
     assert (m._salience > 0).all()
     m.add("plain note", time=3, meta={"salience": 0.0})
     assert m._salience[-1] == 0.0                      # explicit salience wins
+    assert m.metas[0] == {}                            # computed salience is not written into meta
     assert label(-1, 1) == "negative, energetic" and label(0, 0) == "neutral"
     a = Affect(type("E", (), {"name": "sentence-transformers/all-MiniLM-L6-v2"})())
     assert a.W.shape == (384, 2)                        # shipped probe loads

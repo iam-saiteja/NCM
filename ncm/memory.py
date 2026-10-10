@@ -219,15 +219,14 @@ class Memory:
                 va = self._affect(vecs)
                 sal = salience(va)
                 for (key, item), v, e, s_ in zip(fresh, vecs, va, sal):
-                    item[3].setdefault("salience", float(s_))
-                    mid = self._index[key] = self._append(item, v, e)
+                    mid = self._index[key] = self._append(item, v, e, float(item[3].get("salience", s_)))
                     self._uses[-1] += len(pending[key]) - 1
                     for i in pending[key]:
                         out[i] = mid
             self._forget_overflow()
             return [o if o in self._rows else None for o in out]   # None: forgotten at once, store full
 
-    def _append(self, item, vec, va=(0.0, 0.0)) -> int:
+    def _append(self, item, vec, va, sal) -> int:
         text, speaker, ts, meta = item
         n = len(self)
         if n and (self._new_session or ts - self._times[-1] > self.config.session_gap):
@@ -242,7 +241,7 @@ class Memory:
             self._buf = {k: np.concatenate([v, np.zeros_like(v)]) for k, v in self._buf.items()}
         b = self._buf
         b["emb"][n], b["times"][n], b["sessions"][n] = vec, ts, self._session
-        b["uses"][n], b["salience"][n] = 0, float(meta.get("salience", 0.0))
+        b["uses"][n], b["salience"][n] = 0, sal
         b["valence"][n], b["arousal"][n] = va
         b["evidence"][n], b["stmt_words"][n] = evidence(text), len(" ".join(statements(text)).split())
         b["speaker"][n] = self._speaker_ids.setdefault(speaker, len(self._speaker_ids))
@@ -275,14 +274,15 @@ class Memory:
         """Emotional tone of the most recent statements (optionally of one speaker),
         recency-weighted: {"valence": v, "arousal": a, "label": "positive, calm"}.
         Questions and one-word turns are skipped: asking about feelings is not feeling."""
-        rows = self.rows_of(speaker)
-        rows = rows[self._col("stmt_words")[rows] >= 3][-last:]   # skip questions and "hi"
-        if not len(rows):
-            return {"valence": 0.0, "arousal": 0.0, "label": "neutral"}
-        w = 0.5 ** (np.arange(len(rows))[::-1] / half_life)
-        v = float(w @ self._valence[rows] / w.sum())
-        a = float(w @ self._arousal[rows] / w.sum())
-        return {"valence": v, "arousal": a, "label": label(v, a)}
+        with self._lock:
+            rows = self.rows_of(speaker)
+            rows = rows[self._col("stmt_words")[rows] >= 3][-last:]   # skip questions and "hi"
+            if not len(rows):
+                return {"valence": 0.0, "arousal": 0.0, "label": "neutral"}
+            w = 0.5 ** (np.arange(len(rows))[::-1] / half_life)
+            v = float(w @ self._valence[rows] / w.sum())
+            a = float(w @ self._arousal[rows] / w.sum())
+            return {"valence": v, "arousal": a, "label": label(v, a)}
 
     def _forget_overflow(self):
         cap = self.config.max_items
