@@ -150,6 +150,10 @@ def main():
                     rows = m.rows_of(sp)
                     top = rows[np.argsort(-(m.embeddings[rows] @ qv), kind="stable")[:6]]
                     ctx = lines(m, top, "Memories")
+                elif arm == "cosine-recall-k15":   # control: vector search with context()'s prompt budget
+                    qv = m.embedder([query], query=True)[0]
+                    rows = m.rows_of(sp)
+                    ctx = lines(m, rows[np.argsort(-(m.embeddings[rows] @ qv), kind="stable")[:15]], "Memories")
                 elif arm == "ncm-recall":
                     ctx = lines(m, [m._row(h.id) for h in m.recall(query, k=6, speaker=sp)], "Memories")
                 elif arm == "ncm-persona":

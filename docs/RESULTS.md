@@ -201,8 +201,11 @@ Every arm scores higher, and one conclusion changes. NCM's retrieval alone still
 plain vector search (`recall()` +0.002 [-0.023, +0.027], McNemar p 1.0). But `context()`,
 which adds the persona block, beats vector search by +0.033 [+0.004, +0.062] (bootstrap
 p 0.029, exact McNemar p 0.036: 34 pairs only NCM got right, 18 only vector search).
-Two NCM arms were compared with vector search, so after a Holm correction the evidence
-is borderline (p about 0.06): suggestive, not conclusive. Results:
+`context()` also sends more text (2,525 characters against 996), so a control gives
+vector search the same budget (15 memories, 2,185 characters): it scores 0.858, no
+better than with 6. Against that control `context()` is ahead by +0.042 [+0.013, +0.071]
+(p 0.005, exact McNemar p 0.008: 36 pairs against 16), which survives a Holm correction.
+The persona block, not the extra text, is what helps here. Results:
 `bench/results/persona-choice-f16-msc-qwen2.5_3b.json`.
 
 An earlier yes/no version of this test ("is this statement true of them?") was
@@ -210,6 +213,56 @@ uninformative: the 3B model answered "no" to 94-100% of statements in every arm,
 accuracy sat at chance. Its true-positive rates still ordered the arms the same way
 (window 0.013, NCM recall 0.102, NCM context 0.117); results are kept in
 `bench/results/persona-yesno-msc-qwen2.5_3b.json`.
+
+## 3b. Character consistency: does the AI stay consistent with itself?
+
+Section 3 asks whether the model knows *the user*. This asks whether an AI character
+knows *itself*: its own facts, and what it said before. Speech style and "voice" are not
+measured; that needs a strong judge model or people.
+
+**Its own facts, asked in character** (`bench/character.py`). Multi-Session Chat, 120
+conversations; Speaker 2 plays the character, whose card gives only its name, so
+everything it knows about itself comes from memory. Its own persona lines become
+in-character questions ("I own a Jeep" becomes "What car do you drive?", gold "Jeep";
+drafted by the local LLM with few-shot examples, kept only when the answer is copied
+from the fact and absent from the question): 258 questions. The character answers in
+its own words; a reply counts as right if it contains the fact.
+
+| what the character has | right about itself | says it does not remember | other (wrong or vague) | prompt |
+|---|---|---|---|---|
+| no memory | 9.3% | 12.0% | 78.7% | 40 chars |
+| the last 10 turns | 19.4% | 3.5% | 77.1% | 1,698 |
+| plain vector search, 6 memories | 41.5% | 2.3% | 56.2% | 772 |
+| plain vector search, 18 memories (budget control) | 46.5% | | | 2,243 |
+| NCM `recall()`, 6 memories | 42.6% | 1.2% | 56.2% | 775 |
+| NCM `context()` (self-profile + its own lines as "you") | **48.1%** | 0.8% | 51.2% | 2,214 |
+
+- Memory is what keeps a character consistent about itself: 9% without, 42-48% with.
+- `context()` beats plain vector search with 6 memories by +0.066 [+0.016, +0.120]
+  (McNemar p 0.024), but **not** vector search given the same budget: +0.016
+  [-0.039, +0.070], p 0.64. Here NCM's advantage is the extra context, not the method.
+- Even at best a 3B character is right about itself less than half the time, and it
+  almost never says it does not remember: it fills gaps by inventing. With no memory,
+  79% of its answers are made up.
+
+**What it said before** (LongMemEval, the 56 "single-session-assistant" questions, which
+ask about the assistant's own earlier replies; same reader, clean runtime, answer F1):
+
+| memory | F1 | vs vector search |
+|---|---|---|
+| none | 0.151 | |
+| NCM v1 | 0.375 | -0.057 [-0.119, -0.003] |
+| plain vector search (10 memories) | 0.432 | |
+| NCM v2 `recall()` | 0.404 | -0.028 [-0.091, +0.025] |
+| NCM v2 `context()` | 0.415 | -0.017 [-0.079, +0.046] |
+| NCM v2 `context(self_name="assistant")` | 0.413 | -0.019 [-0.085, +0.046] |
+
+NCM v2 and vector search tie on remembering the assistant's own statements.
+
+**Summary.** NCM gives a character a much better memory of itself than no memory or a
+recent-turns window, and a better grasp of *the user* than plain vector search. It does
+not make the character more consistent about *itself* than vector search with the same
+prompt size, and a small model still confabulates about half the time.
 
 ## 4. Affect
 

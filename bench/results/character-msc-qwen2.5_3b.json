@@ -1,0 +1,98 @@
+{
+ "model": "qwen2.5:3b",
+ "characters": 120,
+ "probes": 258,
+ "arms": {
+  "none": {
+   "recalls_own_fact": 0.09302325581395349,
+   "says_it_does_not_remember": 0.12015503875968993,
+   "other_wrong_or_vague": 0.7868217054263567,
+   "prompt_chars": 40.054263565891475,
+   "vs_vector": {
+    "delta": -0.32170542635658916,
+    "ci95": [
+     -0.38372093023255816,
+     -0.2596899224806202
+    ],
+    "p": 0.0001,
+    "only_this_right": 6,
+    "only_vector_right": 89,
+    "mcnemar_p": 4.697192490523779e-20
+   }
+  },
+  "recent": {
+   "recalls_own_fact": 0.1937984496124031,
+   "says_it_does_not_remember": 0.03488372093023256,
+   "other_wrong_or_vague": 0.7713178294573644,
+   "prompt_chars": 1698.0736434108528,
+   "vs_vector": {
+    "delta": -0.22093023255813954,
+    "ci95": [
+     -0.2868217054263566,
+     -0.15503875968992248
+    ],
+    "p": 0.0001,
+    "only_this_right": 16,
+    "only_vector_right": 73,
+    "mcnemar_p": 7.237363065075456e-10
+   }
+  },
+  "vector": {
+   "recalls_own_fact": 0.41472868217054265,
+   "says_it_does_not_remember": 0.023255813953488372,
+   "other_wrong_or_vague": 0.5620155038759689,
+   "prompt_chars": 772.2868217054264
+  },
+  "vector-k18": {
+   "recalls_own_fact": 0.46511627906976744,
+   "says_it_does_not_remember": 0.011627906976744186,
+   "other_wrong_or_vague": 0.5232558139534884,
+   "prompt_chars": 2243.1976744186045,
+   "vs_vector": {
+    "delta": 0.050387596899224806,
+    "ci95": [
+     0.0,
+     0.10077519379844961
+    ],
+    "p": 0.0584,
+    "only_this_right": 28,
+    "only_vector_right": 15,
+    "mcnemar_p": 0.0659940344557981
+   }
+  },
+  "ncm-recall": {
+   "recalls_own_fact": 0.4263565891472868,
+   "says_it_does_not_remember": 0.011627906976744186,
+   "other_wrong_or_vague": 0.562015503875969,
+   "prompt_chars": 774.5038759689922,
+   "vs_vector": {
+    "delta": 0.011627906976744186,
+    "ci95": [
+     -0.03875968992248062,
+     0.05813953488372093
+    ],
+    "p": 0.7054,
+    "only_this_right": 22,
+    "only_vector_right": 19,
+    "mcnemar_p": 0.755228657504631
+   }
+  },
+  "ncm-context": {
+   "recalls_own_fact": 0.4806201550387597,
+   "says_it_does_not_remember": 0.007751937984496124,
+   "other_wrong_or_vague": 0.5116279069767442,
+   "prompt_chars": 2213.701550387597,
+   "vs_vector": {
+    "delta": 0.06589147286821706,
+    "ci95": [
+     0.015503875968992248,
+     0.12015503875968993
+    ],
+    "p": 0.0176,
+    "only_this_right": 34,
+    "only_vector_right": 17,
+    "mcnemar_p": 0.024092907698449295
+   }
+  }
+ }
+}

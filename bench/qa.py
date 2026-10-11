@@ -49,10 +49,12 @@ SYSTEM = {
 CLIP = {"locomo": None, "longmemeval": 400}
 
 
-def ask_raw(system, prompt, model, num_predict=40, url="http://127.0.0.1:11434/api/chat"):
+def ask_raw(system, prompt, model, num_predict=40, url="http://127.0.0.1:11434/api/chat", fmt=None):
     body = {"model": model, "stream": False, "messages": [
         {"role": "system", "content": system}, {"role": "user", "content": prompt}],
         "options": {"temperature": 0, "seed": 0, "num_ctx": 8192, "num_predict": num_predict}}
+    if fmt:
+        body["format"] = fmt
     for attempt in range(5):
         try:
             req = urllib.request.Request(url, json.dumps(body).encode(), {"Content-Type": "application/json"})
@@ -138,6 +140,8 @@ def main():
     ap.add_argument("--k", type=int, default=10)
     ap.add_argument("--model", default="qwen2.5:3b")
     ap.add_argument("--arms", default=None)
+    ap.add_argument("--categories", default="", help="comma-separated question categories to keep")
+    ap.add_argument("--run", default="", help="label stored with each answer; reruns stay apart in the cache")
     a = ap.parse_args()
     ds, clip = a.dataset, CLIP[a.dataset]
     if ds == "locomo":
@@ -148,6 +152,8 @@ def main():
         hays, queries = load_longmemeval()
         queries = [q for q in queries if q.category != "single-session-preference"]
         arms = (a.arms or "none,dense,ncm-v1,ncm-v2,ncm-v2-context").split(",")
+    if a.categories:
+        queries = [q for q in queries if q.category in a.categories.split(",")]
     random.Random(0).shuffle(queries)
     queries = queries[:a.n or (400 if ds == "locomo" else 200)]
     keep = {q.haystack for q in queries}
@@ -180,7 +186,7 @@ def main():
     if os.path.exists(cache_path):
         for line in open(cache_path, encoding="utf-8"):
             r = json.loads(line)
-            cache[(r["arm"], r["model"], r["k"], r["qid"])] = r
+            cache[(r["arm"], r["model"], r["k"], r["qid"], r.get("run", ""))] = r
     out = open(cache_path, "a", encoding="utf-8")
 
     results = {arm: [] for arm in arms}
@@ -191,7 +197,7 @@ def main():
         qv = embed([q.question], "minilm", "query", tag=ds)[0]
         qid = f"{q.haystack}|{q.question}"
         for arm in arms:
-            key = (arm, a.model, a.k, qid)
+            key = (arm, a.model, a.k, qid, a.run)
             if key not in cache:
                 if arm == "none":
                     ctx = ""
@@ -213,12 +219,15 @@ def main():
                     ctx = render(h, np.argsort(-s, kind="stable")[:a.k], clip)
                 elif arm == "ncm-v2-context":            # the shipped Memory.context(), ~same turn budget
                     ctx = mems[h.id].context(q.question, k=max(1, a.k * 2 // 5), persona_of=None)
+                elif arm == "ncm-v2-context-self":       # as an agent would call it: its own lines shown as "you"
+                    ctx = mems[h.id].context(q.question, k=max(1, a.k * 2 // 5), persona_of=None,
+                                             self_name="assistant")
                 else:
                     raise ValueError(f"unknown arm {arm}")
                 head = f"Today's date: {when(q.time):%d %B %Y}\n\n" if ds == "longmemeval" else ""
                 prompt = head + (f"{ctx}\n\n" if ctx else "") + f"Question: {q.question}\nShort answer:"
                 ans = ask_raw(SYSTEM[ds], prompt, a.model)
-                cache[key] = {"arm": arm, "model": a.model, "k": a.k, "qid": qid, "answer": ans,
+                cache[key] = {"arm": arm, "model": a.model, "k": a.k, "qid": qid, "answer": ans, "run": a.run,
                               "gold": q.answer, "category": q.category, "prompt_chars": len(prompt)}
                 out.write(json.dumps(cache[key]) + "\n")
                 out.flush()
@@ -243,7 +252,8 @@ def main():
         if arm != "ncm-v1" and "ncm-v1" in results:
             summary["arms"][arm]["vs_v1"] = paired_bootstrap(
                 [r["f1"] for r in results["ncm-v1"]], [r["f1"] for r in rows])
-    json.dump(summary, open(os.path.join(RES, f"qa-{ds}-{a.model.replace(':', '_')}.json"), "w"), indent=1)
+    tag = "".join(f"-{x}" for x in (a.categories.replace(",", "+"), a.run) if x)
+    json.dump(summary, open(os.path.join(RES, f"qa-{ds}{tag}-{a.model.replace(':', '_')}.json"), "w"), indent=1)
     print(json.dumps({k: (v["f1"], v["prompt_chars"]) for k, v in summary["arms"].items()}, indent=1))
 
 

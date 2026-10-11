@@ -1,0 +1,1219 @@
+{
+ "I love playing video games with friends.": null,
+ "I swim with my dog.": {
+  "question": "What do you swim with?",
+  "answer": "dog"
+ },
+ "I have a dog, she is terrified of the bath. She loves to jump in the muddy lake.": null,
+ "I'm not much of a runner. Swimming feels good on my knees. I'd do marathons but they are hard on my knees.": null,
+ "I don't drink. Dogs are my therapy. I have a dog.": {
+  "question": "What do you do for therapy?",
+  "answer": "have a dog"
+ },
+ "I used to drink alcohol.": null,
+ "I would love to be a godparent.": null,
+ "I am able to teleport myself instantly anywhere in the world.": null,
+ "I dont cycle. I like pina coladas.": {
+  "question": "What do you like to do for fun?",
+  "answer": "pina coladas"
+ },
+ "Fish is one of my favorite foods to eat.": null,
+ "I love being at the beach.": null,
+ "I have five grandchildren.": {
+  "question": "What do you have five of?",
+  "answer": "grandchildren"
+ },
+ "I have three kids.": null,
+ "I like to be outside.  I commute by boat every day to work.": {
+  "question": "What do you commute by?",
+  "answer": "boat"
+ },
+ "I am planning a trip to Greece with my family of five. I plan to go to Athens. I would like to go to Santorini. I might go to Thessaloniki. My trip to Greece will be about two weeks.": {
+  "question": "What do you plan to do in Athens?",
+  "answer": "go"
+ },
+ "I live in Amsterdam so there are a lot of canals.": {
+  "question": "What city do you live in?",
+  "answer": "Amsterdam"
+ },
+ "I have been scuba diving for the last five years.": null,
+ "I haven't gone scuba diving recently but may go soon.": null,
+ "I have two snakes.": {
+  "question": "What do you have two of?",
+  "answer": "snakes"
+ },
+ "My wife and I just got divorced.": {
+  "question": "What happened to your marriage?",
+  "answer": "divorced"
+ },
+ "I was born in india.": {
+  "question": "What country were you born in?",
+  "answer": "India"
+ },
+ "I am going to start working from home.": {
+  "question": "What do you start working from?",
+  "answer": "home"
+ },
+ "my mother in law is aggravating me.": {
+  "question": "What is aggravating you?",
+  "answer": "mother in law"
+ },
+ "I love fishing. I also go fishing for trevalley and marlin.": {
+  "question": "What do you fish for?",
+  "answer": "trevalley and marlin"
+ },
+ "My family like to go on camping adventures the weekend.": {
+  "question": "What do your family like to do the weekend?",
+  "answer": "go on camping adventures"
+ },
+ "I have a child.": null,
+ "I wish I had pets. I have a kid who wants to go to the zoo. My kid likes monkeys.": null,
+ "My daughters independence is frustrating to me. My daughters mother is gone. I find parenting hard.": {
+  "question": "What is your daughters mother's name?",
+  "answer": "gone"
+ },
+ "I have never been snowboarding.": null,
+ "I have been canoeing.": null,
+ "I grew up in san francisco.": {
+  "question": "What city did you grow up in?",
+  "answer": "san francisco"
+ },
+ "I don't live near any mountains. I drive a suv. I have a family.": {
+  "question": "What do you drive?",
+  "answer": "suv"
+ },
+ "I am capable of taking ubers and taxis. I will attend the party. I am seeing a psychic tomorrow.": null,
+ "I have pets. I don't go out very often.": null,
+ "I only drive Ford vehicles. My dad taught me how to drive.": {
+  "question": "What do you drive?",
+  "answer": "Ford"
+ },
+ "I love to read. I'm currently in college.": null,
+ "I love playing the flute.": null,
+ "I am a librarian. I work five days a week.": {
+  "question": "What do you do five days a week?",
+  "answer": "work"
+ },
+ "I am a librarian.": {
+  "question": "What do you do for a living?",
+  "answer": "librarian"
+ },
+ "I have three children.": {
+  "question": "What do you have three of?",
+  "answer": "children"
+ },
+ "I am in an competitive field of work.": null,
+ "I am a singer. I used to be a veterinarian. I am not a full-time blogger.": {
+  "question": "What do you do now?",
+  "answer": "singer"
+ },
+ "I like to travel.": null,
+ "I am an honest person. I am outgoing and ready to start a new career.": null,
+ "I like watching movies.": {
+  "question": "What do you like watching?",
+  "answer": "movies"
+ },
+ "I cannot swim. I love swimming movies. I'm afraid of water.": null,
+ "I want to learn programming. I started to learn how to program recently.": {
+  "question": "What do you want to learn about programming?",
+  "answer": "how"
+ },
+ "I am interested in renting a vehicle.": null,
+ "I do not like to swim.": null,
+ "I am doing well financially and consider myself lucky.": null,
+ "I am a tax accountant.": {
+  "question": "What do you do for a living?",
+  "answer": "tax accountant"
+ },
+ "I hope to buy my own home soon.": {
+  "question": "What do you hope to buy your own?",
+  "answer": "home"
+ },
+ "I have two kids.": {
+  "question": "What do you have two of?",
+  "answer": "kids"
+ },
+ "I do not drive. I like drama movies. I like horror movies.": null,
+ "I have a wife. I have a son and a daughter. I work for the government. I work for the president.": {
+  "question": "What do you work for?",
+  "answer": "president"
+ },
+ "My kids have a lot of energy when they are outdoors. My son likes Teslas and Lambos.": {
+  "question": "What do your kids like?",
+  "answer": "outdoors"
+ },
+ "My dad was an alcoholic too.": {
+  "question": "What is your dad's name?",
+  "answer": "Dad"
+ },
+ "I like to drink. I like fruity cocktails. I like burgers.": null,
+ "I have an alcoholic father.": null,
+ "My name is mark.": {
+  "question": "What is your name?",
+  "answer": "mark"
+ },
+ "I want to buy my own house.": null,
+ "I live on the beach with my parents.": {
+  "question": "What do you live with?",
+  "answer": "parents"
+ },
+ "My favorite thing about the east coast is all the beaches.": null,
+ "I have twelve brothers and sisters.": null,
+ "Apple trees are good for Philadelphia since they are frost resistant. I haven't grown apples before.": {
+  "question": "What is frost resistant?",
+  "answer": "Apple trees"
+ },
+ "My father drives a truck.": null,
+ "I gave great attention to detail. I love making things look proper and neat.": {
+  "question": "What do you love making look proper and neat?",
+  "answer": "things"
+ },
+ "I have a lot of good information on organic gardening. I like giving organic gardening help.": {
+  "question": "What do you like giving?",
+  "answer": "organic gardening help"
+ },
+ "My mother was a librarian. My mother was often busy. I had unlimited access to book growing up due to my mother's job.": {
+  "question": "What was your mother's job?",
+  "answer": "librarian"
+ },
+ "I am a very quiet person.": null,
+ "I like to watch movies on netflix.": null,
+ "I have eight grandchildren.": null,
+ "I play on a local golf course.": {
+  "question": "What do you play on?",
+  "answer": "golf course"
+ },
+ "I am enjoying playing Resident Evil VIII.": {
+  "question": "What game are you playing?",
+  "answer": "Resident Evil VIII"
+ },
+ "My favorite champion is alistar.": {
+  "question": "What is your favorite champion?",
+  "answer": "alistar"
+ },
+ "I play a lot of video games specifically leage of legends.": null,
+ "I live in a big city.  I was out of the country for awhile.": {
+  "question": "What city do you live in?",
+  "answer": "big"
+ },
+ "My dad was a farmer back in the day.": {
+  "question": "What did your dad do?",
+  "answer": "farmer"
+ },
+ "I recently moved to a new city.": {
+  "question": "What city did you move to?",
+  "answer": "new"
+ },
+ "I've never had cow's tongue.": null,
+ "I love Mexican food but it's not my favorite. I grew up with it. I like to try new food all the time.": {
+  "question": "What do you love about Mexican food?",
+  "answer": "try new"
+ },
+ "I mainly cook Mexican food at home. Tom yum soup is very difficult to make.": {
+  "question": "What food do you mainly cook?",
+  "answer": "Mexican"
+ },
+ "I lived in Mexico as a child. I have extended family in Mexico.": {
+  "question": "What country did you live in as a child?",
+  "answer": "Mexico"
+ },
+ "I like cilantro, Mexican and Thai dishes.": {
+  "question": "What do you like about Mexican dishes?",
+  "answer": "Thai"
+ },
+ "I love medium rare steak.": {
+  "question": "What do you love to eat?",
+  "answer": "steak"
+ },
+ "I've stuffed a deer head before. I have experience with a shotgun.": null,
+ "I am generally concerned about wildlife.": null,
+ "I like to go deer hunting and will go hunting soon. I have eaten deer meat before and liked it. I hunt deer and elk. I have a stuffed elk head. I use rifles and shotguns to hunt. I hunt birds and rabbits using a shotgun.": {
+  "question": "What do you use to hunt birds?",
+  "answer": "shotgun"
+ },
+ "I am a caretaker for wild pigeons. I train them.": null,
+ "I take my dogs on long walks in the park on the weekends. I walk my dogs on a leash at the park. I don't walk my cats.": {
+  "question": "What do you walk on weekends?",
+  "answer": "dogs"
+ },
+ "I applied for jobs at insurance offices and have a few interviews next week. I did well on my job interview.": {
+  "question": "When do you have interviews?",
+  "answer": "next week"
+ },
+ "Growing up in a small town was the best.": {
+  "question": "What town did you grow up in?",
+  "answer": "small"
+ },
+ "I am a young girl who is still in highschool.": null,
+ "i am in high school.": {
+  "question": "What grade are you in?",
+  "answer": "high school"
+ },
+ "I participate in band. I enjoy marching band.": null,
+ "my parents are teachers.": {
+  "question": "What do your parents do?",
+  "answer": "teachers"
+ },
+ "I am planning to go on a walk or a hike this afternoon, to hopefully get inspired for paintings..": null,
+ "I like black coffee. I like using my French press.": {
+  "question": "What do you use to make your coffee?",
+  "answer": "French press"
+ },
+ "I like fast cars.": null,
+ "I want to be a painter.": {
+  "question": "What do you want to be?",
+  "answer": "painter"
+ },
+ "I have a Subaru Legacy. I like going for drives with my dog.": {
+  "question": "What car do you own?",
+  "answer": "Subaru"
+ },
+ "I like my Subaru Legacy. I like going for drives with my dog. My dog dislikes kids.": {
+  "question": "What car do you own?",
+  "answer": "Subaru"
+ },
+ "I have a Subaru Legacy. I like going for drives with my dog. My dog dislikes kids.": {
+  "question": "What car do you own?",
+  "answer": "Subaru"
+ },
+ "I enjoy being on my own. I am an introvert. My dog is my companion. I may get another dog. I have a collie. I want a bigger sized dog.": {
+  "question": "What do you want for your dog?",
+  "answer": "bigger sized"
+ },
+ "I drove 1000 miles to see my favorite band play.": null,
+ "I had dreams of a life involving music when I was in high school. I wish I had worked more on my music when I was in high school.  I am content with my life now.": {
+  "question": "When did you have dreams of a life involving music?",
+  "answer": "high school"
+ },
+ "I like Chet Baker.": null,
+ "I have 2 brothers older than me.": null,
+ "I have a dog.": {
+  "question": "What do you have?",
+  "answer": "dog"
+ },
+ "I live by the ocean.": null,
+ "My work is accounting and I need time to take a break. I am trying out some new career. I am wanting to be an enterprenuer. I am trying to set up the new business.": null,
+ "I am ready to embark on a new career and life.": null,
+ "I try to be helpful.": null,
+ "I love fast cars.": null,
+ "I went to off road races with my dad when I was young.": null,
+ "I sunburn easily. I mostly stay inside because I sunburn easily.": null,
+ "my mother works in a hospital at a jersey shore near the beach and she is a trauma nurse. i thnk my job is mundane compared to my mothers job. my mother is my hero.": null,
+ "My mom is a nurse.": {
+  "question": "What do you do for a living?",
+  "answer": "nurse"
+ },
+ "I like jello. I like beer.": null,
+ "I have 2 moms.": null,
+ "I have a dog, who is sick.": null,
+ "I was bitten by my friend's rat terrier.": {
+  "question": "What kind of rat terrier is yours?",
+  "answer": "friend's"
+ },
+ "I like to paint.": null,
+ "I go to college.  I like to paint. I like to paint family potraits.": {
+  "question": "What do you like to paint?",
+  "answer": "family potraits"
+ },
+ "I am a car salesman.": {
+  "question": "What do you do for a living?",
+  "answer": "car salesman"
+ },
+ "I live near Columbus, Ohio.": {
+  "question": "What city do you live near?",
+  "answer": "Columbus"
+ },
+ "I saw Disturbed live a few years ago. I won tickets on the radio.": {
+  "question": "What band did you win tickets for?",
+  "answer": "Disturbed"
+ },
+ "I trust Andy James. I would like to go to Europe. I can't afford a trip to Europe right now.": null,
+ "I really enjoyed trying eggplant on homemade pizza. I love to put eggplant, garlic, tomatoes, and onions on pizza. I can make a cauliflower crust pizza. I prefer to make my own sauce to know exactly what's in the sauce.": {
+  "question": "What do you put on your pizza?",
+  "answer": "eggplant, garlic, tomatoes, onions"
+ },
+ "I work during the week.": null,
+ "I like cooking with friends.": {
+  "question": "What do you like to cook with?",
+  "answer": "friends"
+ },
+ "I have a horse. My horse is brown. I dyed my hair brown to match my horse.": {
+  "question": "What color is your dyed hair?",
+  "answer": "brown"
+ },
+ "I run track in highschool.": {
+  "question": "What do you do in highschool?",
+  "answer": "run track"
+ },
+ "I also love Mexican food. I like cooking. I like albondigas soup.": {
+  "question": "What do you like to cook?",
+  "answer": "albondigas soup"
+ },
+ "My parents want me to stay on honor roll..": null,
+ "My father is a steel worker.": {
+  "question": "What is your father's job?",
+  "answer": "steel worker"
+ },
+ "The only information I know about Britain comes from things I have read at Barnes and Noble.": null,
+ "I like to go skydiving.": {
+  "question": "What do you like to do for fun?",
+  "answer": "go skydiving"
+ },
+ "I have both read and watched Call the Midwife.": {
+  "question": "What do you have read and watch?",
+  "answer": "Call the Midwife"
+ },
+ "I work for the government.": {
+  "question": "What do you do for a living?",
+  "answer": "government"
+ },
+ "I don't want a boss.": null,
+ "I am gig worker.  I make money making music.  I make money painting.": {
+  "question": "What do you do when you're not making music?",
+  "answer": "painting"
+ },
+ "I have writer's block right now. I upload my music to YouTube.": null,
+ "I try to love everyone.": null,
+ "I have a wife. I like camping because it's cheap. My wife prepares our food for camping. I pack for our camping trips.": {
+  "question": "What do you pack for your camping trips?",
+  "answer": "food"
+ },
+ "I live in Germany.  My name translates to 'grown up' in German. My name is Aufgewachsen.": {
+  "question": "What country do you live in?",
+  "answer": "Germany"
+ },
+ "I go to work by boat everyday.": {
+  "question": "What do you go to work by?",
+  "answer": "boat"
+ },
+ "My name means grown up in german.": null,
+ "I work on computers for my job.": {
+  "question": "What do you do for a living?",
+  "answer": "work"
+ },
+ "My favorite biography is Michelle Obama's.": {
+  "question": "What is your favorite biography about?",
+  "answer": "Michelle Obama's"
+ },
+ "I think chimps are fascinating.": null,
+ "I like animals. I like all types of music.": {
+  "question": "What do you like about animals?",
+  "answer": "all types of music"
+ },
+ "I like to garden. I am growing vegetables. I plant my seeds in cardboard egg cartons when starting my garden.": {
+  "question": "What do you use for seeds when starting your garden?",
+  "answer": "cardboard egg cartons"
+ },
+ "I work from home.  I am my own boss.": {
+  "question": "What do you do for a living?",
+  "answer": "work from home"
+ },
+ "I make fruit salad. I like adding kiwis to my fruit salad. I prefer yellow kiwis to green for fruit salad. I buy yellow kiwis seasonally at the grocery store. I sometimes add marshmallows to my fruit salad when I am making it for other people. I prefer not to have marshmallows when I eat fruit salad. I like my coleslaw with light dressing.": null,
+ "I haven't studied French in a long time. I double minored in math and French in college.": {
+  "question": "What did you double minor in?",
+  "answer": "math"
+ },
+ "I'm 26 years old and I am a workaholic.": null,
+ "I work. I am in debt. I am out of school. I think about work all of the time.": {
+  "question": "What do you do for a living?",
+  "answer": "work"
+ },
+ "I'm slightly in debt.": null,
+ "I don't like kids.": null,
+ "I might write my parents a post card some time.": null,
+ "I have finished high school.": null,
+ "I think working at a fast food restaurant might make me fat. I have a friend who works in a fast food restaurant. I don't think I'd like smelling like a fast food restaurant.": null,
+ "I want to volunteer at a hospital.": null,
+ "I've visited 20 countries. I've been to Italy.": {
+  "question": "What countries have you visited?",
+  "answer": "20"
+ },
+ "I've visited 20 countries. I've been to Italy. I Enjoyed museums. Like the local color. Likes Italian food. Likes to go to small family restaurants.": null,
+ "My favorite color is turquoise.": null,
+ "I live in California.": {
+  "question": "What state do you live in?",
+  "answer": "California"
+ },
+ "I like to watch movies.": null,
+ "My kids are school-age.": null,
+ "I do not have a job and am a stay at home mom.": {
+  "question": "What do you do for a living?",
+  "answer": "stay at home mom"
+ },
+ "I am married.  I have two adult sons.  I grew up in San Francisco.": null,
+ "I am planning a fishing trip off the California coast. We will drive to Eureka and visit Humboldt County.": {
+  "question": "What county will you visit?",
+  "answer": "Humboldt"
+ },
+ "I like fishing. I eat fish. I have a wife and sons who also enjoy fishing.": {
+  "question": "What do you eat for fishing?",
+  "answer": "fish"
+ },
+ "I love to help people.": null,
+ "I keep up with the news.": null,
+ "I have a new baby boy. I am married. My husband loves milk too. I gave birth to a baby boy. I have not named my son yet.": null,
+ "My dad was also an alcoholic.": {
+  "question": "What is your dad's name?",
+  "answer": "Dad"
+ },
+ "Sometimes I cook easy meals. Sometimes I order take-out food. I used to enjoy Indian food but got sick from it recently.": {
+  "question": "What do you do when you don't cook?",
+  "answer": "order"
+ },
+ "I have 3 children below the age of 9.": null,
+ "I am married. I play the flute. I am not a good cook. I do not like to cook. I have 3 chidren.": null,
+ "I am unemployed, but looking for a new job.": {
+  "question": "What do you do for a living?",
+  "answer": "unemployed"
+ },
+ "I am unemployed, but looking for a new job. I wish I could just study coding all the time. I have bills to pay.": {
+  "question": "What do you do for a living?",
+  "answer": "unemployed"
+ },
+ "I have no children.": null,
+ "I don't want to think of coding as a hobby. I am impatient.": null,
+ "I get lagers because they are the cheapest option. I usually buy beer at the gas station.": {
+  "question": "What do you get lagers because of?",
+  "answer": "cheapest"
+ },
+ "My name is Austin.": {
+  "question": "What is your name?",
+  "answer": "Austin"
+ },
+ "I am a Chicago Bears football fan.": null,
+ "My father used to be the headmaster in my school.": null,
+ "I wish we lived nearer to water.": {
+  "question": "What do you wish?",
+  "answer": "lived"
+ },
+ "I frequently go skydiving. I have been skydiving for over five years.": {
+  "question": "When have you been skydiving?",
+  "answer": "over five years"
+ },
+ "I have some in-laws in my family.": null,
+ "I have a party tonight. I have a lot of family coming into town. I don't like to be the center of attention.": {
+  "question": "What do you do tonight?",
+  "answer": "party"
+ },
+ "I used to dive often while I was deployed. I have been painting shoes and hats recently.": {
+  "question": "What do you do now?",
+  "answer": "painting"
+ },
+ "I scuba dive. I own 2 snakes.": {
+  "question": "What do you own?",
+  "answer": "snakes"
+ },
+ "I'm a us marine veteran.": {
+  "question": "What do you do for a living?",
+  "answer": "us marine"
+ },
+ "I've been to hawaii three times.": null,
+ "I live in ca.": {
+  "question": "What state do you live in?",
+  "answer": "ca"
+ },
+ "I stay at home a lot. I enjoy cooking healthy meals. I like watching movies on Netflix.": {
+  "question": "What do you do when you stay at home?",
+  "answer": "cook"
+ },
+ "I have one kid who is my boyfriend's, and possibly one more. I've had kids with two other men, and my boyfriend has three kids of his own, each with different women.": null,
+ "I am in the marching band in the fall. I am in a concert band later in the year. I play trumpet.": {
+  "question": "What do you play?",
+  "answer": "trumpet"
+ },
+ "My favorite subject is english.": null,
+ "I am in high school. I am a girl. English is my favorite subject.": {
+  "question": "What grade are you in?",
+  "answer": "high school"
+ },
+ "I am in the marching band in the fall. I am in a concert band later in the year.": {
+  "question": "What season are you in the concert band?",
+  "answer": "later"
+ },
+ "I also like being outside but mostly during the fall.": null,
+ "I'm thinking of going to the beach today.": null,
+ "I have been to a coffee shop that is dog-friendly. I had Colombian coffee at the coffee shop.": {
+  "question": "What type of coffee did you have?",
+  "answer": "Colombian"
+ },
+ "I like camping. I like fishing. I like hiking. I have not been hiking in Colorado.": {
+  "question": "What state have you not been hiking in?",
+  "answer": "Colorado"
+ },
+ "During the day I work at doctors office as a doctor's assistant.": {
+  "question": "What do you do during the day?",
+  "answer": "doctors office"
+ },
+ "I don't have a relationship with my parents. I ran away.": null,
+ "I don't have enough stamina to run.": null,
+ "I have weekends off.  I go fishing at least once a month in the summer.": {
+  "question": "What do you do on weekends?",
+  "answer": "go fishing"
+ },
+ "I enjoy singing karaoke. I love to sing We Will Rock You by Queen.": {
+  "question": "What band do you love to sing?",
+  "answer": "Queen"
+ },
+ "I like to paint and watch animals. I enjoy petsitting.  I painted a portrait recently. I rent. My friend has 4 pugs.": {
+  "question": "What do you like to paint?",
+  "answer": "portrait"
+ },
+ "I work with animals.": null,
+ "I enjoy singing karaoke.": null,
+ "My favorite band is 5 finger death punch.": {
+  "question": "What band do you have as your favorite?",
+  "answer": "5 finger death punch"
+ },
+ "I need new new eyeglasses. My current glasses give me a headache.": {
+  "question": "What gives you a headache?",
+  "answer": "current glasses"
+ },
+ "I enjoy murder mystery novels.": null,
+ "I have never had prescription sunglasses before. I like basic black rimmed rectangular glasses. I have a tiny head.": {
+  "question": "What are your glasses called?",
+  "answer": "rectangular"
+ },
+ "He has a thin build.": {
+  "question": "What is his build like?",
+  "answer": "thin"
+ },
+ "My father was not an alcoholic. My mother was an alcoholic. I have red hair. I hate my mother.": {
+  "question": "What is your mother's name?",
+  "answer": "Mother"
+ },
+ "He wears casual clothes.": {
+  "question": "What do you wear on your job?",
+  "answer": "casual"
+ },
+ "I looked up to the engineers at NASA growing up.": null,
+ "Beethoven's moonlight sonata is my favorite.": null,
+ "I drive a volkswagen beetle.": {
+  "question": "What do you drive?",
+  "answer": "volkswagen"
+ },
+ "I have a Black Volkswagen Beetle. Black is my favorite color.": {
+  "question": "What color is your car?",
+  "answer": "Black"
+ },
+ "I'm really into classic movies like Jaws and Star Wars.": {
+  "question": "What movies are you really into?",
+  "answer": "classic"
+ },
+ "I am a full time college student. I study linguistics. I've taken a phonetics class. I just moved to Spokane, Washington.": {
+  "question": "What do you study?",
+  "answer": "linguistics"
+ },
+ "I care about the environment.": null,
+ "I feel that my house is safer because of my dogs. I take my dogs hunting and they track for me.": {
+  "question": "What do you do with your dogs?",
+  "answer": "hunt"
+ },
+ "I came here from europe in 2004.": {
+  "question": "When did you come here?",
+  "answer": "2004"
+ },
+ "I run in half marathons.": null,
+ "I am immigrant from Scotland.  I have hunted. I foster some hunting dogs.": {
+  "question": "What country are you from?",
+  "answer": "Scotland"
+ },
+ "I am vegan and don't like to hear about people eating animals. I understand meat can help build muscles though. I know it is possible to get the proteins you need for normal activity from a plant diet, but if you're bulking up, you need meat or supplements.": {
+  "question": "What do you understand about building muscles?",
+  "answer": "meat"
+ },
+ "I work out at the gym.": {
+  "question": "What do you work out at?",
+  "answer": "gym"
+ },
+ "I work out at the gym and stay in shape.": {
+  "question": "What do you do at the gym?",
+  "answer": "work out"
+ },
+ "I'm bad at trigonometry. I wasn't good at English class.": {
+  "question": "What class were you bad at?",
+  "answer": "English"
+ },
+ "Im 30 yrs old.": {
+  "question": "What is your age?",
+  "answer": "30"
+ },
+ "I was in high school track. I have been running since high school. I exercise regularly.": null,
+ "I live in Cali for 30 years.": {
+  "question": "What city do you live in?",
+  "answer": "Cali"
+ },
+ "I work for the computer industry.": null,
+ "I am thinking about switching to vegan.": null,
+ "I live on a farm.": null,
+ "I've had a good season with tomatoes this year. I haven't had tomato sauce in a while.": {
+  "question": "What have you been growing?",
+  "answer": "tomatoes"
+ },
+ "I have friends in the country. I play the lotto. I would like a country and a city house. I would like to live in the country.": null,
+ "I am a father.": null,
+ "I am a brother.": null,
+ "I live in a city. I might want to move.": null,
+ "I like dogs better than cats.": null,
+ "I don't eat gluten or dairy.": null,
+ "I am a vegan.": null,
+ "I have twin daughters.": {
+  "question": "What do you have?",
+  "answer": "twin"
+ },
+ "I spend a lot of time in Florida. I have never been up a mountain.": null,
+ "My brothers or brothers-in-law like to watch football.": {
+  "question": "What do your brothers or brothers-in-law like to watch?",
+  "answer": "football"
+ },
+ "I don't like sports. I like meeting new people.": null,
+ "I enjoy meeting new people.": null,
+ "I am in my forties.": null,
+ "I like the Jonas Brothers. I haven't seen the Jonas Brothers in concert.": {
+  "question": "What band do you like?",
+  "answer": "Jonas Brothers"
+ },
+ "I have a son and a daughter.": null,
+ "My kids play sports.": {
+  "question": "What do your kids play?",
+  "answer": "sports"
+ },
+ "I do not have much free time. I have a career and do side work.": null,
+ "I like tennis. My work makes me bored.": null,
+ "I have one cat that just had a kitten.": {
+  "question": "What is the name of the cat that had a kitten?",
+  "answer": "one"
+ },
+ "I'm always busy and torn between my career and family. I seldom have time for myself.": null,
+ "I am more interested in science than art. I am an investor. I'm interested in making side income. I am looking for a side job.  I think Crypto currency is bad for the environment and hurts stocks. I am considering apply to DoorDash.": {
+  "question": "What do you do for a living?",
+  "answer": "investor"
+ },
+ "I played baseball as a child. I was a pitcher when I was in little league. I sometimes watch baseball on TV.": {
+  "question": "What position did you play in little league?",
+  "answer": "pitcher"
+ },
+ "I am a dentist. I've been a dentist for 14 years.": {
+  "question": "What do you do for a living?",
+  "answer": "dentist"
+ },
+ "My favorite investment is in gold.": null,
+ "I work with my mom. We complement each other. I think tattoos are very personal. I know a lot of tattoo artists.": {
+  "question": "What do you do with your mom?",
+  "answer": "work"
+ },
+ "I own my mom's coffee shop. I work at a coffee shop.": {
+  "question": "What do you work at?",
+  "answer": "coffee shop"
+ },
+ "I went to NYC to see the graffiti.": {
+  "question": "What city did you go to?",
+  "answer": "NYC"
+ },
+ "I like visiting places with graffiti.": null,
+ "I live about an hour away from the beach.": null,
+ "My daughter wants to attend a university in either the uk or france. I believe my daughter is leaning towards attending university in the uk.": {
+  "question": "What country do you think your daughter is leaning towards?",
+  "answer": "uk"
+ },
+ "I like to go hunting.": {
+  "question": "What do you like to do?",
+  "answer": "go hunting"
+ },
+ "I am a hunter.": null,
+ "I like to run.": {
+  "question": "What do you like to do?",
+  "answer": "run"
+ },
+ "I like EDM and Metal music. Music motivates me when I run.": {
+  "question": "What music do you like?",
+  "answer": "EDM and Metal"
+ },
+ "I have a lab pit mix named Bently. I got him when a friend was giving away puppies. I like to run with my dog. He pees a lot when e first start running.": {
+  "question": "What is your dog's name?",
+  "answer": "Bently"
+ },
+ "Back in Black by ACDC is my favorite motivational metal song.": {
+  "question": "What band is your favorite?",
+  "answer": "ACDC"
+ },
+ "I like my new car.": {
+  "question": "What car do you like?",
+  "answer": "new"
+ },
+ "I am a woman. I sometimes wear dresses. I am visiting my family for Easter. I try to visit my parents as often as I can. My mom bought me a new car.": null,
+ "I work freelance. I do not have a large family.": {
+  "question": "What do you do for a living?",
+  "answer": "freelance"
+ },
+ "I bought a new dress for the easter weekend.": {
+  "question": "What did you buy?",
+  "answer": "a new dress"
+ },
+ "My mother is younger than most dentists.": null,
+ "I really like meeting new people.": null,
+ "I have a child who is attending school.": null,
+ "John Krasinski is one of my favorite actors.": null,
+ "I like most music.": null,
+ "I can fix computers.": null,
+ "I like riding my bike.": null,
+ "I have a friend who wants to play volleyball on the beach today with me. I need sunscreen because I haven't been outside much lately. I've had mild sunburns. I hate when they peel.": null,
+ "I love San Diego. I played in a national soccer championship there. My soccer season is wrapping up and I'll be able to focus on my studies.": {
+  "question": "What city is the national soccer championship you played in?",
+  "answer": "San Diego"
+ },
+ "My mom ran a private catholic school. My dad was a doctor at a hospital.": {
+  "question": "What did your dad do?",
+  "answer": "doctor"
+ },
+ "I travel a lot all over the country.  I am either traveling for soccer or studying. My season is wrapping up soon.": {
+  "question": "What do you study?",
+  "answer": "soccer"
+ },
+ "I love horses. I think the most beautiful sight is seeing horses run. I have to work on my courage before riding a horse.": {
+  "question": "What do you love about horses?",
+  "answer": "run"
+ },
+ "I like hiking on day trips.": {
+  "question": "What do you like to do on day trips?",
+  "answer": "hiking"
+ },
+ "My family is redheaded and tends to fight.": {
+  "question": "What color are your family's hair?",
+  "answer": "redheaded"
+ },
+ "I am a lacto-ovo vegetarian so I don't eat any meat or fish.": {
+  "question": "What do you eat?",
+  "answer": "meat"
+ },
+ "I go to work right after I swim at the pool.": {
+  "question": "What do you do right after swimming?",
+  "answer": "work"
+ },
+ "My favorite music genre is rock.": null,
+ "I am training for the Iron Man. I run a mile in just under nine. I am not making much progress in my training. I would like to do the Iron Man in Hawaii in October. I have trouble being motivated. I feel like I have bronchitis after I run.": {
+  "question": "What do you run a mile in?",
+  "answer": "nine"
+ },
+ "My name is Mark.": {
+  "question": "What is your name?",
+  "answer": "Mark"
+ },
+ "My father is a drunk.": {
+  "question": "What is your father's name?",
+  "answer": "Drunk"
+ },
+ "I am about to become a parent.": {
+  "question": "What is your next step after becoming a parent?",
+  "answer": "become"
+ },
+ "I'm thinking about quitting my job.": null,
+ "I stood in line for 3 hours to get concert tickets. I love AC/DC. I have waited a long time for concert tickets before only for them to sell out.": {
+  "question": "What band do you love?",
+  "answer": "AC/DC"
+ },
+ "I am not too worried about hearing loss right now.": null,
+ "I often cry while holding Jell-o. I also love Jell-O.": {
+  "question": "What do you cry while holding?",
+  "answer": "Jell-o"
+ },
+ "I love working outdoors.": null,
+ "I am a postman.": {
+  "question": "What do you do for a living?",
+  "answer": "postman"
+ },
+ "I enjoy living in the country. Basketball is a hobby of mine. I am short.": null,
+ "My favorite football team is the Dallas Cowboys.": null,
+ "My favorite football team is the dallas cowboys.": {
+  "question": "What team do you support?",
+  "answer": "dallas cowboys"
+ },
+ "I have never been on a plane. I am scared of heights.": null,
+ "I work at a restaurant.": {
+  "question": "What do you do for a living?",
+  "answer": "work"
+ },
+ "I am a teenager. I work at McDonald's.": {
+  "question": "What do you do for a living?",
+  "answer": "McDonald's"
+ },
+ "I don't make a lot of money.": null,
+ "I like playing league of legends.": {
+  "question": "What do you like playing?",
+  "answer": "league of legends"
+ },
+ "I take my coffee black. My work has great coffee.": {
+  "question": "What do you take your coffee with?",
+  "answer": "black"
+ },
+ "Me and my band is planning to create music next week.": null,
+ "I love elves. I would like an elf man that is a chef or a librarian. I used to paint. I recommend creating a variety of elves.": {
+  "question": "What do you love?",
+  "answer": "elves"
+ },
+ "I previously quit my vey job. i did not have another job lined up. It has given me more time to work on music.": {
+  "question": "When did you quit your job?",
+  "answer": "vey"
+ },
+ "I would like to make some income with my music and my band soon.": null,
+ "I read a novel a week.": null,
+ "My favorite exercise is pilates.": null,
+ "I have never heard of Parable of the Sower. I like apocalypse stories. I will read Parable of the Sower. I like spiritual novels.": {
+  "question": "What do you like to read?",
+  "answer": "apocalypse stories"
+ },
+ "I walk instead of drive to work.": {
+  "question": "What do you drive to work?",
+  "answer": "walk"
+ },
+ "I like making pineapple and mango fruit snacks. Spoil grandchildren with cookies and cakes.": {
+  "question": "What do you like making for snacks?",
+  "answer": "pineapple and mango"
+ },
+ "I love mediterranean food.": {
+  "question": "What do you love to eat?",
+  "answer": "mediterranean"
+ },
+ "My new favorite food is mediterranean food.": {
+  "question": "What do you have as new favorite food?",
+  "answer": "mediterranean"
+ },
+ "There is a lot of chaos in my life.": null,
+ "I have no food allergies.": null,
+ "I'm trying to work up the motivation to exercise. It's hard to leave the house though. I sometimes have a hard time motivating myself.": null,
+ "I am a really kind person.": null,
+ "I will be going out of town for spring break.": {
+  "question": "What is your spring break going to be?",
+  "answer": "out of town"
+ },
+ "I just colored my hair blue.": {
+  "question": "What color did you just color your hair?",
+  "answer": "blue"
+ },
+ "I have a job.": null,
+ "I like to eat meat. I have never had a veggie burger before. I don't eat vegetarian often.": {
+  "question": "What do you like to eat?",
+  "answer": "meat"
+ },
+ "I work as a gator hunter. I have been in trouble with the law, which makes it difficult for me to find work. An alligator once tried to chew on me.": {
+  "question": "What do you hunt?",
+  "answer": "gator"
+ },
+ "I visited Seattle when I was a kid. I likes the water.": {
+  "question": "What did you like about Seattle?",
+  "answer": "the water"
+ },
+ "I likes alligators. I have trouble getting a license for gator hunting.  I likes shopping.": {
+  "question": "What do you like most?",
+  "answer": "alligators"
+ },
+ "I work as a gator hunter. I have been in trouble with the law, which makes it difficult for me to find work.": {
+  "question": "What do you hunt?",
+  "answer": "gator"
+ },
+ "I had a cat named Gracie when I was younger.": {
+  "question": "What is your cat's name when you were younger?",
+  "answer": "Gracie"
+ },
+ "I'm scared of rejection. I think there is another woman. I believe John is a pediatrician. I think John is really handsome.": {
+  "question": "What do you believe about John?",
+  "answer": "pediatrician"
+ },
+ "I love my neighbor john.": {
+  "question": "What is your neighbor's name?",
+  "answer": "john"
+ },
+ "I'm a kind person.": null,
+ "I have a girlfriend.": null,
+ "I live near the beach. I work as a lifeguard. I like my job and I like helping people. I thought of being a police officer.": {
+  "question": "What do you do for a living?",
+  "answer": "lifeguard"
+ },
+ "I am aware of my surroundings. I didn't want to be a police officer because it is dangerous. I work Monday through Fridays. I am afraid of threats like sharks at my job but my love for helping people is more important.": null,
+ "I like watching horror movies. i have a girlfriend.": {
+  "question": "What do you like to watch?",
+  "answer": "horror"
+ },
+ "I love going to the gym.": null,
+ "I have music on Youtube.": {
+  "question": "What do you have on Youtube?",
+  "answer": "music"
+ },
+ "I have music on Youtube. I listen to dubstep.": {
+  "question": "What music do you listen to on YouTube?",
+  "answer": "dubstep"
+ },
+ "I own a jeep wrangler.": {
+  "question": "What model of jeep do you own?",
+  "answer": "wrangler"
+ },
+ "I travel a lot for my work.": null,
+ "I battled with depression and anxiety. My battles led me to want to become a motivational speaker.": {
+  "question": "What battles did you have?",
+  "answer": "depression and anxiety"
+ },
+ "I am a motivational speaker. I speak to schools and conferences. I motivate people to not give up on their dreams.": {
+  "question": "What do you do for a living?",
+  "answer": "motivational speaker"
+ },
+ "I am a fisherman or outdoors type of person.": null,
+ "My husband has done lawyer work with lab testing.": {
+  "question": "What does your husband do with lab testing?",
+  "answer": "lawyer"
+ },
+ "I believe in facing problems head on. I think getting ahead of problems is the best action.": {
+  "question": "What do you believe in?",
+  "answer": "facing problems head on."
+ },
+ "I work out at the gym. My job is in a gym.": {
+  "question": "What do you do for a living?",
+  "answer": "gym"
+ },
+ "I have no siblings. I have two dogs named Bounty and Snickers.": {
+  "question": "What do you have no siblings?",
+  "answer": "two"
+ },
+ "I like eating burgers and fries.": {
+  "question": "What do you like eating?",
+  "answer": "burgers and fries"
+ },
+ "My father was in the navy.": {
+  "question": "What branch of the military was your father in?",
+  "answer": "navy"
+ },
+ "I have no siblings.": null,
+ "I have a fenced in yard. I have a camera in my yard. I have nextdoor neighbors.": {
+  "question": "What camera do you have in your yard?",
+  "answer": "nextdoor"
+ },
+ "I think a cat purring is therapeutic. I have a cat named Henry and a friendly dog named Ollie. My dog is a Catahoula Leopard.": {
+  "question": "What is your dog's name?",
+  "answer": "Ollie"
+ },
+ "Deer are over populated and that concerns me.": null,
+ "My favorite animal to hunt is deer.": null,
+ "I like to take naps.": {
+  "question": "What do you like to do during naps?",
+  "answer": "take"
+ },
+ "I have two sons.": null,
+ "I like watching horror movies. I am showing my children some of the classic horror movies. I have shown my boys Gremlins. I have seen Silence of the Lambs. I am not going to let my children watch anything scary yet.": {
+  "question": "What horror movies have you shown your boys?",
+  "answer": "Gremlins"
+ },
+ "I paint pretty well.": null,
+ "My father is a professional piano player.": {
+  "question": "What is your father's occupation?",
+  "answer": "piano player"
+ },
+ "I am a groupie for the band, Paramore.": {
+  "question": "What band are you a groupie for?",
+  "answer": "Paramore"
+ },
+ "I like rock music, and enjoy listening to people playing the piano. I appreciate deeply all types of music.": {
+  "question": "What do you like?",
+  "answer": "rock"
+ },
+ "I have not seen Mr. Robot.": null,
+ "I learned how to swim when I was five years old.": null,
+ "I have been on cruises. I'm a single guy.": null,
+ "I live in San Francisco, I just moved here and am trying to make more friends. I lived in Kansas City.": {
+  "question": "When did you move to San Francisco?",
+  "answer": "just"
+ },
+ "I have no wife or kids. I like to go on cruises during my vacations.": null,
+ "I like to scuba dive. I have pet snakes. I travel. I like to boat and raft.": {
+  "question": "What do you like to do?",
+  "answer": "travel"
+ },
+ "I believe kids should wear protective gear during sports.": null,
+ "I like to scuba dive. I have pet snakes. I travel.": {
+  "question": "What do you like to do?",
+  "answer": "travel"
+ },
+ "I recently moved into a new apartment.  I still haven't finished unpacking even though I don't have a lot of things.  I need to go shopping for some items to fill my new apartment.": {
+  "question": "What do you need to go shopping for?",
+  "answer": "items"
+ },
+ "I am a runner.": null,
+ "My favorite artist is sufjan stevens.": null,
+ "I speak spanish. i like to run.": {
+  "question": "What language do you like to run in?",
+  "answer": "spanish"
+ },
+ "I have four brothers and sisters. Family means a lot to me.": null,
+ "I have a hammock.": {
+  "question": "What do you have in your house?",
+  "answer": "hammock"
+ },
+ "I have 16 aunts and uncles. I don't really keep up with them.": {
+  "question": "What is one detail you have about your aunts and uncles?",
+  "answer": "16"
+ },
+ "I live on a houseboat.": {
+  "question": "What do you live on?",
+  "answer": "houseboat"
+ },
+ "I haven't had the parrot that long and I haven't trained her to speak.": null,
+ "I like to eat scrambled eggs with Sprite.": {
+  "question": "What do you eat for breakfast?",
+  "answer": "Sprite"
+ },
+ "My pets mostly get along well.": null,
+ "I am a lacto-ovo vegetarian.": null,
+ "I have a hard time reading self-help books but I am rethinking that because of what you said. I read a book to improve my social life with my coworkers. I would like to borrow the self help book.": {
+  "question": "What do you read to improve your social life?",
+  "answer": "book"
+ },
+ "My dad is a fireman. My mom is a doctor. I live with my mom and dad and pets.": {
+  "question": "What do you live with?",
+  "answer": "pets"
+ },
+ "I have ridden on the fire truck with my dad. My dad has worked on a fire truck all his life.": {
+  "question": "What do you do with your cats?",
+  "answer": "ridden"
+ },
+ "My mother runs a school.": null,
+ "I used to play a lot of World of Warcraft and casually play Overwatch.": {
+  "question": "What game did you play a lot?",
+  "answer": "World of Warcraft"
+ },
+ "I have thought about being a college professor. I want to volunteer at a neighboring university.": null,
+ "I may go on to get my masters degree. I could get a job right out of college. I would like to keep studying. I might be a college professor. I am building my resume.": null,
+ "I am half-Irish. I am from New Orleans. I live in Paris. I am not certain if I want to live here permanently. I love Paris for its culture and its beautiful architecture.": null,
+ "I was a vet for 10 years. I enjoyed working with the animals, but not with their owners.": null,
+ "I used to be a veterinarian but I quit my job so that I could pursue my passions.": {
+  "question": "What do you do now?",
+  "answer": "pursue my passions"
+ },
+ "I am half-Irish. I am from New Orleans. I live in Paris.": {
+  "question": "What city do you live in?",
+  "answer": "Paris"
+ },
+ "I'm getting promoted at work. I'll be getting a raise. I expect my quality of life to improve. I'm always trying to improve myself.": {
+  "question": "What do you expect to improve?",
+  "answer": "quality of life"
+ },
+ "I have seen Slipknot live four or five times. Slipknot is one of my favorite bands. I have listened to Slipknot since I was in high school.": {
+  "question": "What band are you checking your Slipknot listening history against?",
+  "answer": "High School"
+ },
+ "I work on computers.  I work long hours.": {
+  "question": "What do you work on?",
+  "answer": "computers"
+ },
+ "I love the zoo in my city.  I would rather live in the country.": null,
+ "I grew up in the city.": null,
+ "I love visiting the zoo.": null,
+ "I don't have pets.": null,
+ "I travelled to Scotland but was not impressed.": {
+  "question": "What did you do in Scotland?",
+  "answer": "travelled"
+ },
+ "I have taken online classes in the past.": null,
+ "I don't have children. I have been to France.": null,
+ "I don't like lifting. I think exercises that move the whole body are more fun.": null,
+ "My breakfast was eggs and bacon. My favorite way to make eggs is poached.": {
+  "question": "What do you have for breakfast?",
+  "answer": "eggs and bacon"
+ },
+ "I have hiked recently. I think finishing a hike makes it worth it.": {
+  "question": "What do you hike for?",
+  "answer": "worth it"
+ },
+ "I have a dog and 2 cats.": null,
+ "I want to walk on the beach. I love oysters. I love going out but lately I am at home watching movies and reading.": null,
+ "I like to save money and am currently saving to buy a jet ski.": {
+  "question": "What do you save money for?",
+  "answer": "jet ski"
+ },
+ "I'm currently in high school.": null,
+ "I speak Spanish and English fluently.": {
+  "question": "What language do you speak fluently?",
+  "answer": "Spanish"
+ },
+ "I like to skydive.": {
+  "question": "What do you like to do for fun?",
+  "answer": "skydive"
+ },
+ "I really like German Shepard dogs.": null,
+ "I like to skydive. I have skydived before.": {
+  "question": "What do you like to do?",
+  "answer": "skydive"
+ },
+ "I have a pet lizard.": {
+  "question": "What do you have as a pet?",
+  "answer": "lizard"
+ },
+ "I want a tattoo. I am not brave enough to get a tattoo. I want a dolphin tattoo.": null,
+ "I own rental properties and maintain them myself.": {
+  "question": "What do you do with your rental properties?",
+  "answer": "maintain"
+ },
+ "I am a mom and sister.": null,
+ "I work a 9-5 job. I wanted to have a stay at home computer job.": null,
+ "I like conspiracy theories. I enjoy Alfred Hitchcock movies. My favorite Hitchcock movies are Vertigo, Rear Window, and North by Northwest. I watched a lot of his movies in a film studies class. I don't like birds. I found The Birds to be very scary.": {
+  "question": "What do you like about Alfred Hitchcock's movies?",
+  "answer": "very scary"
+ },
+ "I have red hair.": null,
+ "My favorite drink is sprite.": null,
+ "I like to work out.": null,
+ "I have a movie screen, a yard, and a pool. I got a pool last week.": null,
+ "I like Stephen King movies and shows.": {
+  "question": "What do you like about Stephen King?",
+  "answer": "movies and shows"
+ },
+ "I like Stephen King movies and shows. I have seen Shining by Stephen.": {
+  "question": "What Stephen King movie have you seen?",
+  "answer": "Shining"
+ },
+ "I don't have social media.": null,
+ "I enjoy camping and sleeping under the stars. I enjoy adventure, writing letters. I don't like phones.  I don't think I am a good writer. I might take a writing course.": null,
+ "I enjoy camping and sleeping under the stars. I enjoy adventure, writing letters. I don't like phones.": null,
+ "I'm going on a cross-country trip and never coming back.": null,
+ "I want see my ex girl friend memory.": {
+  "question": "What do you want to see?",
+  "answer": "ex girl friend"
+ },
+ "We never going to see pacific again.": {
+  "question": "What do you watch on TV?",
+  "answer": "Pacific"
+ },
+ "I am recently divorced.": {
+  "question": "What happened recently?",
+  "answer": "divorce"
+ },
+ "I have not seen the movie Office Space. I will look into watching Office Space.": null,
+ "My parents met when they were in high school.": {
+  "question": "What grade were you in when your parents met?",
+  "answer": "high"
+ },
+ "My lease on my apartment is up soon.": {
+  "question": "What is your apartment's current lease status?",
+  "answer": "up"
+ },
+ "I'd like to work for an international non-profit.": null,
+ "I've never been scuba diving but would like to. I have a boring office job. I'm thinking about getting a new job. I'd like to work for a non-profit. I'd like to make a difference in my job.": null,
+ "I am scared of fast boats.": null,
+ "I like driving trucks and tractors are my favorite.": {
+  "question": "What do you like doing?",
+  "answer": "driving"
+ },
+ "I am interested in fishing. I have plans on Saturday. I am free on Sunday.": {
+  "question": "What day are you free?",
+  "answer": "Sunday"
+ },
+ "My father is a preacher in church.": {
+  "question": "What is your father's occupation?",
+  "answer": "preacher"
+ },
+ "I am studying early childhood development. I'm not sure if I like what I'm studying. I want to work with kids.": {
+  "question": "What do you study?",
+  "answer": "early childhood development"
+ },
+ "I have three siblings.  I go to the gym everyday.": {
+  "question": "What do you go to the gym for?",
+  "answer": "everyday"
+ },
+ "I like live music.": null
+}

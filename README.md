@@ -221,9 +221,16 @@ is true of the speaker (480 pairs, chance 0.5)?
 | NCM v2 `recall()` | 0.869 |
 | **NCM v2 `context()`** | **0.900** |
 
-NCM's retrieval alone ties vector search; the persona block in `context()` adds +0.033
-(p 0.03, borderline once corrected for two comparisons). Details in
+NCM's retrieval alone ties vector search; the persona block in `context()` adds +0.033,
+and +0.042 (p 0.005) against vector search given the same prompt size. Details in
 [docs/RESULTS.md](docs/RESULTS.md).
+
+**Character consistency:** does the AI stay consistent about *itself*? Asked 258
+questions about its own facts in character, a 3B character is right 9% of the time with
+no memory, 19% with recent turns, 42% with plain vector search and 48% with NCM
+`context()`. With the same prompt size, vector search reaches 46.5%: a tie. On the
+assistant's own earlier statements (LongMemEval) NCM and vector search also tie.
+Speaking style was not measured.
 
 **Speed:** recall latency p50 on a laptop CPU, NCM's own cost (the query embedding
 adds ~21 ms on CPU).
@@ -325,6 +332,10 @@ python -m bench.speed && python -m bench.plots
   orders memories so the reader can tell which statement is newer.
 - More context is not better for small models: with a 3B reader, fewer and better
   memories beat more of them.
+- NCM helps a character remember itself far better than no memory, but no better than
+  plain vector search at the same prompt size, and a 3B character still invents an
+  answer about half the time instead of saying it does not remember. Speaking style and
+  "voice" have not been measured.
 
 ## License and history
 
