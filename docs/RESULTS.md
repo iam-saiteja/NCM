@@ -112,6 +112,12 @@ backward lift helps with bge too (LongMemEval R@5 +0.016, MRR +0.027).
 
 ## 2. End-to-end: do the answers get better?
 
+> Runtime note, found after these runs: the Ollama install they used had
+> `OLLAMA_KV_CACHE_TYPE=q4_0`. A 4-bit KV cache corrupts qwen2.5-3B's output (doubled
+> syllables in ~5% of answers, broken JSON), which lowers every arm's F1. The clean,
+> larger head-to-head in [comparisons/](../comparisons/README.md) supersedes the absolute
+> numbers below; the ordering v1 < plain vector search < NCM v2 holds there as well.
+
 A local model reads each arm's memories and answers; nothing else differs between
 arms. Reader: qwen2.5:3b (Q4, Ollama, temperature 0). Metric: SQuAD-style token F1
 against the gold answer, the LoCoMo paper's metric. Every arm shows 10 memories,
