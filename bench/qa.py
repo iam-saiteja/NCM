@@ -49,7 +49,7 @@ SYSTEM = {
 CLIP = {"locomo": None, "longmemeval": 400}
 
 
-def ask_raw(system, prompt, model, num_predict=40, url="http://localhost:11434/api/chat"):
+def ask_raw(system, prompt, model, num_predict=40, url="http://127.0.0.1:11434/api/chat"):
     body = {"model": model, "stream": False, "messages": [
         {"role": "system", "content": system}, {"role": "user", "content": prompt}],
         "options": {"temperature": 0, "seed": 0, "num_ctx": 8192, "num_predict": num_predict}}

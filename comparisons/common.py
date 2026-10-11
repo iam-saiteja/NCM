@@ -12,7 +12,7 @@ from bench.data import load_locomo, load_longmemeval   # noqa: E402
 HERE = os.path.dirname(os.path.abspath(__file__))
 RESULTS = os.path.join(HERE, "results")
 CACHE = os.path.join(HERE, "..", "bench", ".cache", "comparisons")
-OLLAMA = os.environ.get("OLLAMA_URL", "http://localhost:11434")
+OLLAMA = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")   # not "localhost": on Windows it tries IPv6 first and waits ~2 s per request
 READER = os.environ.get("NCM_READER", "qwen2.5:3b")
 
 # End-to-end subset: the two shortest LoCoMo conversations, so full-context fits a 3B

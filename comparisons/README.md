@@ -22,21 +22,25 @@ with its 95% bootstrap interval (positive = better than NCM context()).
 
 | system | answer F1 | vs NCM context() | write cost per memory | LLM calls to write 788 turns | fetch context (p50) | prompt to reader (≈tokens) | reader time (p50) | storage | needs | effort |
 |---|---|---|---|---|---|---|---|---|---|---|
-| NCM v2 + reranker (accuracy mode) | **0.436** | +0.030 [-0.010, +0.071] | 5.2 ms | 0 | 187 ms | 507 | 2.58 s | 784 KB | + 22M reranker | low: one flag |
-| NCM v2 · recall() | **0.417** | +0.011 [-0.026, +0.048] | 5.5 ms | 0 | 8 ms | 473 | 2.55 s | 784 KB | numpy + embedding model, one file | low: pip install, 3 lines |
-| NCM v2 · context() | **0.406** |  | 5.3 ms | 0 | 7 ms | 490 | 2.57 s | 784 KB | numpy + embedding model, one file | low: pip install, 3 lines |
-| vector RAG · bge-base (110M) | **0.395** | -0.011 [-0.056, +0.034] | 20.8 ms | 0 | 33 ms | 429 | 2.51 s | 2.3 MB | bigger embedding model + vector DB | low |
-| retrieve & rerank · MiniLM → bge-reranker-base | **0.378** | -0.028 [-0.069, +0.013] | 3.6 ms | 0 | 1166 ms | 460 | 2.59 s | 1.2 MB | vector DB + 278M reranker | medium |
-| hybrid RRF · BM25 + MiniLM | **0.359** | -0.047 [-0.090, -0.004] | 4.4 ms | 0 | 8 ms | 384 | 2.53 s | 1.2 MB | search engine with hybrid mode (Elasticsearch, Weaviate, Qdrant) | medium |
-| full context (whole history in the prompt) | **0.344** | -0.062 [-0.107, -0.019] | 0.0 ms | 0 | 1 ms | 17,675 | 3.59 s | 119 KB | a long-context LLM; cost grows with history | trivial |
-| vector RAG · MiniLM-L6 (22M) | **0.337** | -0.069 [-0.116, -0.024] | 3.4 ms | 0 | 7 ms | 392 | 2.50 s | 1.2 MB | embedding model + vector DB | low |
-| Mem0 (open-source, local LLM) | **0.291** | -0.115 [-0.170, -0.060] | 4.2 s | 395 (≈3.7M tokens in) | 57 ms | 360 | 2.51 s | 5.7 MB | LLM at every write + Qdrant + SQLite | medium |
-| NCM v1 | **0.286** | -0.120 [-0.164, -0.076] | ≈7.5 ms (2 embeddings) | 0 | 0 ms | 403 | 2.53 s | - | numpy (old API) | low |
-| summary memory (LLM summary per session) | **0.280** | -0.126 [-0.178, -0.073] | 190.4 ms | 38 (≈31k tokens in) | 0 ms | 2,817 | 2.39 s | 21 KB | an LLM call per session | low |
-| sliding window (last 20 turns) | **0.072** | -0.334 [-0.384, -0.285] | 0.0 ms | 0 | 0 ms | 843 | 2.34 s | - | nothing | trivial |
-| no memory | **0.046** | -0.360 [-0.411, -0.310] | 0.0 ms | 0 | 0 ms | 18 | 2.33 s | - | nothing | - |
+| NCM v2 + reranker (accuracy mode) | **0.436** | +0.030 [-0.010, +0.071] | 5.2 ms | 0 | 187 ms | 507 | 0.30 s | 784 KB | + 22M reranker | low: one flag |
+| NCM v2 · recall() | **0.417** | +0.011 [-0.026, +0.048] | 5.5 ms | 0 | 8 ms | 473 | 0.30 s | 784 KB | numpy + embedding model, one file | low: pip install, 3 lines |
+| NCM v2 · context() | **0.406** |  | 5.3 ms | 0 | 7 ms | 490 | 0.32 s | 784 KB | numpy + embedding model, one file | low: pip install, 3 lines |
+| vector RAG · bge-base (110M) | **0.395** | -0.011 [-0.056, +0.034] | 20.8 ms | 0 | 33 ms | 429 | 0.28 s | 2.3 MB | bigger embedding model + vector DB | low |
+| retrieve & rerank · MiniLM → bge-reranker-base | **0.378** | -0.028 [-0.069, +0.013] | 3.6 ms | 0 | 1166 ms | 460 | 0.30 s | 1.2 MB | vector DB + 278M reranker | medium |
+| hybrid RRF · BM25 + MiniLM | **0.359** | -0.047 [-0.090, -0.004] | 4.4 ms | 0 | 8 ms | 384 | 0.28 s | 1.2 MB | search engine with hybrid mode (Elasticsearch, Weaviate, Qdrant) | medium |
+| full context (whole history in the prompt) | **0.344** | -0.062 [-0.107, -0.019] | 0.0 ms | 0 | 1 ms | 17,675 | 1.22 s | 119 KB | a long-context LLM; cost grows with history | trivial |
+| vector RAG · MiniLM-L6 (22M) | **0.337** | -0.069 [-0.116, -0.024] | 3.4 ms | 0 | 7 ms | 392 | 0.28 s | 1.2 MB | embedding model + vector DB | low |
+| Mem0 (open-source, local LLM) | **0.291** | -0.115 [-0.170, -0.060] | 4.2 s | 395 (≈3.7M tokens in) | 57 ms | 360 | 0.26 s | 5.7 MB | LLM at every write + Qdrant + SQLite | medium |
+| NCM v1 | **0.286** | -0.120 [-0.164, -0.076] | ≈7.5 ms (2 embeddings) | 0 | 0 ms | 403 | 0.29 s | - | numpy (old API) | low |
+| summary memory (LLM summary per session) | **0.280** | -0.126 [-0.178, -0.073] | 190.4 ms | 38 (≈31k tokens in) | 0 ms | 2,817 | 0.18 s | 21 KB | an LLM call per session | low |
+| sliding window (last 20 turns) | **0.072** | -0.334 [-0.384, -0.285] | 0.0 ms | 0 | 0 ms | 843 | 0.12 s | - | nothing | trivial |
+| no memory | **0.046** | -0.360 [-0.411, -0.310] | 0.0 ms | 0 | 0 ms | 18 | 0.11 s | - | nothing | - |
 
 Timings: embedding models and rerankers on a laptop CPU, LLM work on an RTX 3050 (4 GB).
+Reader time is the LLM's answer time, re-measured over `127.0.0.1` on 40 sampled
+questions per system (`retime.py`): the first recording reached Ollama at `localhost`,
+which on Windows tries IPv6 first and waited ~2.1 s per request, inflating every
+system's reader time equally without affecting any answer.
 "Storage" is what each system keeps for these two conversations: NCM's `.ncm` file (text,
 fp16 vectors, BM25 index), fp32 vectors for vector RAG, Mem0's Qdrant + SQLite folders.
 
@@ -45,7 +49,8 @@ What the table says:
 - **Memory beats no memory by a mile, and a sliding window is nearly useless** for
   questions about earlier sessions (0.072).
 - **Full context is not the ceiling for a small model.** Putting all 13-18k tokens of
-  history in the prompt scored 0.344 and cost ~36x the prompt tokens of retrieval. It
+  history in the prompt scored 0.344 and cost ~36x the prompt tokens of retrieval and
+  4x the reader time (1.2 s against 0.3 s). It
   also stops working once the history outgrows the context window: LongMemEval's
   histories (~115k tokens) cannot be run this way at all.
 - **LLM-based memory is expensive to write and was not more accurate here.** Mem0

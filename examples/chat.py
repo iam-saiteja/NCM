@@ -84,7 +84,7 @@ def main():
     ap.add_argument("--model", default=os.environ.get("OLLAMA_MODEL", "qwen2.5:3b"))
     ap.add_argument("--character", help="path to a character card JSON")
     ap.add_argument("--memory", help="memory file (default: <name>.ncm)")
-    ap.add_argument("--url", default="http://localhost:11434/api/chat")
+    ap.add_argument("--url", default="http://127.0.0.1:11434/api/chat")   # "localhost" adds ~2 s per reply on Windows
     a = ap.parse_args()
     card = json.load(open(a.character, encoding="utf-8")) if a.character else DEFAULT_CARD
     bot = Character(card, a.memory or f"{card['name'].lower()}.ncm", a.model, a.url)
