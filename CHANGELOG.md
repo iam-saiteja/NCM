@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- `accuracy/`: how often a character with NCM memory answers correctly about the user
+  (LongMemEval, 204 questions, LLM-judged, token P/R/F1 recorded, two-judge check).
+- `bench.metrics.paired_bootstrap`: p is capped at 1 (it could exceed 1 when two arms tie).
+
 ## 2.0.0 (2026-10-11)
 
 A rebuild. v1's four-channel distance ranked evidence worse than plain cosine

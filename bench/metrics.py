@@ -41,4 +41,4 @@ def paired_bootstrap(a, b, n=10000, seed=0):
     means = d[rng.integers(0, len(d), (n, len(d)))].mean(axis=1)
     p = 2 * min((means <= 0).mean(), (means >= 0).mean())
     return {"delta": float(d.mean()), "ci95": [float(np.percentile(means, 2.5)),
-            float(np.percentile(means, 97.5))], "p": float(max(p, 1.0 / n))}
+            float(np.percentile(means, 97.5))], "p": float(min(1.0, max(p, 1.0 / n)))}

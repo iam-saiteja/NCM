@@ -264,6 +264,33 @@ recent-turns window, and a better grasp of *the user* than plain vector search. 
 not make the character more consistent about *itself* than vector search with the same
 prompt size, and a small model still confabulates about half the time.
 
+## 3c. Answer accuracy about the user: how often is the character right?
+
+Full study, code and every graded answer: [accuracy/](../accuracy/README.md).
+
+LongMemEval-S, 204 questions about the user's own past conversations (~500 turns of
+history each): facts the user told it (64), facts that later changed (72), what the
+assistant itself said (56), and things the user never said (12). Answers graded by a
+Gemini Flash judge with LongMemEval's rules (two other models regraded 100 answers each:
+97-98% agreement).
+
+| memory | qwen2.5:3b | qwen2.5:7b | evidence in prompt |
+|---|---|---|---|
+| oracle: the exact conversations (ceiling) | 79.7% | 87.5% | 100% |
+| **NCM + reranker** | **79.4%** | **83.8%** | 97.9% |
+| NCM default | 76.5% | 82.8% | 94.8% |
+| plain vector search (10) | 74.5% | 81.4% | 94.3% |
+
+- With the reranker, the evidence was in the prompt for 100% of user-fact and
+  changed-fact questions; NCM + reranker equals the oracle with the 3B reader.
+- 7B with NCM + reranker: 90.6% on facts the user told it, 70.8% on facts that changed
+  (the oracle gets 76.4%: readers often report the older value).
+- NCM + reranker vs vector search: +4.9 (3B) and +2.5 (7B) points, not significant
+  (p 0.13, 0.49). A "second look" (re-ask with the two best memories when the reader says
+  it was never told) lifts the 3B to 81.4%, +6.9 over vector search (p 0.03).
+- Tried and dropped: a notes-first reader (3B 79.4% → 66.7%), listing the newest
+  conversation first (changed facts 70.8% → 35%), cutting neighbouring turns (→ 72.5%).
+
 ## 4. Affect
 
 The valence/arousal probe is a 384x2 ridge regression on MiniLM embeddings. Valence

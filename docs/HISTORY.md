@@ -103,3 +103,14 @@ well and deleting what did not. Details and every number: [RESULTS.md](RESULTS.m
 
 The old experiments, results and paper workspace remain in git history
 (`git show 9c1e851:experiments/...`).
+
+### Answer accuracy (11 October 2026, later)
+
+Asked for a character that gets facts about its user right "ninety-nine percent" of the
+time, we measured answers rather than retrieval ([accuracy/](../accuracy/README.md)).
+The memory layer reached it for the questions that matter (with the reranker, the
+evidence was in the prompt for 136 of 136 user-fact and changed-fact questions); the
+local 3B/7B readers did not (79-84% overall, 87.5% even when handed the exact
+conversations). Three ideas were tried and dropped because they lost accuracy: a
+notes-first reader prompt, cutting the turns around each hit, and listing the newest
+conversation first; `context()` keeps its oldest-first order, now with a comment saying why.

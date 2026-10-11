@@ -69,3 +69,6 @@ bench/results/rows-*.json
 
 # secrets
 .env
+
+# accuracy study: prompt contexts are rebuilt by accuracy/run.py (~13 MB)
+accuracy/results/contexts.json
