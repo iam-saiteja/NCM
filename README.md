@@ -82,19 +82,59 @@ python examples/chat.py
 
 ## How it works
 
+NCM sits between your app and your LLM. Every turn goes in once; before each
+reply, `context()` hands the model what it should remember.
+
+```mermaid
+flowchart LR
+    T(["new turn<br/>user or assistant"]) --> ADD["<b>add()</b><br/>embed once<br/>BM25-index the words<br/>affect: valence, arousal<br/>persona evidence"]
+    ADD --> STORE[("<b>memory.ncm</b><br/>one file, no pickle")]
+    M(["incoming message"]) --> CTX["<b>context()</b><br/>recall the best memories<br/>+ the turns around them"]
+    STORE --> CTX
+    CTX --> P["<b>prompt block</b><br/>who the person is<br/>their mood lately<br/>relevant memories, dated"]
+    P --> LLM["your LLM<br/>any model, any API"]
+    LLM --> R(["reply"])
+    R --> ADD
+    CTX -.->|recalled: uses + 1| STORE
+    STORE -.->|over capacity| FORGET["<b>forget</b><br/>least active 5% fade<br/>ACT-R: uses, age, salience"]
+    classDef ncm fill:#dbe9fb,stroke:#2a78d6,color:#16171a
+    classDef io fill:#f4f3ef,stroke:#9a9890,color:#16171a
+    class ADD,STORE,CTX,P,FORGET ncm
+    class T,M,LLM,R io
 ```
- add(text, speaker, time)                     recall(query) / context(query)
- ------------------------                     ------------------------------
- embed "speaker: text"  (1 model call)        embed query    (1 model call)
- BM25-index the tokens                        dense   = E @ q             \
- affect probe on the vector -> valence,       lexical = BM25(query)        } z-score, sum
-   arousal -> salience                        lift: a strong hit raises    /
- new session after 30 min of silence            the turn just before it
- exact repeat? reinforce, don't store         top-k -> add neighbouring turns,
-                                                persona, mood; date and sort
- forgetting (only when max_items is set): ACT-R activation
-   ln((uses+1)/(1-d)) - d ln(age) + salience; the least active 5% fade
+
+Inside `recall()`, ranking is about relevance only. Emotion and age never change
+what is relevant; they only decide what is kept when the store is full.
+
+```mermaid
+flowchart LR
+    Q["query"] --> E["embed<br/>MiniLM, ~20 ms CPU"]
+    E --> D["dense similarity<br/>to every memory"]
+    Q --> B["BM25<br/>names, numbers,<br/>rare words"]
+    D --> Z["z-score both<br/>dense + 0.75 x BM25"]
+    B --> Z
+    Z --> L["backward lift<br/>a strong hit raises<br/>the turn before it"]
+    L --> T30["top 30"]
+    T30 --> K["top k"]
+    T30 -.->|accuracy mode| X["cross-encoder<br/>re-scores the 30"]
+    X -.-> K
+    classDef ncm fill:#dbe9fb,stroke:#2a78d6,color:#16171a
+    classDef opt fill:#f4f3ef,stroke:#9a9890,color:#16171a,stroke-dasharray:4 3
+    class E,D,B,Z,L,T30,K ncm
+    class X opt
 ```
+
+What each memory carries:
+
+| field | from | used for |
+|---|---|---|
+| text, speaker, time, session | the turn | rendering, speaker filter, contiguity |
+| 384-d vector | the embedder, once | dense similarity, persona diversity |
+| BM25 postings | the words | keyword match |
+| valence, arousal | probe on the vector | `mood()`, salience |
+| salience | affect, or `meta={"salience": ...}` | slower forgetting |
+| persona evidence | first-person statement patterns | `persona()` |
+| uses | each recall in `context()` | slower forgetting |
 
 Every piece was kept only if it measured well. What was dropped, and why, is in
 [docs/HISTORY.md](docs/HISTORY.md).
@@ -140,13 +180,91 @@ and +0.08 on LongMemEval, for ~0.1-0.2 s per query on a laptop GPU. Any
 
 ## Results
 
-Full tables, confidence intervals and method: [docs/RESULTS.md](docs/RESULTS.md).
+Two public long-conversation benchmarks, a personalisation test, and a speed test.
+Every number comes from `bench/`; confidence intervals and method are in
+[docs/RESULTS.md](docs/RESULTS.md).
+
+**Retrieval:** how often the turn holding the answer is in the top 5 (recall@5).
+Same embeddings (MiniLM) for every row.
+
+| | LoCoMo (1,531 q) | LongMemEval-S (479 q) |
+|---|---|---|
+| NCM v1 | 0.278 | 0.497 |
+| plain vector search (cosine) | 0.360 | 0.575 |
+| BM25 keywords | 0.506 | 0.683 |
+| **NCM v2** | **0.555** | **0.735** |
+| **NCM v2 + reranker** (accuracy mode) | **0.657** | **0.812** |
 
 ![retrieval](docs/img/retrieval.png)
 
-![qa](docs/img/qa.png)
+**Answers:** a local qwen2.5:3b reads each system's memories and answers (token F1).
 
-![speed](docs/img/speed.png)
+| memories given | LoCoMo (400 q) | LongMemEval (200 q) |
+|---|---|---|
+| none | 0.043 | 0.095 |
+| NCM v1 | 0.184 | 0.217 |
+| plain vector search | 0.214 | 0.224 |
+| **NCM v2 `context()`** | **0.289** | **0.293** |
+
+**Personalisation:** after five Multi-Session Chat sessions, which of two statements
+is true of the speaker (480 pairs, chance 0.5)?
+
+| what the model is given | accuracy |
+|---|---|
+| no memory | 0.477 |
+| the last 10 turns (a sliding-window bot) | 0.504 |
+| plain vector search | 0.762 |
+| **NCM v2 `context()`** | **0.790** |
+
+**Speed:** recall latency p50 on a laptop CPU, NCM's own cost (the query embedding
+adds ~21 ms on CPU).
+
+| memories | 1,000 | 10,000 | 100,000 | 1,000,000 |
+|---|---|---|---|---|
+| NCM v1 | 0.92 ms | 5.6 ms | 49 ms | |
+| **NCM v2** | **0.56 ms** | **1.3 ms** | **11.6 ms** | 117 ms |
+
+## How v2 was built: the experiments
+
+v2 was not designed up front. Each component was proposed, measured on both
+benchmarks, and kept only if it held on both. The path:
+
+```mermaid
+flowchart TD
+    A["<b>NCM v1</b><br/>4 channels: semantic, emotion, state, recency<br/>R@5 LoCoMo 0.278, LongMemEval 0.497"] --> B["<b>plain cosine beats it</b><br/>0.360, 0.575<br/>random projection and noise channels hurt"]
+    B --> C["<b>+ BM25 fusion</b><br/>0.545, 0.728<br/>kept: the biggest single gain"]
+    C --> D["<b>symmetric contiguity spreading</b><br/>tuned on LoCoMo: +0.055<br/>held-out LongMemEval: -0.034<br/>rejected as a default"]
+    D --> E["<b>backward-only lift</b><br/>0.555, 0.735<br/>kept: helps both"]
+    E --> F["<b>cross-encoder reranker</b><br/>0.657, 0.812<br/>kept as opt-in accuracy mode"]
+    E --> G["<b>end-to-end QA, persona, speed</b><br/>answers +57% vs v1<br/>persona 79% vs 50% for a window<br/>recall 4x faster than v1"]
+    C -.-> X["<b>rejected</b><br/>recency prior, RRF fusion,<br/>session boost, session diversity,<br/>contextual turn embeddings,<br/>forward lift gated by turn length"]
+    classDef v1 fill:#fde3d7,stroke:#eb6834,color:#16171a
+    classDef kept fill:#dbe9fb,stroke:#2a78d6,color:#16171a
+    classDef no fill:#f4f3ef,stroke:#9a9890,color:#16171a
+    classDef result fill:#dff2e7,stroke:#1f7a4d,color:#16171a
+    class A,B v1
+    class C,E,F kept
+    class D,X no
+    class G result
+```
+
+| experiment | LoCoMo R@5 | LongMemEval R@5 | decision |
+|---|---|---|---|
+| BM25 fused with dense (vs dense only) | +0.19 | +0.15 | **kept** |
+| backward lift (vs none) | +0.010 | +0.007 (nDCG +0.020, MRR +0.031) | **kept** |
+| cross-encoder reranker over top 30 | +0.102 | +0.077 | **opt-in** (costs 30-230 ms) |
+| forward lift too ("dialogue mode") | +0.039 | -0.138 | opt-in for two-person transcripts |
+| bge-small instead of MiniLM | +0.010 | +0.024 | optional (1.8x encoding cost) |
+| recency prior | +0.000 | +0.003 | rejected |
+| reciprocal rank fusion instead of z-scores | -0.085 | -0.030 | rejected |
+| session-max boost | +0.035 | -0.022 | rejected |
+| session-diverse top-k | -0.015 | -0.001 | rejected |
+| contextual turn embeddings | +0.014 | -0.008 | rejected |
+| emotion and state as ranking channels (v1) | | | removed: no retrievable signal |
+| affect probe (EmoBank + GoEmotions) vs v1 tracker | valence r 0.42 -> 0.62, arousal r 0.10 -> 0.44 | | **kept** for mood and salience |
+
+The tuning protocol, ablations with confidence intervals, and the end-to-end and
+persona experiments are written up in [docs/RESULTS.md](docs/RESULTS.md).
 
 ## Reproduce
 
