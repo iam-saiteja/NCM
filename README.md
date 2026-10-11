@@ -198,6 +198,9 @@ Same embeddings (MiniLM) for every row.
 ![retrieval](docs/img/retrieval.png)
 
 **Answers:** a local qwen2.5:3b reads each system's memories and answers (token F1).
+These runs used an Ollama install with a 4-bit KV cache, which corrupts this model's
+output and lowers every score; the clean head-to-head above supersedes the absolute
+numbers, and the ordering (v1 below plain vector search below v2) holds there too.
 
 | memories given | LoCoMo (400 q) | LongMemEval (200 q) |
 |---|---|---|
@@ -223,6 +226,31 @@ adds ~21 ms on CPU).
 |---|---|---|---|---|
 | NCM v1 | 0.92 ms | 5.6 ms | 49 ms | |
 | **NCM v2** | **0.56 ms** | **1.3 ms** | **11.6 ms** | 117 ms |
+
+## How NCM compares to other memory systems
+
+Thirteen ways of giving an AI memory, run head to head on the same conversations, the
+same questions and the same local LLM (qwen2.5:3b), with what each costs. Full tables,
+code and raw outputs: [comparisons/](comparisons/README.md).
+
+| system | answer F1 | to store a memory | LLM calls to store 788 turns | to fetch context | prompt to the LLM |
+|---|---|---|---|---|---|
+| **NCM v2 + reranker** | **0.436** | 5 ms | 0 | 187 ms | ~510 tokens |
+| **NCM v2 `context()`** | **0.406** | 5 ms | 0 | 7 ms | ~490 tokens |
+| vector RAG, bge-base embedder | 0.395 | 21 ms | 0 | 33 ms | ~430 tokens |
+| vector RAG → bge-reranker-base | 0.378 | 4 ms | 0 | 1,166 ms | ~460 tokens |
+| hybrid search (BM25 + vectors, RRF) | 0.359 | 4 ms | 0 | 8 ms | ~380 tokens |
+| full history in the prompt | 0.344 | - | 0 | - | ~17,700 tokens |
+| vector RAG, MiniLM embedder | 0.337 | 3 ms | 0 | 7 ms | ~390 tokens |
+| Mem0 (open-source, local LLM) | 0.291 | 4.2 s | 395 | 57 ms | ~360 tokens |
+| summary memory (LLM per session) | 0.280 | 190 ms | 38 | 0 ms | ~2,800 tokens |
+| last 20 turns only | 0.072 | - | 0 | - | ~840 tokens |
+
+NCM is in the most accurate group at the bottom of the cost range. Its lead over a
+well-chosen vector RAG (bge-base) is within the noise on these 230 questions; its lead
+over full-history prompting, hybrid search, Mem0 on a local LLM and summary memory is
+significant. Published vendor numbers (GPT-4-class models, not comparable) are listed
+alongside in [comparisons/](comparisons/README.md#3-published-numbers-from-the-vendors-not-measured-here).
 
 ## How v2 was built: the experiments
 
