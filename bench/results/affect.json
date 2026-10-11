@@ -1,0 +1,146 @@
+{
+ "n": {
+  "emobank": {
+   "train": 8062,
+   "dev": 1000,
+   "test": 1000
+  },
+  "goemotions": {
+   "train": 36172,
+   "dev": 4547,
+   "test": 4539
+  }
+ },
+ "candidates": {
+  "emobank-only@0.3": {
+   "dev": {
+    "emobank_r_valence": 0.6360204955266666,
+    "emobank_r_arousal": 0.48656473286242546,
+    "goemotions_auc_pos_vs_neg": 0.8744607946248655,
+    "goemotions_r_valence": 0.5439734867741759,
+    "goemotions_neutral_mean_valence": -0.21553897482687182,
+    "emobank_mean_valence": -0.02175913868524526
+   },
+   "selection": 0.6238356058796076
+  },
+  "emobank-only@1.0": {
+   "dev": {
+    "emobank_r_valence": 0.6365628873624666,
+    "emobank_r_arousal": 0.48626788744251803,
+    "goemotions_auc_pos_vs_neg": 0.8752346083222317,
+    "goemotions_r_valence": 0.5456891530408771,
+    "goemotions_neutral_mean_valence": -0.2161795532161821,
+    "emobank_mean_valence": -0.020814826163183756
+   },
+   "selection": 0.6244333304831493
+  },
+  "emobank-only@3.0": {
+   "dev": {
+    "emobank_r_valence": 0.6357011710344921,
+    "emobank_r_arousal": 0.48322268222570436,
+    "goemotions_auc_pos_vs_neg": 0.8751736381031352,
+    "goemotions_r_valence": 0.5462763089957605,
+    "goemotions_neutral_mean_valence": -0.2145497352303981,
+    "emobank_mean_valence": -0.01873843292633499
+   },
+   "selection": 0.6230903764888223
+  },
+  "emobank-only@10.0": {
+   "dev": {
+    "emobank_r_valence": 0.6289853703224364,
+    "emobank_r_arousal": 0.4738723568110059,
+    "goemotions_auc_pos_vs_neg": 0.8725046667621866,
+    "goemotions_r_valence": 0.5423369295916759,
+    "goemotions_neutral_mean_valence": -0.20160532673397608,
+    "emobank_mean_valence": -0.013552138403788633
+   },
+   "selection": 0.6159556868859385
+  },
+  "emobank+goemotions@0.3": {
+   "dev": {
+    "emobank_r_valence": 0.6149209535990746,
+    "emobank_r_arousal": 0.48656473286242546,
+    "goemotions_auc_pos_vs_neg": 0.9007333701186988,
+    "goemotions_r_valence": 0.5919796751931568,
+    "goemotions_neutral_mean_valence": -0.15610350408370777,
+    "emobank_mean_valence": -0.00801645213953967
+   },
+   "selection": 0.6343174755662992
+  },
+  "emobank+goemotions@1.0": {
+   "dev": {
+    "emobank_r_valence": 0.616025310454014,
+    "emobank_r_arousal": 0.48626788744251803,
+    "goemotions_auc_pos_vs_neg": 0.9007963726784319,
+    "goemotions_r_valence": 0.5919536820656952,
+    "goemotions_neutral_mean_valence": -0.15563595139310568,
+    "emobank_mean_valence": -0.0077259217374542645
+   },
+   "selection": 0.6346286477511319
+  },
+  "emobank+goemotions@3.0": {
+   "dev": {
+    "emobank_r_valence": 0.6174506399820525,
+    "emobank_r_arousal": 0.48322268222570436,
+    "goemotions_auc_pos_vs_neg": 0.9006515684080777,
+    "goemotions_r_valence": 0.5913423157748596,
+    "goemotions_neutral_mean_valence": -0.15421929409801718,
+    "emobank_mean_valence": -0.006963990536510819
+   },
+   "selection": 0.6339921530079707
+  },
+  "emobank+goemotions@10.0": {
+   "dev": {
+    "emobank_r_valence": 0.6178124487251753,
+    "emobank_r_arousal": 0.4738723568110059,
+    "goemotions_auc_pos_vs_neg": 0.8995220950993154,
+    "goemotions_r_valence": 0.5886882068734077,
+    "goemotions_neutral_mean_valence": -0.14918281314667997,
+    "emobank_mean_valence": -0.0048430250775242335
+   },
+   "selection": 0.6302429985782706
+  }
+ },
+ "test": {
+  "emobank-only": {
+   "emobank_r_valence": 0.6231054404050043,
+   "emobank_r_arousal": 0.4376792852766323,
+   "goemotions_auc_pos_vs_neg": 0.8836300610511636,
+   "goemotions_r_valence": 0.5631244887335729,
+   "goemotions_neutral_mean_valence": -0.2380220174989379,
+   "emobank_mean_valence": 0.0157200843694922
+  },
+  "emobank+goemotions": {
+   "emobank_r_valence": 0.6205482777233876,
+   "emobank_r_arousal": 0.4376792852766323,
+   "goemotions_auc_pos_vs_neg": 0.9058347254202598,
+   "goemotions_r_valence": 0.6049357093535541,
+   "goemotions_neutral_mean_valence": -0.1696428495095636,
+   "emobank_mean_valence": 0.014576564022978323
+  },
+  "anchor-sentences": {
+   "emobank_r_valence": 0.45326342388428154,
+   "emobank_r_arousal": 0.15500809358726408,
+   "goemotions_auc_pos_vs_neg": 0.8549801707267761,
+   "goemotions_r_valence": 0.5197303466968437,
+   "goemotions_neutral_mean_valence": -0.019750302657485008,
+   "emobank_mean_valence": 0.0010102150263264775
+  }
+ },
+ "shipped": {
+  "probe": "emobank+goemotions",
+  "lambda": 1.0,
+  "test": {
+   "emobank_r_valence": 0.6205482777233876,
+   "emobank_r_arousal": 0.4376792852766323,
+   "goemotions_auc_pos_vs_neg": 0.9058347254202598,
+   "goemotions_r_valence": 0.6049357093535541,
+   "goemotions_neutral_mean_valence": -0.1696428495095636,
+   "emobank_mean_valence": 0.014576564022978323
+  },
+  "test_with_speaker_prefix": {
+   "emobank_r_valence": 0.6262628306372975,
+   "emobank_r_arousal": 0.43383611268468003
+  }
+ }
+}

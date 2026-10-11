@@ -59,3 +59,10 @@ experiments/data/MemoryAgentBench/
 experiments/python/exp19_memoryagentbench_competencies.py
 experiments/python/exp20_memoryagentbench_baseline.py
 experiments/python/exp21_multihop_reasoning.py
+
+# NCM v2 bench artefacts (embedding caches and run logs are rebuilt on demand)
+.venv/
+bench/.cache/
+bench/logs/
+*.ncm.tmp
+bench/results/rows-*.json
