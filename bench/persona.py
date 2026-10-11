@@ -94,6 +94,8 @@ def main():
     ap.add_argument("--model", default="qwen2.5:3b")
     ap.add_argument("--arms", default="none,recent,cosine-recall,ncm-recall,ncm-persona,ncm-context")
     ap.add_argument("--mode", default="choice", choices=("choice", "yesno"))
+    ap.add_argument("--run", default="", help="label stored with each answer, so a rerun (e.g. on another "
+                                               "runtime) is kept apart from earlier answers in the cache")
     a = ap.parse_args()
 
     convs = [json.loads(l) for l in open(os.path.join(DATA_DIR, "msc", "test.jsonl"), encoding="utf-8")]
@@ -127,7 +129,7 @@ def main():
     if os.path.exists(cache_path):
         for line in open(cache_path, encoding="utf-8"):
             r = json.loads(line)
-            cache[(r["arm"], r["model"], r["item"])] = r
+            cache[(r["arm"], r["model"], r["item"], r.get("run", ""))] = r
     out = open(cache_path, "a", encoding="utf-8")
     arms = a.arms.split(",")
     res = {arm: [] for arm in arms}
@@ -137,7 +139,7 @@ def main():
         query = " ".join(stmt) if a.mode == "choice" else stmt
         item = f"choice|{ci}|{sp}|{stmt[0]}|{stmt[1]}" if a.mode == "choice" else f"{ci}|{sp}|{stmt}"
         for arm in arms:
-            key = (arm, a.model, item)
+            key = (arm, a.model, item, a.run)
             if key not in cache:
                 if arm == "none":
                     ctx = ""
@@ -162,7 +164,7 @@ def main():
                 prompt = (f"{ctx}\n\n" if ctx else "") + ask
                 ans = ask_raw(SYSTEM[a.mode], prompt, a.model, num_predict=3)
                 cache[key] = {"arm": arm, "model": a.model, "item": item, "label": label,
-                              "answer": ans, "chars": len(prompt)}
+                              "answer": ans, "chars": len(prompt), "run": a.run}
                 out.write(json.dumps(cache[key]) + "\n")
                 out.flush()
             r = cache[key]
@@ -176,7 +178,7 @@ def main():
             print(f"{n}/{len(items)} {time.time()-t0:.0f}s " + " ".join(
                 f"{arm}={np.mean([x['correct'] for x in res[arm]]):.3f}" for arm in arms), flush=True)
 
-    summary = {"model": a.model, "mode": a.mode, "items": len(items), "arms": {}}
+    summary = {"model": a.model, "mode": a.mode, "run": a.run, "items": len(items), "arms": {}}
     for arm in arms:
         rows = res[arm]
         summary["arms"][arm] = {"accuracy": float(np.mean([r["correct"] for r in rows])),
@@ -188,7 +190,7 @@ def main():
         if arm != "recent" and "recent" in res:
             summary["arms"][arm]["vs_recent"] = paired_bootstrap(
                 [r["correct"] for r in res["recent"]], [r["correct"] for r in rows])
-    path = os.path.join(RES, f"persona-{a.mode}-msc-{a.model.replace(':', '_')}.json")
+    path = os.path.join(RES, f"persona-{a.mode}{'-' + a.run if a.run else ''}-msc-{a.model.replace(':', '_')}.json")
     json.dump(summary, open(path, "w"), indent=1)
     print(json.dumps({k: v["accuracy"] for k, v in summary["arms"].items()}, indent=1))
 

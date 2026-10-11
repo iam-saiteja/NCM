@@ -1,0 +1,70 @@
+{
+ "n_sentences": 320,
+ "examples": [
+  "I was thrilled about my wedding.",
+  "I was thrilled about my birthday party.",
+  "I felt sick about the final exam.",
+  "I felt sick about the flood damage."
+ ],
+ "probe": {
+  "cells": {
+   "feeling + / topic +": {
+    "n": 80,
+    "mean_score": 0.965214729309082,
+    "sign_matches_feeling": 1.0
+   },
+   "feeling + / topic -": {
+    "n": 80,
+    "mean_score": 0.3391282558441162,
+    "sign_matches_feeling": 0.8375
+   },
+   "feeling - / topic +": {
+    "n": 80,
+    "mean_score": -0.4547964930534363,
+    "sign_matches_feeling": 0.9375
+   },
+   "feeling - / topic -": {
+    "n": 80,
+    "mean_score": -0.9395338296890259,
+    "sign_matches_feeling": 1.0
+   }
+  },
+  "sign_accuracy_when_feeling_and_topic_agree": 1.0,
+  "sign_accuracy_when_they_conflict": 0.8875,
+  "effect_of_feeling": 0.864323801430875,
+  "effect_of_topic": 0.35577164173591885
+ },
+ "sst2_distilbert": {
+  "cells": {
+   "feeling + / topic +": {
+    "n": 80,
+    "mean_score": 0.999746560305357,
+    "sign_matches_feeling": 1.0
+   },
+   "feeling + / topic -": {
+    "n": 80,
+    "mean_score": 0.9969622753560543,
+    "sign_matches_feeling": 1.0
+   },
+   "feeling - / topic +": {
+    "n": 80,
+    "mean_score": -0.99866703748703,
+    "sign_matches_feeling": 1.0
+   },
+   "feeling - / topic -": {
+    "n": 80,
+    "mean_score": -0.9989265494048596,
+    "sign_matches_feeling": 1.0
+   }
+  },
+  "sign_accuracy_when_feeling_and_topic_agree": 1.0,
+  "sign_accuracy_when_they_conflict": 1.0,
+  "effect_of_feeling": 0.9999856812486831,
+  "effect_of_topic": 0.0007620237432633958
+ },
+ "shipped_probe_on_test_splits": {
+  "emobank_r_valence": 0.6205482797425788,
+  "emobank_r_arousal": 0.4376792832177137,
+  "goemotions_auc_pos_vs_neg": 0.9058347344398499
+ }
+}

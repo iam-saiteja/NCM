@@ -184,6 +184,27 @@ ranking is level with plain vector search (`context()` vs cosine +0.027
 retrieval advantage shows on the conversation benchmarks above. The query-free `persona()` block,
 six lines that are always in the prompt, already recovers part of that (0.62).
 
+**Re-run on a clean runtime.** The runs above used an Ollama install with a 4-bit KV
+cache that corrupts this model's output. Re-run with a full-precision cache (`--run f16`,
+same 480 pairs):
+
+| what the model is given | accuracy | vs last-10-turns window |
+|---|---|---|
+| no memory | 0.529 | |
+| the last 10 turns | 0.588 | |
+| NCM `persona()` only | 0.656 | +0.069 [0.021, 0.117] |
+| plain vector search | 0.867 | +0.279 [0.233, 0.325] |
+| NCM `recall()` | 0.869 | +0.281 [0.235, 0.327] |
+| **NCM `context()`** | **0.900** | **+0.312** [0.267, 0.358] |
+
+Every arm scores higher, and one conclusion changes. NCM's retrieval alone still ties
+plain vector search (`recall()` +0.002 [-0.023, +0.027], McNemar p 1.0). But `context()`,
+which adds the persona block, beats vector search by +0.033 [+0.004, +0.062] (bootstrap
+p 0.029, exact McNemar p 0.036: 34 pairs only NCM got right, 18 only vector search).
+Two NCM arms were compared with vector search, so after a Holm correction the evidence
+is borderline (p about 0.06): suggestive, not conclusive. Results:
+`bench/results/persona-choice-f16-msc-qwen2.5_3b.json`.
+
 An earlier yes/no version of this test ("is this statement true of them?") was
 uninformative: the 3B model answered "no" to 94-100% of statements in every arm, so
 accuracy sat at chance. Its true-positive rates still ordered the arms the same way
@@ -209,9 +230,25 @@ Embedding with the store's "user: " prefix changes EmoBank r by under 0.01
 (0.626 / 0.434). Zero means "emotionally average": the shipped probe puts average
 EmoBank text at +0.01 and neutral Reddit comments at -0.17, inside the +-0.4 band
 that `mood()` labels neutral.
-v1's arousal dimension was essentially noise. The probe reads tone but topic words
-can fool it: on the v1 sample files, "I feel overwhelmed trying to memorize dozens of
-formulas" scores slightly positive. Treat `mood()` as a soft, relative signal. Affect is not used for ranking:
+v1's arousal dimension was essentially noise.
+
+**Does it read the feeling or the topic?** A controlled test (`bench/affect_topic.py`):
+320 sentences crossing a feeling with a topic, such as "I was thrilled about the
+funeral" or "I was miserable about my wedding". A dedicated sentiment classifier
+(DistilBERT fine-tuned on SST-2, 66M parameters) is the reference.
+
+| | NCM probe | DistilBERT SST-2 |
+|---|---|---|
+| sign right when feeling and topic agree | 100% | 100% |
+| sign right when they conflict | 88.8% | 100% |
+| standardised weight of the feeling | 0.86 | 1.00 |
+| standardised weight of the topic | 0.36 | 0.00 |
+
+The probe follows the feeling, but about a third of its signal comes from topic words,
+so roughly one conflicting sentence in nine gets the wrong sign ("thrilled about the
+funeral" scores +0.34 against +0.97 for "thrilled about my wedding"). A dedicated
+classifier would fix that at the cost of a 66M-parameter model run per memory; the probe
+reuses the embedding NCM already has. Treat `mood()` as a soft, relative signal. Affect is not used for ranking:
 Phase 2 showed it carries no retrievable signal (see HISTORY.md). It sets
 salience, so emotional memories survive capacity eviction longer, and feeds `mood()`.
 

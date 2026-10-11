@@ -37,8 +37,9 @@ Relevant memories (oldest first):
   F1 **0.289** from NCM's memories, against **0.214** from vector
   search and **0.184** from NCM v1.
 - **Gives a character a person to remember.** Asked which of two statements is true
-  of someone after five sessions, a 3B model is right 79% of the time with NCM's
-  `context()` and 50% (chance) with the last 10 turns a sliding-window bot keeps.
+  of someone after five sessions, a 3B model is right 90% of the time with NCM's
+  `context()`, 87% with plain vector search and 59% with the last 10 turns a
+  sliding-window bot keeps.
   `persona()` distils who the user is from their own statements, `mood()` tracks the
   emotional tone, and emotional memories fade more slowly (ACT-R activation plus salience).
 - **Small and fast.** Pure numpy at query time, no LLM calls inside the memory.
@@ -214,10 +215,15 @@ is true of the speaker (480 pairs, chance 0.5)?
 
 | what the model is given | accuracy |
 |---|---|
-| no memory | 0.477 |
-| the last 10 turns (a sliding-window bot) | 0.504 |
-| plain vector search | 0.762 |
-| **NCM v2 `context()`** | **0.790** |
+| no memory | 0.529 |
+| the last 10 turns (a sliding-window bot) | 0.588 |
+| plain vector search | 0.867 |
+| NCM v2 `recall()` | 0.869 |
+| **NCM v2 `context()`** | **0.900** |
+
+NCM's retrieval alone ties vector search; the persona block in `context()` adds +0.033
+(p 0.03, borderline once corrected for two comparisons). Details in
+[docs/RESULTS.md](docs/RESULTS.md).
 
 **Speed:** recall latency p50 on a laptop CPU, NCM's own cost (the query embedding
 adds ~21 ms on CPU).
@@ -264,7 +270,7 @@ flowchart TD
     C --> D["<b>symmetric contiguity spreading</b><br/>tuned on LoCoMo: +0.055<br/>held-out LongMemEval: -0.034<br/>rejected as a default"]
     D --> E["<b>backward-only lift</b><br/>0.555, 0.735<br/>kept: helps both"]
     E --> F["<b>cross-encoder reranker</b><br/>0.657, 0.812<br/>kept as opt-in accuracy mode"]
-    E --> G["<b>end-to-end QA, persona, speed</b><br/>answers +57% vs v1<br/>persona 79% vs 50% for a window<br/>recall 4x faster than v1"]
+    E --> G["<b>end-to-end QA, persona, speed</b><br/>answers +57% vs v1<br/>persona 90% vs 59% for a window<br/>recall 4x faster than v1"]
     C -.-> X["<b>rejected</b><br/>recency prior, RRF fusion,<br/>session boost, session diversity,<br/>contextual turn embeddings,<br/>forward lift gated by turn length"]
     classDef v1 fill:#fde3d7,stroke:#eb6834,color:#16171a
     classDef kept fill:#dbe9fb,stroke:#2a78d6,color:#16171a
@@ -312,8 +318,9 @@ python -m bench.speed && python -m bench.plots
 
 - Benchmarks are English, and the persona and question detectors are English regexes.
 - The affect probe reads valence well (r 0.62 against human ratings, AUC 0.91 on
-  Reddit comments) and arousal moderately (r 0.44). Topic words can fool it, so
-  treat `mood()` as a soft, relative signal.
+  Reddit comments) and arousal moderately (r 0.44). Topic words pull it: when the
+  feeling and the topic disagree ("thrilled about the funeral"), it gets the sign wrong
+  about one time in nine. Treat `mood()` as a soft, relative signal.
 - Contradictions are not resolved inside the memory: `context()` dates (in UTC) and
   orders memories so the reader can tell which statement is newer.
 - More context is not better for small models: with a 3B reader, fewer and better
