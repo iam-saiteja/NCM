@@ -1,3 +1,4 @@
+import json
 import os
 import threading
 import zlib
@@ -179,6 +180,44 @@ def test_capacity_eviction_is_batched_and_index_stays_consistent():
     assert last.text == "note 99 about topic99"
     gone = [i for i in range(100) if f"note {i} about topic{i}" not in m.texts]
     assert gone and max(gone) < 60                 # the oldest unused ones faded
+
+
+DAY = 86400.0
+
+
+def test_forgetting_ages_from_the_newest_memory_not_the_wall_clock():
+    # an imported history from 2001: measured from today every memory is ~25 years old and
+    # the once-recalled old note would outlive the newer one
+    m = mem(max_items=2)
+    old = m.add("note alpha", time=1e9, meta={"salience": 0.0})
+    newer = m.add("note beta", time=1e9 + 299 * DAY, meta={"salience": 0.0})
+    m.recall("note alpha", k=1, reinforce=True)
+    m.add("note gamma", time=1e9 + 300 * DAY, meta={"salience": 0.0})
+    assert old not in m.ids and newer in m.ids
+
+
+def test_self_reference_keeps_what_people_say_about_themselves():
+    def run(**cfg):
+        m = mem(max_items=4, **cfg)
+        m.add("I work as a nurse in Boston", time=0, meta={"salience": 0.0})
+        for i in range(4):
+            m.add(f"the weather report for day {i}", time=(i + 1) * DAY, meta={"salience": 0.0})
+        return "I work as a nurse in Boston" in m.texts
+    assert not run(self_weight=0.0) and run() and run(self_weight=3.0)
+
+
+def test_load_ignores_settings_from_a_newer_version(tmp_path):
+    p = str(tmp_path / "m.ncm")
+    m = Memory(p, embedder=bow)
+    m.add("I live in Paris", time=1)
+    m.save()
+    with np.load(p) as z:
+        arrays = {k: z[k] for k in z.files}
+    meta = json.loads(zlib.decompress(arrays["meta"].tobytes()))
+    meta["config"]["a_future_setting"] = 1
+    arrays["meta"] = np.frombuffer(zlib.compress(json.dumps(meta).encode()), np.uint8)
+    np.savez(p, **arrays)
+    assert Memory(p, embedder=bow).texts == ["I live in Paris"]
 
 
 def test_forget_many_then_bm25_rebuild():

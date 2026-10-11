@@ -175,9 +175,10 @@ and +0.08 on LongMemEval, for ~0.1-0.2 s per query on a laptop GPU. Any
 | `lift_next` | 0.0 | a hit lifts the turns after it; 0.75 helps dialogue between two people (LoCoMo), hurts assistant chat (LongMemEval) |
 | `lift_width` | 1.0 | how far the lift reaches, in turns |
 | `session_gap` | 1800 | seconds of silence that start a new session |
-| `max_items` | 0 | capacity; 0 = unlimited |
+| `max_items` | 0 | capacity; 0 = unlimited. When full, the least active 5% fade |
 | `rerank_top` | 30 | with a reranker: how many first-stage hits it re-scores |
 | `decay` | 0.5 | ACT-R decay for forgetting |
+| `self_weight` | 0.5 | when forgetting: what people say about themselves is harder to forget |
 
 ## Results
 
@@ -239,6 +240,12 @@ every user-fact and changed-fact question. The answers are right 79.4% of the ti
 `qwen2.5:3b` and 83.8% with `qwen2.5:7b` (90.6% on facts the user told it), against a
 ceiling of 79.7% / 87.5% when the reader is handed the exact conversations. The reader,
 not the memory, is now the limit. Details: [accuracy/](accuracy/README.md).
+
+**When memory is limited:** with `max_items` set to a quarter of each LongMemEval history,
+2.1 keeps the answer in the prompt for 53% of questions (2.0: 42%) and a 3B reader answers
+43.1% correctly (2.0: 30.9%, p = 0.002); facts that changed go from 32% to 63%. At half
+the history the two tie. What it borrows from memory research, and what did not work:
+[docs/BRAIN.md](docs/BRAIN.md).
 
 **Speed:** recall latency p50 on a laptop CPU, NCM's own cost (the query embedding
 adds ~21 ms on CPU).
@@ -312,6 +319,8 @@ flowchart TD
 | emotion and state as ranking channels (v1) | | | removed: no retrievable signal |
 | affect probe (EmoBank + GoEmotions) vs v1 tracker | valence r 0.42 -> 0.62, arousal r 0.10 -> 0.44 | | **kept** for mood and salience |
 | newest conversation first in `context()` (answer accuracy, LongMemEval) | | changed facts 70.8% -> 35% | rejected: oldest first stays |
+| forgetting: self-reference, age from the newest memory (25% of memory kept) | | answer in prompt 42% -> 53%, correct 31% -> 43% | **kept** (2.1) |
+| forgetting: gist, spill-over, speaker quotas, change detection | | no gain over the above, or worse | rejected ([docs/BRAIN.md](docs/BRAIN.md)) |
 
 The tuning protocol, ablations with confidence intervals, and the end-to-end and
 persona experiments are written up in [docs/RESULTS.md](docs/RESULTS.md).
@@ -329,6 +338,7 @@ python -m bench.qa                                # needs Ollama + qwen2.5:3b
 python -m bench.persona
 python -m bench.speed && python -m bench.plots
 python -m accuracy.run                            # answer accuracy; Ollama + a Gemini key for the judge
+python -m accuracy.bounded                        # what forgetting keeps when memory is limited
 ```
 
 ## Limits

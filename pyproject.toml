@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ncm"
-version = "2.0.0"
+version = "2.1.0"
 description = "Native Cognitive Memory: fast, small, human-like long-term memory for conversational AI"
 readme = "README.md"
 requires-python = ">=3.9"

@@ -291,6 +291,23 @@ Gemini Flash judge with LongMemEval's rules (two other models regraded 100 answe
 - Tried and dropped: a notes-first reader (3B 79.4% → 66.7%), listing the newest
   conversation first (changed facts 70.8% → 35%), cutting neighbouring turns (→ 72.5%).
 
+## 3d. When memory is limited: what does forgetting keep?
+
+Full study: [accuracy/README.md](../accuracy/README.md#when-the-character-cannot-keep-everything);
+design and rejected ideas: [BRAIN.md](BRAIN.md). Each LongMemEval history (~500 turns) is
+replayed into a store capped at 25% or 50% of its size.
+
+| forgetting | answer in prompt, 25% / 50% kept | qwen2.5:3b correct, 25% / 50% kept |
+|---|---|---|
+| 2.0 | 42.0% / 66.3% | 30.9% / 59.3% |
+| 2.1: age from the newest memory + self-reference 0.5 | 52.7% / 70.4% | **43.1%** / 58.8% |
+
+2.1 against 2.0 at 25%: 44 questions better, 19 worse (exact McNemar p = 0.002);
+facts that changed 31.9% -> 62.5%. At 50% they tie (30 / 31). Tested and not built:
+gist before forgetting (it equalled simply keeping 25% more memories), spill-over from
+emotional neighbours (no effect), per-speaker quotas (a trade), change detection at
+write time (too noisy without an LLM), suppressing older look-alike statements (worse).
+
 ## 4. Affect
 
 The valence/arousal probe is a 384x2 ridge regression on MiniLM embeddings. Valence

@@ -47,6 +47,11 @@ class Config:
     max_items: int = 0               # 0 = unlimited; when full, the least active 5% fade
     rerank_top: int = 30             # with a reranker: how many first-stage hits it re-scores
     decay: float = 0.5               # ACT-R base-level decay d
+    # Self-reference, for forgetting only: what people say about themselves is what they
+    # later ask about, so it is harder to forget. Measured with accuracy/bounded.py: with a
+    # quarter of each history kept, the answer reaches the prompt for 53% of questions
+    # (v2.0: 42%).
+    self_weight: float = 0.5
 
 
 @dataclass
@@ -265,11 +270,13 @@ class Memory:
     # ------------------------------------------------------------ forgetting
     def activation(self, now: float = None) -> np.ndarray:
         """ACT-R base-level activation per memory: ln((uses+1)/(1-d)) - d*ln(age), plus
-        emotional salience. High = easy to keep. Decides forgetting, not ranking."""
+        emotional salience, plus self-reference (Config.self_weight times how much the
+        memory says about its speaker). High = easy to keep. Decides forgetting, not ranking."""
         now = _time.time() if now is None else now
-        d = self.config.decay
+        c = self.config
         age_days = np.maximum((now - self._times) / 86400.0, 1.0 / 1440)
-        return np.log((self._uses + 1) / (1 - d)) - d * np.log(age_days) + self._salience
+        return (np.log((self._uses + 1) / (1 - c.decay)) - c.decay * np.log(age_days)
+                + self._salience + c.self_weight * self._evidence)
 
     def mood(self, speaker: str = None, last: int = 20, half_life: float = 5.0) -> dict:
         """Emotional tone of the most recent statements (optionally of one speaker),
@@ -277,7 +284,8 @@ class Memory:
         Questions and one-word turns are skipped: asking about feelings is not feeling."""
         with self._lock:
             rows = self.rows_of(speaker)
-            rows = rows[self._col("stmt_words")[rows] >= 3][-last:]   # skip questions and "hi"
+            rows = rows[self._col("stmt_words")[rows] >= 3]           # skip questions and "hi"
+            rows = rows[np.argsort(self._times[rows], kind="stable")][-last:]   # imports may be out of order
             if not len(rows):
                 return {"valence": 0.0, "arousal": 0.0, "label": "neutral"}
             w = 0.5 ** (np.arange(len(rows))[::-1] / half_life)
@@ -289,7 +297,8 @@ class Memory:
         cap = self.config.max_items
         if cap and len(self) > cap:
             drop = len(self) - (cap - cap // 20)   # batch it: one compaction per 5% of capacity
-            order = np.argsort(self.activation(), kind="stable")[:drop]
+            # age is measured from the newest memory: the wall clock is wrong for imported histories
+            order = np.argsort(self.activation(now=float(self._times.max())), kind="stable")[:drop]
             self.forget([self.ids[r] for r in order])
 
     def forget(self, ids) -> None:
@@ -465,7 +474,8 @@ class Memory:
             emb = np.array(z["emb"], dtype=np.float32)
             bm = [z[k] for k in ("bm25_indptr", "bm25_docs", "bm25_tfs", "bm25_len")]
         if self.config == Config():
-            self.config = Config(**meta["config"])
+            known = Config.__dataclass_fields__     # a newer file may carry settings this version lacks
+            self.config = Config(**{k: v for k, v in meta["config"].items() if k in known})
         self.ids, self.texts = meta["ids"], meta["texts"]
         self.speakers, self.metas = meta["speakers"], meta["metas"]
         self._next_id, self._session = meta["next_id"], meta["session"]

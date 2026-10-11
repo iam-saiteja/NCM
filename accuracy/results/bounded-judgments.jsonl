@@ -1,0 +1,816 @@
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "e47becba", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "118b2229", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "51a45a95", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "58bf7951", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "1e043500", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "c5e8278d", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "6ade9755", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "6f9b354f", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "58ef2f1c", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "f8c5f88b", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "5d3d2817", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "7527f7e2", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "c960da58", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "3b6f954b", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "726462e0", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "94f70d80", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "66f24dbb", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "ad7109d1", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "af8d2e46", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "dccbc061", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "c8c3f81d", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "8ebdbe50", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "6b168ec8", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "75499fd8", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "21436231", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "95bcc1c8", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "0862e8bf", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "853b0a1d", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "a06e4cfe", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "37d43f65", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "b86304ba", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "d52b4f67", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "25e5aa4f", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "caf9ead2", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "8550ddae", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "60d45044", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "3f1e9474", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "86b68151", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "577d4d32", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "ec81a493", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "15745da0", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "e01b8e2f", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "bc8a6e93", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "ccb36322", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "001be529", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "b320f3f8", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "19b5f2b3", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "4fd1909e", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "545bd2b5", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "8a137a7f", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "76d63226", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "86f00804", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "8e9d538c", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "311778f1", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "c19f7a0b", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "4100d0a0", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "29f2956b", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "1faac195", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "faba32e5", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "f4f1d8a4", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "c14c00dd", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "36580ce8", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "3d86fd0a", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "a82c026e", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "0862e8bf_abs", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "15745da0_abs", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "bc8a6e93_abs", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "19b5f2b3_abs", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "29f2956b_abs", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "f4f1d8a4_abs", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "6a1eabeb", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "6aeb4375", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "830ce83f", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "852ce960", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "945e3d21", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "d7c942c3", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "71315a70", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "89941a93", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "ce6d2d27", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "9ea5eabc", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "07741c44", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "a1eacc2a", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "184da446", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "031748ae", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "4d6b87c8", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "0f05491a", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "08e075c7", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "f9e8c073", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "41698283", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "2698e78f", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "b6019101", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "45dc21b6", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "5a4f22c0", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "6071bd76", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "e493bb7c", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "618f13b2", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "72e3ee87", "correct": false, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "c4ea545c", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "01493427", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "6a27ffc2", "correct": true, "judge": "gemini-2.5-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "2133c1b5", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "18bc8abd", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "db467c8c", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "7a87bd0c", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "e61a7584", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "1cea1afa", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "ed4ddc30", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "8fb83627", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "b01defab", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "22d2cb42", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "0e4e4c46", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "4b24c848", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "7e974930", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "603deb26", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "59524333", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "5831f84d", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "eace081b", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "affe2881", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "50635ada", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "e66b632c", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "0ddfec37", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "f685340e", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "cc5ded98", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "dfde3500", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "69fee5aa", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "7401057b", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "cf22b7bf", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "a2f3aa27", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "c7dc5443", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "06db6396", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "3ba21379", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "9bbe84a2", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "10e09553", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "dad224aa", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "ba61f0b9", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "42ec0761", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "5c40ec5b", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "c6853660", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "26bdc477", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "0977f2af", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "6aeb4375_abs", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "031748ae_abs", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "2698e78f_abs", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "2133c1b5_abs", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "0ddfec37_abs", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "f685340e_abs", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "89941a94", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "07741c45", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "7161e7e2", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "c4f10528", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "89527b6b", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "e9327a54", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "4c36ccef", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "6ae235be", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "7e00a6cb", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "1903aded", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "ceb54acb", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "f523d9fe", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "0e5e2d1a", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "fea54f57", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "cc539528", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "dc439ea3", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "18dcd5a5", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "488d3006", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "58470ed2", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "8cf51dda", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "1d4da289", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "8464fc84", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "8aef76bc", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "71a3fd6b", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "2bf43736", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "70b3e69b", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "8752c811", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "3249768e", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "1b9b7252", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "1568498a", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "6222b6eb", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "e8a79c70", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "d596882b", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "e3fc4d6e", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "51b23612", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "3e321797", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "e982271f", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "352ab8bd", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "fca762bc", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "7a8d0b71", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "a40e080f", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "8b9d4367", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "5809eb10", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "41275add", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "4388e9dd", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "4baee567", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "561fabcd", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "b759caee", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "ac031881", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "28bcfaac", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "16c90bf4", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "c8f1aeed", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "eaca4986", "correct": true, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "c7cf7dfd", "correct": false, "judge": "gemini-3.7-flash"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "e48988bc", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "1de5cff2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "65240037", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 25%", "id": "778164c6", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "e47becba", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "118b2229", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "51a45a95", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "58bf7951", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "1e043500", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "c5e8278d", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "6ade9755", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "6f9b354f", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "58ef2f1c", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "f8c5f88b", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "5d3d2817", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "7527f7e2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "c960da58", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "3b6f954b", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "726462e0", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "94f70d80", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "66f24dbb", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "ad7109d1", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "af8d2e46", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "dccbc061", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "c8c3f81d", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "8ebdbe50", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "6b168ec8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "75499fd8", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "21436231", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "95bcc1c8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "0862e8bf", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "853b0a1d", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "a06e4cfe", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "37d43f65", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "b86304ba", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "d52b4f67", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "25e5aa4f", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "caf9ead2", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "8550ddae", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "60d45044", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "3f1e9474", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "86b68151", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "577d4d32", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "ec81a493", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "15745da0", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "e01b8e2f", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "bc8a6e93", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "ccb36322", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "001be529", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "b320f3f8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "19b5f2b3", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "e47becba", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "118b2229", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "51a45a95", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "58bf7951", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "1e043500", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "c5e8278d", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "6ade9755", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "6f9b354f", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "58ef2f1c", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "f8c5f88b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "5d3d2817", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "7527f7e2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "c960da58", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "3b6f954b", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "726462e0", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "94f70d80", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "66f24dbb", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "ad7109d1", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "af8d2e46", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "dccbc061", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "c8c3f81d", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "8ebdbe50", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "6b168ec8", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "75499fd8", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "21436231", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "95bcc1c8", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "0862e8bf", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "853b0a1d", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "a06e4cfe", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "37d43f65", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "b86304ba", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "d52b4f67", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "25e5aa4f", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "caf9ead2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "8550ddae", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "60d45044", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "3f1e9474", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "86b68151", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "577d4d32", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "ec81a493", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "15745da0", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "e01b8e2f", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "bc8a6e93", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "ccb36322", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "001be529", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "b320f3f8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "19b5f2b3", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "4fd1909e", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "545bd2b5", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "8a137a7f", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "76d63226", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "86f00804", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "8e9d538c", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "311778f1", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "c19f7a0b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "4100d0a0", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "29f2956b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "1faac195", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "faba32e5", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "f4f1d8a4", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "c14c00dd", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "36580ce8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "3d86fd0a", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "a82c026e", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "0862e8bf_abs", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "15745da0_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "bc8a6e93_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "19b5f2b3_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "29f2956b_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "f4f1d8a4_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "6a1eabeb", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "6aeb4375", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "830ce83f", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "852ce960", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "945e3d21", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "d7c942c3", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "71315a70", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "89941a93", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "ce6d2d27", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "9ea5eabc", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "07741c44", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "a1eacc2a", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "184da446", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "031748ae", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "4d6b87c8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "0f05491a", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "08e075c7", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "f9e8c073", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "41698283", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "2698e78f", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "b6019101", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "45dc21b6", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "5a4f22c0", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "6071bd76", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "e493bb7c", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "618f13b2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "72e3ee87", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "c4ea545c", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "01493427", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "6a27ffc2", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "2133c1b5", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "18bc8abd", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "db467c8c", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "7a87bd0c", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "e61a7584", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "1cea1afa", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "ed4ddc30", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "8fb83627", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "b01defab", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "22d2cb42", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "0e4e4c46", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "4b24c848", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "7e974930", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "603deb26", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "59524333", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "5831f84d", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "eace081b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "affe2881", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "50635ada", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "e66b632c", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "0ddfec37", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "f685340e", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "cc5ded98", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "dfde3500", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "69fee5aa", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "7401057b", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "cf22b7bf", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "a2f3aa27", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "c7dc5443", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "06db6396", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "3ba21379", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "9bbe84a2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "10e09553", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "dad224aa", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "ba61f0b9", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "42ec0761", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "5c40ec5b", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "c6853660", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "26bdc477", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "0977f2af", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "6aeb4375_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "031748ae_abs", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "2698e78f_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "2133c1b5_abs", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "0ddfec37_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "f685340e_abs", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "89941a94", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "07741c45", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "7161e7e2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "c4f10528", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "89527b6b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "e9327a54", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "4c36ccef", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "6ae235be", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "7e00a6cb", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "1903aded", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "ceb54acb", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "f523d9fe", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "0e5e2d1a", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "fea54f57", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "cc539528", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "dc439ea3", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "18dcd5a5", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "488d3006", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "58470ed2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "8cf51dda", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "1d4da289", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "8464fc84", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "8aef76bc", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "71a3fd6b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "2bf43736", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "70b3e69b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "8752c811", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "3249768e", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "1b9b7252", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "1568498a", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "6222b6eb", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "e8a79c70", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "d596882b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "e3fc4d6e", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "51b23612", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "3e321797", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "e982271f", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "352ab8bd", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "fca762bc", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "7a8d0b71", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "a40e080f", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "8b9d4367", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "5809eb10", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "41275add", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "4388e9dd", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "4baee567", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "561fabcd", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "b759caee", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "ac031881", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "28bcfaac", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "16c90bf4", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "c8f1aeed", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "eaca4986", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "c7cf7dfd", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "e48988bc", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "1de5cff2", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "65240037", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 25%", "id": "778164c6", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "4fd1909e", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "545bd2b5", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "8a137a7f", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "76d63226", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "86f00804", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "8e9d538c", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "311778f1", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "c19f7a0b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "4100d0a0", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "29f2956b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "1faac195", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "faba32e5", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "f4f1d8a4", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "c14c00dd", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "36580ce8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "3d86fd0a", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "a82c026e", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "0862e8bf_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "15745da0_abs", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "bc8a6e93_abs", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "19b5f2b3_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "29f2956b_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "f4f1d8a4_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "6a1eabeb", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "6aeb4375", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "830ce83f", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "852ce960", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "945e3d21", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "d7c942c3", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "71315a70", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "89941a93", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "ce6d2d27", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "9ea5eabc", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "07741c44", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "a1eacc2a", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "184da446", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "031748ae", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "4d6b87c8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "0f05491a", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "08e075c7", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "f9e8c073", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "41698283", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "2698e78f", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "b6019101", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "45dc21b6", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "5a4f22c0", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "6071bd76", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "e493bb7c", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "618f13b2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "72e3ee87", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "c4ea545c", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "01493427", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "6a27ffc2", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "2133c1b5", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "18bc8abd", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "db467c8c", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "7a87bd0c", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "e61a7584", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "1cea1afa", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "ed4ddc30", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "8fb83627", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "b01defab", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "22d2cb42", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "0e4e4c46", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "4b24c848", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "7e974930", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "603deb26", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "59524333", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "5831f84d", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "eace081b", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "affe2881", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "50635ada", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "e66b632c", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "0ddfec37", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "f685340e", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "cc5ded98", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "dfde3500", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "69fee5aa", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "7401057b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "cf22b7bf", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "a2f3aa27", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "c7dc5443", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "06db6396", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "3ba21379", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "9bbe84a2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "10e09553", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "dad224aa", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "ba61f0b9", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "42ec0761", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "5c40ec5b", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "c6853660", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "26bdc477", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "0977f2af", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "6aeb4375_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "031748ae_abs", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "2698e78f_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "2133c1b5_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "0ddfec37_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "f685340e_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "89941a94", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "07741c45", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "7161e7e2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "c4f10528", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "89527b6b", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "e9327a54", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "4c36ccef", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "6ae235be", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "7e00a6cb", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "1903aded", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "ceb54acb", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "f523d9fe", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "0e5e2d1a", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "fea54f57", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "cc539528", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "dc439ea3", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "18dcd5a5", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "488d3006", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "58470ed2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "8cf51dda", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "1d4da289", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "8464fc84", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "8aef76bc", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "71a3fd6b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "2bf43736", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "70b3e69b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "8752c811", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "3249768e", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "1b9b7252", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "1568498a", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "6222b6eb", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "e8a79c70", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "d596882b", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "e3fc4d6e", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "51b23612", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "3e321797", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "e982271f", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "352ab8bd", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "fca762bc", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "7a8d0b71", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "a40e080f", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "8b9d4367", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "5809eb10", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "41275add", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "4388e9dd", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "4baee567", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "561fabcd", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "b759caee", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "ac031881", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "28bcfaac", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "16c90bf4", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "c8f1aeed", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "eaca4986", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "c7cf7dfd", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "e48988bc", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "1de5cff2", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "65240037", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "wall-clock age (v2.0) @ 50%", "id": "778164c6", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "e47becba", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "118b2229", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "51a45a95", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "58bf7951", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "1e043500", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "c5e8278d", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "6ade9755", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "6f9b354f", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "58ef2f1c", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "f8c5f88b", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "5d3d2817", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "7527f7e2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "c960da58", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "3b6f954b", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "726462e0", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "94f70d80", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "66f24dbb", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "ad7109d1", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "af8d2e46", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "dccbc061", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "c8c3f81d", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "8ebdbe50", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "6b168ec8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "75499fd8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "21436231", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "95bcc1c8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "0862e8bf", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "853b0a1d", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "a06e4cfe", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "37d43f65", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "b86304ba", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "d52b4f67", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "25e5aa4f", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "caf9ead2", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "8550ddae", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "60d45044", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "3f1e9474", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "86b68151", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "577d4d32", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "ec81a493", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "15745da0", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "e01b8e2f", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "bc8a6e93", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "ccb36322", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "001be529", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "b320f3f8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "19b5f2b3", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "4fd1909e", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "545bd2b5", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "8a137a7f", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "76d63226", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "86f00804", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "8e9d538c", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "311778f1", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "c19f7a0b", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "4100d0a0", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "29f2956b", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "1faac195", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "faba32e5", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "f4f1d8a4", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "c14c00dd", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "36580ce8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "3d86fd0a", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "a82c026e", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "0862e8bf_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "15745da0_abs", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "bc8a6e93_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "19b5f2b3_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "29f2956b_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "f4f1d8a4_abs", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "6a1eabeb", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "6aeb4375", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "830ce83f", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "852ce960", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "945e3d21", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "d7c942c3", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "71315a70", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "89941a93", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "ce6d2d27", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "9ea5eabc", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "07741c44", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "a1eacc2a", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "184da446", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "031748ae", "correct": false, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "4d6b87c8", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "0f05491a", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "08e075c7", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "f9e8c073", "correct": true, "judge": "gemini-3-flash-preview"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "41698283", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "2698e78f", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "b6019101", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "45dc21b6", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "5a4f22c0", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "6071bd76", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "e493bb7c", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "618f13b2", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "72e3ee87", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "c4ea545c", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "01493427", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "6a27ffc2", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "2133c1b5", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "18bc8abd", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "db467c8c", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "7a87bd0c", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "e61a7584", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "1cea1afa", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "ed4ddc30", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "8fb83627", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "b01defab", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "22d2cb42", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "0e4e4c46", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "4b24c848", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "7e974930", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "603deb26", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "59524333", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "5831f84d", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "eace081b", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "affe2881", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "50635ada", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "e66b632c", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "0ddfec37", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "f685340e", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "cc5ded98", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "dfde3500", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "69fee5aa", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "7401057b", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "cf22b7bf", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "a2f3aa27", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "c7dc5443", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "06db6396", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "3ba21379", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "9bbe84a2", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "10e09553", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "dad224aa", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "ba61f0b9", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "42ec0761", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "5c40ec5b", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "c6853660", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "26bdc477", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "0977f2af", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "6aeb4375_abs", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "031748ae_abs", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "2698e78f_abs", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "2133c1b5_abs", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "0ddfec37_abs", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "f685340e_abs", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "89941a94", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "07741c45", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "7161e7e2", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "c4f10528", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "89527b6b", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "e9327a54", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "4c36ccef", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "6ae235be", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "7e00a6cb", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "1903aded", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "ceb54acb", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "f523d9fe", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "0e5e2d1a", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "fea54f57", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "cc539528", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "dc439ea3", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "18dcd5a5", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "488d3006", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "58470ed2", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "8cf51dda", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "1d4da289", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "8464fc84", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "8aef76bc", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "71a3fd6b", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "2bf43736", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "70b3e69b", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "8752c811", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "3249768e", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "1b9b7252", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "1568498a", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "6222b6eb", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "e8a79c70", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "d596882b", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "e3fc4d6e", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "51b23612", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "3e321797", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "e982271f", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "352ab8bd", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "fca762bc", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "7a8d0b71", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "a40e080f", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "8b9d4367", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "5809eb10", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "41275add", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "4388e9dd", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "4baee567", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "561fabcd", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "b759caee", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "ac031881", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "28bcfaac", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "16c90bf4", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "c8f1aeed", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "eaca4986", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "c7cf7dfd", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "e48988bc", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "1de5cff2", "correct": true, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "65240037", "correct": false, "judge": "gemma-4-31b-it"}
+{"reader": "qwen2.5:3b", "setup": "+ self 0.5 (default) @ 50%", "id": "778164c6", "correct": false, "judge": "gemma-4-31b-it"}

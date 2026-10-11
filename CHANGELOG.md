@@ -1,7 +1,19 @@
 # Changelog
 
-## Unreleased
+## 2.1.0 (2026-10-12)
 
+Forgetting, from memory research, measured with `accuracy/bounded.py` (why, and the
+ideas that were tested and rejected: [docs/BRAIN.md](docs/BRAIN.md)). Ranking is
+unchanged; this only matters with `max_items`.
+
+- `Config.self_weight` (0.5): what people say about themselves is harder to forget.
+- Fixed: forgetting measured age from the wall clock, so imported or replayed
+  histories looked equally old; it now measures from the newest memory.
+- With a store capped at a quarter of each history, the answer reaches the prompt for
+  53% of LongMemEval questions (2.0: 42%), and qwen2.5:3b answers 43.1% correctly
+  (2.0: 30.9%, p = 0.002). At half the store the two tie.
+- `mood()` orders by time even for imported histories; a file with settings from a
+  newer version still loads.
 - `accuracy/`: how often a character with NCM memory answers correctly about the user
   (LongMemEval, 204 questions, LLM-judged, token P/R/F1 recorded, two-judge check).
 - `bench.metrics.paired_bootstrap`: p is capped at 1 (it could exceed 1 when two arms tie).

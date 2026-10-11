@@ -1,0 +1,52 @@
+{
+ "wall-clock age (v2.0) @ 25%": {
+  "n": 204,
+  "accuracy": 0.3088235294117647,
+  "by_category": {
+   "abstention": 0.9166666666666666,
+   "knowledge-update": 0.3194444444444444,
+   "single-session-assistant": 0.16071428571428573,
+   "single-session-user": 0.3125
+  }
+ },
+ "+ self 0.5 (default) @ 25%": {
+  "n": 204,
+  "accuracy": 0.43137254901960786,
+  "by_category": {
+   "abstention": 0.6666666666666666,
+   "knowledge-update": 0.625,
+   "single-session-assistant": 0.21428571428571427,
+   "single-session-user": 0.359375
+  },
+  "vs wall-clock age (v2.0)": {
+   "wins": 44,
+   "losses": 19,
+   "mcnemar_p": 0.0022275315109880345
+  }
+ },
+ "wall-clock age (v2.0) @ 50%": {
+  "n": 204,
+  "accuracy": 0.5931372549019608,
+  "by_category": {
+   "abstention": 0.75,
+   "knowledge-update": 0.5972222222222222,
+   "single-session-assistant": 0.5178571428571429,
+   "single-session-user": 0.625
+  }
+ },
+ "+ self 0.5 (default) @ 50%": {
+  "n": 204,
+  "accuracy": 0.5882352941176471,
+  "by_category": {
+   "abstention": 0.6666666666666666,
+   "knowledge-update": 0.625,
+   "single-session-assistant": 0.48214285714285715,
+   "single-session-user": 0.625
+  },
+  "vs wall-clock age (v2.0)": {
+   "wins": 30,
+   "losses": 31,
+   "mcnemar_p": 1.0
+  }
+ }
+}

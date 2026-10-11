@@ -46,7 +46,7 @@ GEMINI = "https://generativelanguage.googleapis.com/v1beta/models/{}:generateCon
 # Judges, in order: the free tier allows ~20 calls a day per model, so each call grades a
 # batch of answers and the next model takes over when one runs out for the day.
 JUDGES = ("gemini-2.5-flash", "gemini-3.5-flash", "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash",
-          "gemini-3-flash-preview")
+          "gemini-3-flash-preview", "gemma-4-31b-it")
 JUDGE_BATCH = 100
 READER_SYSTEM = ("You are a personal assistant with a long-term memory of your past conversations with "
                  "this user. Answer the user's question from those memories. If facts changed over "
@@ -184,6 +184,9 @@ def gemini(model, system, prompt, json_mode=False, min_interval=4.5, thinking=0)
                                  "thinkingConfig": {"thinkingBudget": thinking}}}
     if json_mode:
         body["generationConfig"]["responseMimeType"] = "application/json"
+    if model.startswith("gemma"):          # Gemma on this API: no system turn, JSON mode or thinking budget
+        body = {"contents": [{"role": "user", "parts": [{"text": f"{system}\n\n{prompt}"}]}],
+                "generationConfig": {"temperature": 0, "maxOutputTokens": 8192}}
     for attempt in range(8):
         wait = min_interval - (time.time() - _last["t"])
         if wait > 0:
@@ -194,7 +197,8 @@ def gemini(model, system, prompt, json_mode=False, min_interval=4.5, thinking=0)
                                          {"Content-Type": "application/json", "x-goog-api-key": gemini_key()})
             with urllib.request.urlopen(req, timeout=120) as r:
                 d = json.loads(r.read())
-            return "".join(p.get("text", "") for p in d["candidates"][0]["content"]["parts"]).strip()
+            parts = d["candidates"][0]["content"]["parts"]
+            return "".join(p.get("text", "") for p in parts if not p.get("thought")).strip()
         except urllib.error.HTTPError as e:
             msg = e.read().decode("utf-8", "replace")
             if e.code == 429 and "PerDay" in msg:
@@ -253,7 +257,25 @@ def kind(b):
 
 
 def judge_batch(batch, judges=JUDGES):
-    """[(correct, judge model)] for a batch of answers, graded in one call."""
+    """[(correct, judge model)] for a batch of answers: one call per batch (Gemma: per 20)."""
+    for model in judges:
+        if model in _spent:
+            continue
+        step = 20 if model.startswith("gemma") else len(batch)
+        try:
+            grades = [g for k in range(0, len(batch), step) for g in _grade(model, batch[k:k + step])]
+        except DailyQuota:
+            _spent.add(model)
+            print(f"judge {model}: daily quota used up", file=sys.stderr, flush=True)
+            continue
+        except (ValueError, RuntimeError) as e:   # cut off, incomplete or overloaded: the next judge grades it
+            print(f"judge {model}: {type(e).__name__}, trying the next judge", file=sys.stderr, flush=True)
+            continue
+        return [(g, model) for g in grades]
+    raise DailyQuota("every judge model is out of quota for today; rerun tomorrow to finish")
+
+
+def _grade(model, batch):
     lines = [f"### Item {i} ({kind(b)})\nQuestion: {b['question']}\n"
              f"{'Note' if b['abstain'] else 'Correct answer'}: {b['gold']}\nResponse: {b['reply']}"
              for i, b in enumerate(batch)]
@@ -262,25 +284,13 @@ def judge_batch(batch, judges=JUDGES):
               + "\n".join(f"- {k}: {v}" for k, v in RULES.items())
               + '\n\nReturn JSON: {"grades": [{"item": 0, "correct": true}, ...]} with one entry per item.\n\n'
               + "\n\n".join(lines))
-    for model in judges:
-        if model in _spent:
-            continue
-        try:
-            out = json.loads(gemini(model, "You are a strict, fair grader of question answering.", prompt,
-                                    json_mode=True, min_interval=7, thinking=12000))
-        except DailyQuota:
-            _spent.add(model)
-            print(f"judge {model}: daily quota used up", file=sys.stderr, flush=True)
-            continue
-        except (json.JSONDecodeError, RuntimeError) as e:   # cut off, or overloaded: the next judge grades it
-            print(f"judge {model}: {type(e).__name__}, trying the next judge", file=sys.stderr, flush=True)
-            continue
-        grades = {int(g["item"]): bool(g["correct"]) for g in out.get("grades", [])}
-        if set(grades) != set(range(len(batch))):
-            print(f"judge {model}: incomplete batch, trying the next judge", file=sys.stderr, flush=True)
-            continue
-        return [(grades[i], model) for i in range(len(batch))]
-    raise DailyQuota("every judge model is out of quota for today; rerun tomorrow to finish")
+    reply = gemini(model, "You are a strict, fair grader of question answering.", prompt,
+                   json_mode=True, min_interval=7, thinking=12000)
+    out = json.loads(reply[reply.find("{"):reply.rfind("}") + 1])   # Gemma wraps it in ```json
+    grades = {int(g["item"]): bool(g["correct"]) for g in out.get("grades", [])}
+    if set(grades) != set(range(len(batch))):
+        raise ValueError("incomplete batch")
+    return [grades[i] for i in range(len(batch))]
 
 
 _spent = set()

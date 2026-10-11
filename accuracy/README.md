@@ -65,12 +65,14 @@ laptop RTX 3050 with 4 GB.
   the reply contains the correct answer or an equivalent; for changed facts, the latest
   value; for never-told questions, saying it was not told). Answers are graded in batches
   of 100 by Gemini Flash models with reasoning on (the free tier allows ~20 calls a day
-  per model, so five models shared the work: 2.5, 3.5, 3.7, 3.8 and 3-preview). The model
-  that graded each answer is recorded in `judgments.jsonl`.
+  per model, so five models shared the work: 2.5, 3.5, 3.7, 3.8 and 3-preview; for the
+  limited-memory study, Gemma 4 31B graded the last 116 answers, 20 per call). The model
+  that graded each answer is recorded with each grade.
 * **How far to trust the judges:** two other models each regraded a fixed random sample of
   100 answers. Gemini 3.5 Flash agreed with the original grades on 98 of 100 (Cohen's κ
   0.95); Gemini 3 Flash agreed on 97 (κ 0.91), and where they differed it was more
   lenient (79% right against 76%), so the accuracies here are, if anything, slightly low.
+  Gemma 4 31B agreed with the original grades on 98 of 100 (κ 0.94).
   An earlier judge without reasoning marked "a yellow dress and a pair of earrings to
   match" wrong for "a yellow dress"; it was discarded and everything regraded.
 * **Token precision / recall / F1** (SQuAD-style, against the gold answer), as requested
@@ -138,6 +140,43 @@ So for this use case: **turn the reranker on** (`Memory(reranker=True)`), use th
 largest reader you can run, and keep the default oldest-first order. The second look is
 worth it with a small reader if inventing an answer is less costly to you than refusing.
 
+## When the character cannot keep everything
+
+`bounded.py`: the same 204 questions, but each ~500-turn history is replayed into a
+Memory capped at a quarter or half of its size (`Config.max_items`), so the least active
+memories fade as it goes. What it measures: does the answer still reach the prompt, and
+does the reader still answer correctly? Background and the ideas that did not work:
+[docs/BRAIN.md](../docs/BRAIN.md).
+
+Answer in the prompt (the gold answer's words; 169 questions with short answers;
+with no limit: 88.8%):
+
+| forgetting | 25% kept | 50% kept |
+|---|---|---|
+| NCM 2.0 (ages from the wall clock) | 42.0% | 66.3% |
+| age measured from the newest memory | 46.7% | 66.3% |
+| **+ self-reference 0.5 (2.1 default)** | **52.7%** | **70.4%** |
+| + self-reference 1 | 55.0% | 69.2% |
+| + self-reference 2 | 58.0% | 72.2% |
+
+Answered correctly by qwen2.5:3b from that memory (all 204, judged):
+
+| memory | 2.0 | 2.1 | paired |
+|---|---|---|---|
+| 25% kept | 30.9% | **43.1%** | 44 better, 19 worse (p = 0.002) |
+| 50% kept | 59.3% | 58.8% | 30 better, 31 worse (p = 1.0) |
+
+By kind at 25%: facts that changed 31.9% -> 62.5% (the newer value now survives), facts
+the user told it 31.3% -> 35.9%, its own words 16.1% -> 21.4%, never-told questions
+91.7% -> 66.7% (12 questions). The gain is where memory is tight; at half capacity the
+two tie. Stronger self-reference keeps more of the user's facts but pushes out what the
+assistant itself said, which is why the default is 0.5.
+
+```
+python -m accuracy.bounded                                     # memory-level, all setups
+READ_SETUPS="wall-clock age (v2.0)|+ self 0.5 (default)" python -m accuracy.bounded   # read and judge
+```
+
 ## What did not help
 
 | idea | effect | why |
@@ -159,6 +198,9 @@ The dropped variants' answers are not in `results/`; the sample in
 | `results/judgments.jsonl` | every grade, with the judge model |
 | `results/judge-check-<model>.jsonl` | another model's regrade of 100 random answers |
 | `results/summary.json`, `results/summary.md` | all numbers, including paired tests (`vs_vector`, `vs_oracle`, `vs_ncm-rerank`) |
+| `bounded.py` | the limited-memory study |
+| `results/bounded.json`, `results/bounded-rows.json` | answer and evidence in the prompt, per setup and per question |
+| `results/bounded-answers.jsonl`, `bounded-judgments.jsonl`, `bounded-accuracy-qwen2.5_3b.json` | the reader's answers from limited memory, their grades, the paired comparison |
 
 ```
 python -m accuracy.run --readers qwen2.5:3b,qwen2.5:7b     # read, judge, summarise (resumes)

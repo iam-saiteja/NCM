@@ -114,3 +114,14 @@ local 3B/7B readers did not (79-84% overall, 87.5% even when handed the exact
 conversations). Three ideas were tried and dropped because they lost accuracy: a
 notes-first reader prompt, cutting the turns around each hit, and listing the newest
 conversation first; `context()` keeps its oldest-first order, now with a comment saying why.
+
+### Forgetting from memory research (12 October 2026, v2.1)
+
+Asked what else the brain could teach NCM, we mapped memory research onto NCM's
+measured weak spots, simulated each idea on LongMemEval, and built the promising ones
+behind settings ([BRAIN.md](BRAIN.md)). Only two survived measurement: self-reference
+(what people say about themselves is harder to forget) and a bug fix (forgetting measured
+age from the wall clock). Gist-before-forgetting looked like a win until it was compared
+with simply keeping 25% more memories, which did as well; it was removed. Spill-over,
+speaker quotas, write-time change detection and suppression of older statements were
+measured and dropped.

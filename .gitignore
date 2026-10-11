@@ -72,3 +72,4 @@ bench/results/rows-*.json
 
 # accuracy study: prompt contexts are rebuilt by accuracy/run.py (~13 MB)
 accuracy/results/contexts.json
+accuracy/results/bounded-contexts.json

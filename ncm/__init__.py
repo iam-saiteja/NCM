@@ -10,7 +10,7 @@ relevant, knows who the person is, and forgets what stopped mattering.
     mem.save()
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 from ncm.embed import Embedder, FunctionEmbedder
 from ncm.memory import Config, Memory, Recalled
