@@ -293,10 +293,10 @@ model, judge and prompts, so these are a rough guide, not a head-to-head with th
 |---|---|---|---|
 | **NCM (measured here)** | **68.6%** | gpt-oss-120b (judge: gpt-oss-20b) | [comparisons/](comparisons/README.md#3b-ncm-on-all-of-locomo-with-a-large-model-measured-here) |
 | full context (whole conversation in the prompt) | 72.90% | GPT-4o-mini | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
-| Mem0 with graph memory | 68.44% | GPT-4o-mini | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
+| Mem0 with graph memory | 68.44% | GPT-4o-mini (Mem0's stack) | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
 | Mem0 | 66.88% | GPT-4o-mini | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
-| Zep | 65.99% | GPT-4o-mini | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
-| best RAG (2 chunks of 256 tokens) | 60.97% | GPT-4o-mini | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
+| Zep | 65.99% | not stated | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
+| best RAG (2 chunks of 256 tokens) | 60.97% | not stated | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
 | LangMem | 58.10% | GPT-4o-mini | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
 | OpenAI (ChatGPT memory) | 52.90% | - | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
 | A-Mem | 48.38% | - | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
