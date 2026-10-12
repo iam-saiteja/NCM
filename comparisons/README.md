@@ -122,7 +122,8 @@ and an LLM judge (J score), so they are **not comparable** with the measurements
 different model, judge, prompts and question filtering. Numbers for the same system
 also disagree between sources.
 
-LoCoMo, from the Mem0 paper (Chhikara et al. 2025, Table 2), GPT-4o-mini reader and judge:
+LoCoMo, from the Mem0 paper (Chhikara et al. 2025, Table 2). GPT-4o-mini answers; the judge
+is described only as "a separate, more capable LLM" (not named):
 
 | system | J score | memory tokens per query | search p95 | total p95 |
 |---|---|---|---|---|
@@ -136,6 +137,8 @@ LoCoMo, from the Mem0 paper (Chhikara et al. 2025, Table 2), GPT-4o-mini reader 
 | A-Mem | 48.4% | 2,520 | 1.49 s | 4.4 s |
 
 Disputes and later claims:
+- Memori's evaluation (LLM judge, models not named): full context 87.52%, Zep 79.09%,
+  LangMem 78.05%, Mem0 62.47%, Memori 87.0%.
 - Zep's own corrected run reports **75.1%** J with a p95 search latency of 0.63 s, and
   argues the Mem0 paper misconfigured Zep (both speakers as one user, timestamps in the
   text, sequential searches). Zep's newer posts claim ~80%.

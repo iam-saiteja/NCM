@@ -280,6 +280,14 @@ over full-history prompting, hybrid search, Mem0 on a local LLM and summary memo
 significant. Published vendor numbers (GPT-4-class models, not comparable) are listed
 alongside in [comparisons/](comparisons/README.md#3-published-numbers-from-the-vendors-not-measured-here).
 
+**With a large model, on all of LoCoMo** (1,531 questions): NCM in its two-person dialogue
+setting (30 memories) with gpt-oss-120b answering and gpt-oss-20b judging scores **68.6%**
+judged correct (token F1 0.537), with 12 ms retrieval, no model calls to store memories,
+and $0.65 for the whole run. For reference, the Mem0 paper reports 66.88% for Mem0, 65.99%
+for Zep and 72.90% for full context with GPT-4o-mini answering (a different model and
+judge, so a rough guide, not a head-to-head). Details:
+[comparisons/](comparisons/README.md#3b-ncm-on-all-of-locomo-with-a-large-model-measured-here).
+
 ## How v2 was built: the experiments
 
 v2 was not designed up front. Each component was proposed, measured on both
