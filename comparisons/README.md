@@ -190,6 +190,34 @@ their own stacks. What stands out is cost: no model calls to store memories, ~58
 answer against 1,764 (Mem0) and 26,031 (full context), and 43 ms retrieval. The main loss
 is retrieval itself: for 22% of questions the evidence turn is not among the 10 memories.
 
+**Second run: more memories, OpenAI models.** The 22% of questions whose evidence never
+reached the prompt were the main loss (with the evidence, Mistral answered 87.5% right;
+without it, 36.6%). Measured without any model, NCM's documented setting for two-person
+conversations (`Config(lift_next=0.75, lift_width=3.0)`, no reranker) with 30 memories
+puts the evidence in the prompt for 88.8% of questions (78.1% before), at about Mem0's
+prompt size. Rerun with gpt-oss-120b answering and gpt-oss-20b as the judge (the OpenAI
+models this Bedrock account can call; GPT-4o is not offered there):
+
+| | Mistral Large 3, reranker, 10 memories | gpt-oss-120b, dialogue mode, 30 memories |
+|---|---|---|
+| judge | Mistral Large 3 (itself) | gpt-oss-20b |
+| judged correct (J) | 76.4% | **68.6%** |
+| token F1 (no judge involved) | 0.475 | **0.537** |
+| evidence turn in the prompt | 78.1% | **88.8%** |
+| tokens per question (memories and instructions) | ~586 | ~1,380 |
+| retrieval latency (p50, laptop) | 43 ms | 12 ms |
+| cost of the run | ~$0.72 | ~$0.65 |
+
+By kind (gpt-oss): single-hop 82.6%, temporal 59.7%, multi-hop 48.4%, open-domain 31.5%.
+The two J scores come from different judges and are not comparable: gpt-oss-20b is much
+stricter (with the evidence in the prompt it marks 74.7% right; Mistral grading itself
+marked 87.5%). Token F1, which no judge touches, shows the second run answers better.
+Results: `results/locomo-bedrock-gpt-oss-120b-1-0-judge-gpt-oss-20b-1-0-k30-dialogue.jsonl`.
+
+```
+python -m comparisons.locomo_bedrock --model openai.gpt-oss-120b-1:0 --judge openai.gpt-oss-20b-1:0 --k 30 --dialogue
+```
+
 ## 4. How it was run, and what to keep in mind
 
 - **One reader for everyone:** qwen2.5:3b through Ollama 0.33, temperature 0, seed 0,

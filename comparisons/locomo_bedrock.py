@@ -58,13 +58,15 @@ def env():
             for l in open(p, encoding="utf-8") if "=" in l}
 
 
-def converse(system, prompt, max_tokens, _cfg={}):
+def converse(model, system, prompt, max_tokens, _cfg={}):
     if not _cfg:
         e = env()
         _cfg.update(key=e["bedrock_api_key"], region=e.get("bedrock_region", "us-east-1"))
-    url = f"https://bedrock-runtime.{_cfg['region']}.amazonaws.com/model/{MODEL}/converse"
+    url = f"https://bedrock-runtime.{_cfg['region']}.amazonaws.com/model/{model}/converse"
     body = {"system": [{"text": system}], "messages": [{"role": "user", "content": [{"text": prompt}]}],
             "inferenceConfig": {"maxTokens": max_tokens, "temperature": 0}}
+    if "gpt-oss" in model:          # reasoning models: the budget covers their reasoning too
+        body["inferenceConfig"]["maxTokens"] = max(max_tokens, 2000)
     for attempt in range(6):
         req = urllib.request.Request(url, json.dumps(body).encode(), {"Authorization": f"Bearer {_cfg['key']}",
                                                                        "Content-Type": "application/json"})
@@ -99,30 +101,43 @@ def main():
     sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0, help="a random sample of N questions (pilot)")
+    ap.add_argument("--model", default=MODEL, help="Bedrock model that answers")
+    ap.add_argument("--judge", default="", help="Bedrock model that grades (default: the answering model)")
+    ap.add_argument("--k", type=int, default=K, help="memories per question")
+    ap.add_argument("--dialogue", action="store_true",
+                    help="NCM's two-person dialogue mode (lift_next 0.75, width 3) and no reranker")
     a = ap.parse_args()
+    judge = a.judge or a.model
     hays, queries = load_locomo()
     if a.limit:
         queries = random.Random(0).sample(queries, a.limit)
     os.makedirs(RES, exist_ok=True)
-    path = os.path.join(RES, f"locomo-bedrock-{MODEL.split('.', 1)[1]}{'-pilot' if a.limit else ''}.jsonl")
+    tag = MODEL.split(".", 1)[1] if (a.model, judge, a.k, a.dialogue) == (MODEL, MODEL, K, False) else \
+        f"{a.model.split('.', 1)[1]}-judge-{judge.split('.', 1)[1]}-k{a.k}{'-dialogue' if a.dialogue else '-rerank'}"
+    tag = tag.replace(":", "-")                         # model ids like gpt-oss-120b-1:0; Windows names cannot hold ":"
+    path = os.path.join(RES, f"locomo-bedrock-{tag}{'-pilot' if a.limit else ''}.jsonl")
     done = {json.loads(l)["key"] for l in open(path, encoding="utf-8")} if os.path.exists(path) else set()
 
     from ncm import Embedder, Memory
     from ncm.embed import Reranker
-    emb, rr = Embedder("sentence-transformers/all-MiniLM-L6-v2"), Reranker()
+    from ncm.memory import Config
+    emb = Embedder("sentence-transformers/all-MiniLM-L6-v2")
+    rr = None if a.dialogue else Reranker()
+    cfg = Config(lift_next=0.75, lift_width=3.0) if a.dialogue else Config()
     need = {q.haystack for q in queries}
     mems = {}
     for h in hays:
         if h.id not in need:
             continue
-        m = Memory(embedder=emb, reranker=rr)
+        m = Memory(embedder=emb, reranker=rr, config=cfg)
         for s in sorted(set(h.sessions)):
             rows = [i for i, x in enumerate(h.sessions) if x == s]
             m.new_session()
             m.add_many([h.texts[i].split(": ", 1)[1] for i in rows], [h.speakers[i] for i in rows],
                        [when(h.times[i]) for i in rows])
         mems[h.id] = (h, m)
-    print(f"{len(queries)} questions, {len(mems)} conversations, model {MODEL}", flush=True)
+    print(f"{len(queries)} questions, {len(mems)} conversations, answers {a.model}, judge {judge}, "
+          f"k {a.k}, {'dialogue mode' if a.dialogue else 'reranker'}", flush=True)
 
     with open(path, "a", encoding="utf-8") as out:
         for n, q in enumerate(queries):
@@ -132,14 +147,14 @@ def main():
             h, m = mems[q.haystack]
             t0 = time.perf_counter()
             rows = []
-            for hit in m.recall(q.question, k=K):          # the same rendering as comparisons/end_to_end.py
+            for hit in m.recall(q.question, k=a.k):          # the same rendering as comparisons/end_to_end.py
                 t_days = (hit.time - when(0).timestamp()) / 86400
                 rows.append(min((i for i, t in enumerate(h.texts) if t == f"{hit.speaker}: {hit.text}"),
                                 key=lambda i: abs(h.times[i] - t_days)))
             ctx = render(h, rows)
             recall_ms = (time.perf_counter() - t0) * 1000
-            answer, ai, ao, asec = converse(ANSWER_SYSTEM, f"{ctx}\n\nQuestion: {q.question}\nAnswer:", 60)
-            verdict, ji, jo, _ = converse(JUDGE_SYSTEM, JUDGE_PROMPT.format(q=q.question, gold=q.answer, answer=answer), 200)
+            answer, ai, ao, asec = converse(a.model, ANSWER_SYSTEM, f"{ctx}\n\nQuestion: {q.question}\nAnswer:", 60)
+            verdict, ji, jo, _ = converse(judge, JUDGE_SYSTEM, JUDGE_PROMPT.format(q=q.question, gold=q.answer, answer=answer), 200)
             try:
                 label = json.loads(verdict[verdict.find("{"):verdict.rfind("}") + 1])["label"].upper()
             except (ValueError, KeyError):
