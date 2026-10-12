@@ -283,10 +283,30 @@ alongside in [comparisons/](comparisons/README.md#3-published-numbers-from-the-v
 **With a large model, on all of LoCoMo** (1,531 questions): NCM in its two-person dialogue
 setting (30 memories) with gpt-oss-120b answering and gpt-oss-20b judging scores **68.6%**
 judged correct (token F1 0.537), with 12 ms retrieval, no model calls to store memories,
-and $0.65 for the whole run. For reference, the Mem0 paper reports 66.88% for Mem0, 65.99%
-for Zep and 72.90% for full context with GPT-4o-mini answering (a different model and
-judge, so a rough guide, not a head-to-head). Details:
+and $0.65 for the whole run. Details:
 [comparisons/](comparisons/README.md#3b-ncm-on-all-of-locomo-with-a-large-model-measured-here).
+
+Published LoCoMo scores of other systems, for reference. Each source used its own answering
+model, judge and prompts, so these are a rough guide, not a head-to-head with the NCM row:
+
+| system | LoCoMo (LLM judge) | answering model | source |
+|---|---|---|---|
+| **NCM (measured here)** | **68.6%** | gpt-oss-120b (judge: gpt-oss-20b) | [comparisons/](comparisons/README.md#3b-ncm-on-all-of-locomo-with-a-large-model-measured-here) |
+| full context (whole conversation in the prompt) | 72.90% | GPT-4o-mini | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
+| Mem0 with graph memory | 68.44% | GPT-4o-mini | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
+| Mem0 | 66.88% | GPT-4o-mini | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
+| Zep | 65.99% | GPT-4o-mini | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
+| best RAG (2 chunks of 256 tokens) | 60.97% | GPT-4o-mini | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
+| LangMem | 58.10% | GPT-4o-mini | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
+| OpenAI (ChatGPT memory) | 52.90% | - | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
+| A-Mem | 48.38% | - | [Mem0 paper, Table 2](https://arxiv.org/abs/2504.19413) |
+| Zep (Zep's own rerun) | 75.14% | not stated | [Zep blog](https://www.getzep.com/blog/lies-damn-lies-statistics-is-mem0-really-sota-in-agent-memory/) |
+| Memori / Zep / LangMem / Mem0 / full context | 87.0% / 79.09% / 78.05% / 62.47% / 87.52% | not stated | [Memori benchmark](https://memorilabs.ai/docs/memori-cloud/benchmark/results/) |
+
+The Mem0 paper's judge is "a separate, more capable LLM" (not named). The same system scores
+very differently across sources (Zep: 65.99% to 79.09%), which is why only a run with one
+shared model and judge would settle a ranking. Vendors' own 90%+ claims are not listed:
+they are self-reported with their own stacks and could not be checked.
 
 ## How v2 was built: the experiments
 
