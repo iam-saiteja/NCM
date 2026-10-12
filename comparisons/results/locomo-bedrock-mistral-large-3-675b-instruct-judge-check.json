@@ -1,0 +1,108 @@
+{
+ "n": 100,
+ "second_judge": "gemini-2.5-flash",
+ "agreement": 0.86,
+ "kappa": 0.665871121718377,
+ "self_judge_correct": 0.77,
+ "independent_judge_correct": 0.65,
+ "disagreements": [
+  {
+   "question": "Which endorsement deals has John been offered?",
+   "gold": "basketball shoes and gear deal with Nike, potential sponsorship with Gatorade, Moxie a popular beverage company, outdoor gear company",
+   "answer": "Nike, Gatorade, Under Armour, outdoor gear company, beverage company",
+   "self": true,
+   "independent": false
+  },
+  {
+   "question": "Did Audrey and Andrew grow up with a pet dog?",
+   "gold": "Yes",
+   "answer": "Audrey: Max, childhood dog.\nAndrew: No pets on 27 March 2023.",
+   "self": true,
+   "independent": false
+  },
+  {
+   "question": "When did Nate win his first video game tournament?",
+   "gold": "the week before 21Janury, 2022",
+   "answer": "21 January 2022",
+   "self": true,
+   "independent": false
+  },
+  {
+   "question": "When did James ask Samantha to be his girlfriend?",
+   "gold": "September 3, 2022",
+   "answer": "4 September 2022",
+   "self": true,
+   "independent": false
+  },
+  {
+   "question": "What kind of stress was Sam dealing with in October 2023?",
+   "gold": "work-related stress",
+   "answer": "work stress, health scare",
+   "self": true,
+   "independent": false
+  },
+  {
+   "question": "What does Andrew view his pets as?",
+   "gold": "Family",
+   "answer": "friends and confidantes",
+   "self": true,
+   "independent": false
+  },
+  {
+   "question": "When did Jolene's mom gift her a pendant?",
+   "gold": "in 2010",
+   "answer": "23 January 2023, 2010 in Paris",
+   "self": true,
+   "independent": false
+  },
+  {
+   "question": "When Evan did meet his future wife?",
+   "gold": "week before August 7, 2023.",
+   "answer": "7 August 2023",
+   "self": true,
+   "independent": false
+  },
+  {
+   "question": "How many hikes has Joanna been on?",
+   "gold": "Four",
+   "answer": "Several hikes: 12 May 2022, 3 June 2022, 9 November 2022",
+   "self": true,
+   "independent": false
+  },
+  {
+   "question": "What are Jolene's favorite books?",
+   "gold": "Sapiens, Avalanche by Neal Stephenson",
+   "answer": "\"Sapiens\"",
+   "self": true,
+   "independent": false
+  },
+  {
+   "question": "When did John and his programming friends host an online programming competition?",
+   "gold": "Last week before 13 October 2022.",
+   "answer": "6 October 2022",
+   "self": true,
+   "independent": false
+  },
+  {
+   "question": "Is it likely that Nate has friends besides Joanna?",
+   "gold": "Yesteammates on hisvideo game team.",
+   "answer": "Yes, 25 February 2022.",
+   "self": false,
+   "independent": true
+  },
+  {
+   "question": "When did John work with a game developer on a project?",
+   "gold": "November 5-6, 2022",
+   "answer": "20 April 2022, 7 November 2022",
+   "self": true,
+   "independent": false
+  },
+  {
+   "question": "How does Calvin plan to jumpstart his inspiration?",
+   "gold": "explore other things and have some fun",
+   "answer": "watch music videos, concerts, and documentaries (2 November 2023)",
+   "self": true,
+   "independent": false
+  }
+ ]
+}

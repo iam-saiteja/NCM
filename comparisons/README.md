@@ -155,6 +155,41 @@ Sources: [Mem0 paper, arXiv 2504.19413](https://arxiv.org/abs/2504.19413) ·
 [Memori LoCoMo results](https://memorilabs.ai/docs/memori-cloud/benchmark/results/) ·
 [Atlan: agent memory frameworks 2026](https://atlan.com/know/best-ai-agent-memory-frameworks-2026/)
 
+## 3b. NCM on all of LoCoMo with a large model (measured here)
+
+`locomo_bedrock.py`: every LoCoMo question of categories 1-4 that has evidence (1,531), all
+10 conversations. NCM as in section 1's best setup (`Memory(reranker=True)`, the 10 best
+memories, dated, oldest first). One model, Mistral Large 3 (675B, on Amazon Bedrock,
+temperature 0), answers in a short phrase and then grades its own answer with the usual
+LoCoMo judge rule (generous on wording and date format). Only NCM was run.
+
+| | NCM + Mistral Large 3 |
+|---|---|
+| judged correct (J), the model grading itself | **76.4%** |
+| judged correct, independent judge (Gemini 2.5 Flash) on a random 100 | **65%** (the self-judge gave the same 100: 77%) |
+| token F1 | 0.475 |
+| evidence turn in the prompt | 78.1% |
+| memory tokens sent per question | ~586 |
+| retrieval latency (p50, laptop, with reranker) | 43 ms |
+| model calls to store memories | 0 |
+| cost of the whole run (answering and grading) | ~$0.72 |
+
+By kind (self-judged): single-hop 84.8% (841), multi-hop 71.9% (281), temporal 65.0% (320),
+open-domain 51.7% (89).
+
+**Which J to quote.** The two judges agree on 86 of 100 answers (κ 0.67). Where they differ,
+the independent one is stricter, and mostly right: "the week before 21 January" answered as
+"21 January", three hikes listed when the answer is four, one of two books. So the score is
+about **65-76% depending on the judge**; ~65% is the conservative figure. The cross-check is
+in `results/locomo-bedrock-mistral-large-3-675b-instruct-judge-check.json`.
+
+**Against section 3's published numbers** (different reader and judge, so only a rough
+guide): in the range of Mem0 (66.9%) and Zep (66.0-75.1%) as reported in the Mem0 paper and
+by Zep, below full context with GPT-4o-mini (72.9%) and the 88-94% that vendors report for
+their own stacks. What stands out is cost: no model calls to store memories, ~586 tokens per
+answer against 1,764 (Mem0) and 26,031 (full context), and 43 ms retrieval. The main loss
+is retrieval itself: for 22% of questions the evidence turn is not among the 10 memories.
+
 ## 4. How it was run, and what to keep in mind
 
 - **One reader for everyone:** qwen2.5:3b through Ollama 0.33, temperature 0, seed 0,
@@ -187,5 +222,6 @@ python -m comparisons.run_all        # retrieval, end-to-end, then the tables (~
 ```
 
 Files: `retrieval.py` (section 2), `end_to_end.py` (section 1, one class per system),
+`locomo_bedrock.py` and `locomo_judge_check.py` (section 3b; a Bedrock API key in `.env`),
 `common.py` (metered LLM client, subsets), `report.py` (builds these tables from
 `results/`), `run_all.py` (everything in order). Datasets: see `bench/data.py`.
