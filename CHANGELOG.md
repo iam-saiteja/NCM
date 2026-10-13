@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+No library changes; new measurements.
+
+- `comparisons/locomo_bedrock.py`: all of LoCoMo with a large model on Amazon Bedrock.
+  NCM with gpt-oss-120b answering and gpt-oss-20b judging: 68.6% J, token F1 0.537,
+  evidence in the prompt 88.8%, 12 ms retrieval, ~$0.65 a run. README lists the
+  published scores of other systems with their sources.
+- `bench/mood_effect.py`: does the mood line change the character's replies? With
+  qwen2.5:7b, yes: tone fit 3.81 -> 4.09 of 5 (p 0.03), worse with a wrong label; with
+  qwen2.5:3b, barely. `mood()` reads 61% of users' moods right, never the opposite.
+
 ## 2.1.0 (2026-10-12)
 
 Forgetting, from memory research, measured with `accuracy/bounded.py` (why, and the

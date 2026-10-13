@@ -125,3 +125,13 @@ age from the wall clock). Gist-before-forgetting looked like a win until it was 
 with simply keeping 25% more memories, which did as well; it was removed. Spill-over,
 speaker quotas, write-time change detection and suppression of older statements were
 measured and dropped.
+
+### Large-model LoCoMo and the mood test (12-13 October 2026)
+
+With a short-term Amazon Bedrock key, NCM ran on all 1,531 LoCoMo questions: first with
+Mistral Large 3 (76.4% self-judged), then, after finding that retrieval lost 22% of the
+evidence, in its two-person dialogue setting with 30 memories and gpt-oss-120b answering
+(68.6% under a strict gpt-oss-20b judge; token F1 up from 0.475 to 0.537). A separate
+test asked whether the mood line in the prompt changes the character's replies: it does
+for a 7B model (judged tone fit +0.28 of 5, worse with a wrong label) and barely for a 3B
+one.

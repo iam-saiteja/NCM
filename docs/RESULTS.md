@@ -308,6 +308,27 @@ gist before forgetting (it equalled simply keeping 25% more memories), spill-ove
 emotional neighbours (no effect), per-speaker quotas (a trade), change detection at
 write time (too noisy without an LLM), suppressing older look-alike statements (worse).
 
+## 3e. All of LoCoMo with a large model
+
+Full write-up: [comparisons/README.md](../comparisons/README.md#3b-ncm-on-all-of-locomo-with-a-large-model-measured-here).
+All 1,531 LoCoMo questions (categories 1-4 with evidence), on Amazon Bedrock.
+
+| | run 1 | run 2 |
+|---|---|---|
+| NCM setting | reranker, 10 memories | two-person dialogue mode (`lift_next=0.75`, width 3), 30 memories |
+| answering model / judge | Mistral Large 3 / itself | gpt-oss-120b / gpt-oss-20b |
+| judged correct (J) | 76.4% | **68.6%** |
+| token F1 (no judge) | 0.475 | **0.537** |
+| evidence turn in the prompt | 78.1% | **88.8%** |
+| retrieval (p50) | 43 ms | 12 ms |
+| cost of the run | ~$0.72 | ~$0.65 |
+
+The two J scores come from different judges and are not comparable (Mistral grading its
+own answers is lenient; an independent judge gave a random 100 of them 65%). Token F1 is
+comparable and rose with run 2's better retrieval. For reference, the Mem0 paper reports
+66.88% for Mem0, 65.99% for Zep and 72.90% for full context with GPT-4o-mini answering
+(a different model and judge); sources are listed in the README.
+
 ## 4. Affect
 
 The valence/arousal probe is a 384x2 ridge regression on MiniLM embeddings. Valence
