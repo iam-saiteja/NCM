@@ -375,7 +375,10 @@ python -m accuracy.bounded                        # what forgetting keeps when m
 - The affect probe reads valence well (r 0.62 against human ratings, AUC 0.91 on
   Reddit comments) and arousal moderately (r 0.44). Topic words pull it: when the
   feeling and the topic disagree ("thrilled about the funeral"), it gets the sign wrong
-  about one time in nine. Treat `mood()` as a soft, relative signal.
+  about one time in nine. Treat `mood()` as a soft, relative signal. It reads 61% of
+  users' moods right and calls the rest neutral, never the opposite; given to a 7B
+  model, its mood line makes replies fit the user's mood better (judged 4.09 vs 3.81 of
+  5, p 0.03), and a deliberately wrong label makes them worse. A 3B model barely uses it.
 - Contradictions are not resolved inside the memory: `context()` dates (in UTC) and
   orders memories so the reader can tell which statement is newer. Small readers still
   report the older value of a changed fact about one time in four (LongMemEval, even

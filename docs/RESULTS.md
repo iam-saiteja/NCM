@@ -349,6 +349,35 @@ reuses the embedding NCM already has. Treat `mood()` as a soft, relative signal.
 Phase 2 showed it carries no retrievable signal (see HISTORY.md). It sets
 salience, so emotional memories survive capacity eviction longer, and feeds `mood()`.
 
+### Does the mood signal change what the character says?
+
+Mood never enters retrieval; it reaches the model only as text (`context()`'s "Their mood
+lately: ..." line and `examples/chat.py`'s "The conversation lately has felt {tone}").
+`bench/mood_effect.py` tests whether that text matters. 80 users write five messages of one
+clear mood (single-label GoEmotions comments: 40 sad/angry/afraid, 40 joyful/excited/grateful),
+then ask something neutral ("What should I cook tonight?"). The character (the shipped
+persona and rules) answers three times, same memories, temperature 0: without the mood
+lines, with NCM's label, and with the opposite label. One judge (Gemini 2.5 Flash), blind
+to the version, rates how well each reply's tone fits the user's recent mood, 1-5.
+
+**NCM's reading:** right for 49 of 80 users (28 of 40 negative, 21 of 40 positive); the rest
+it calls neutral. It never read a sad user as happy or the reverse.
+
+| reply tone fit (1-5) | no mood line | NCM's label | opposite label |
+|---|---|---|---|
+| qwen2.5:7b, all 80 | 3.81 | **4.09** (+0.28, p 0.03) | 3.61 (-0.20) |
+| qwen2.5:7b, the 49 NCM read right | 3.84 | **4.18** | 3.45 |
+| qwen2.5:7b, sad/angry users | 3.38 | **3.85** | 3.00 |
+| qwen2.5:3b, all 80 | 3.35 | 3.45 (+0.10, p 0.32) | 3.26 |
+
+- The line is causal for the 7B model: the right label makes replies fit the user's mood
+  better, the wrong label makes them fit worse. The gain is largest for upset users.
+- The 3B model barely uses it (differences within noise).
+- 94-96% of replies change wording when the line is added, but most changes are small;
+  what matters is the judged tone above.
+
+Results: `bench/results/mood-effect-{replies.jsonl,grades.json,summary.json}`.
+
 ## 5. Speed and size
 
 All on a laptop CPU (no GPU involved in NCM itself), store of synthetic Zipf-text
