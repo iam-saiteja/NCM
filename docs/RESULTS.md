@@ -329,6 +329,24 @@ comparable and rose with run 2's better retrieval. For reference, the Mem0 paper
 66.88% for Mem0, 65.99% for Zep and 72.90% for full context with GPT-4o-mini answering
 (a different model and judge); sources are listed in the README.
 
+## 3f. MemoryBench: NCM against a RAG memory
+
+Full write-up: [comparisons/README.md](../comparisons/README.md#3c-memorybench-ncm-against-a-rag-memory-on-three-benchmarks-measured-here).
+Supermemory's MemoryBench harness, all questions of its three benchmarks, NCM against its
+RAG baseline (LLM-extracted notes, hybrid BM25 + vector search). Both answered by
+gpt-oss-120b and judged by gpt-oss-20b on Amazon Bedrock, one run each.
+
+| benchmark (questions) | NCM | RAG | McNemar p |
+|---|---|---|---|
+| LoCoMo (1,986, with adversarial) | **70.4%** | 68.5% | 0.09 |
+| LongMemEval-S (500) | **80.6%** | 79.4% | 0.63 |
+| ConvoMem (2,843) | **95.5%** | 92.3% | 4e-9 |
+| all three (5,329) | **84.8%** | 82.2% | 2e-6 |
+
+NCM leads on direct recall, on what the assistant said and on facts that change; RAG leads
+on temporal questions and on abstaining. Cost for all three: NCM $4.43 (no model calls to
+store memories), RAG $35.83. Results: `comparisons/results/memorybench-bedrock.json`.
+
 ## 4. Affect
 
 The valence/arousal probe is a 384x2 ridge regression on MiniLM embeddings. Valence

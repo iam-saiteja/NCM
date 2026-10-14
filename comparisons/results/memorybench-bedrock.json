@@ -1,0 +1,276 @@
+{
+ "answering_model": "gpt-oss-120b (Amazon Bedrock)",
+ "judge": "gpt-oss-20b (Amazon Bedrock)",
+ "benchmarks": {
+  "locomo": {
+   "ncm": {
+    "questions": 1986,
+    "correct": 1398,
+    "accuracy": 0.7039274924471299,
+    "unscored_counted_wrong": 0,
+    "search_ms_median": 386,
+    "context_tokens_mean": 1168,
+    "retrieval": {
+     "hitAtK": 0.6510574018126888,
+     "mrr": 0.39905968765485444,
+     "ndcg": 0.45355433957133884,
+     "k": 10
+    },
+    "by_type": {
+     "multi-hop": {
+      "total": 321,
+      "accuracy": 0.7289719626168224
+     },
+     "temporal": {
+      "total": 96,
+      "accuracy": 0.4375
+     },
+     "single-hop": {
+      "total": 282,
+      "accuracy": 0.36524822695035464
+     },
+     "world-knowledge": {
+      "total": 841,
+      "accuracy": 0.8632580261593341
+     },
+     "adversarial": {
+      "total": 446,
+      "accuracy": 0.6569506726457399
+     }
+    }
+   },
+   "rag": {
+    "questions": 1986,
+    "correct": 1361,
+    "accuracy": 0.6852970795568983,
+    "unscored_counted_wrong": 0,
+    "search_ms_median": 2903,
+    "context_tokens_mean": 3424,
+    "retrieval": {
+     "hitAtK": 0.6913393756294058,
+     "mrr": 0.5446868156460308,
+     "ndcg": 0.5709913822219971,
+     "k": 10
+    },
+    "by_type": {
+     "multi-hop": {
+      "total": 321,
+      "accuracy": 0.778816199376947
+     },
+     "temporal": {
+      "total": 96,
+      "accuracy": 0.4375
+     },
+     "single-hop": {
+      "total": 282,
+      "accuracy": 0.42907801418439717
+     },
+     "world-knowledge": {
+      "total": 841,
+      "accuracy": 0.7360285374554102
+     },
+     "adversarial": {
+      "total": 446,
+      "accuracy": 0.7376681614349776
+     }
+    }
+   },
+   "paired": {
+    "questions": 1986,
+    "ncm_accuracy": 0.7039274924471299,
+    "rag_accuracy": 0.6852970795568983,
+    "ncm_right_rag_wrong": 240,
+    "rag_right_ncm_wrong": 203,
+    "mcnemar_p": 0.08707523498278011
+   }
+  },
+  "longmemeval": {
+   "ncm": {
+    "questions": 500,
+    "correct": 403,
+    "accuracy": 0.806,
+    "unscored_counted_wrong": 1,
+    "search_ms_median": 928,
+    "context_tokens_mean": 8411,
+    "retrieval": {
+     "hitAtK": 0.751503006012024,
+     "mrr": 0.5918503674014693,
+     "ndcg": 0.6138817713507798,
+     "k": 10
+    },
+    "by_type": {
+     "single-session-user": {
+      "total": 70,
+      "accuracy": 0.8857142857142857
+     },
+     "multi-session": {
+      "total": 132,
+      "accuracy": 0.7272727272727273
+     },
+     "knowledge-update": {
+      "total": 78,
+      "accuracy": 0.9102564102564102
+     },
+     "single-session-preference": {
+      "total": 30,
+      "accuracy": 0.5
+     },
+     "temporal-reasoning": {
+      "total": 133,
+      "accuracy": 0.7819548872180451
+     },
+     "single-session-assistant": {
+      "total": 56,
+      "accuracy": 0.9821428571428571
+     }
+    }
+   },
+   "rag": {
+    "questions": 500,
+    "correct": 397,
+    "accuracy": 0.794,
+    "unscored_counted_wrong": 0,
+    "search_ms_median": 709,
+    "context_tokens_mean": 3598,
+    "retrieval": {
+     "hitAtK": 0.838,
+     "mrr": 0.7339095238095237,
+     "ndcg": 0.7497837842724802,
+     "k": 10
+    },
+    "by_type": {
+     "single-session-user": {
+      "total": 70,
+      "accuracy": 0.9142857142857143
+     },
+     "multi-session": {
+      "total": 133,
+      "accuracy": 0.6616541353383458
+     },
+     "knowledge-update": {
+      "total": 78,
+      "accuracy": 0.8974358974358975
+     },
+     "single-session-preference": {
+      "total": 30,
+      "accuracy": 0.5666666666666667
+     },
+     "temporal-reasoning": {
+      "total": 133,
+      "accuracy": 0.8345864661654135
+     },
+     "single-session-assistant": {
+      "total": 56,
+      "accuracy": 0.8392857142857143
+     }
+    }
+   },
+   "paired": {
+    "questions": 500,
+    "ncm_accuracy": 0.806,
+    "rag_accuracy": 0.794,
+    "ncm_right_rag_wrong": 56,
+    "rag_right_ncm_wrong": 50,
+    "mcnemar_p": 0.6274309770786344
+   }
+  },
+  "convomem": {
+   "ncm": {
+    "questions": 2843,
+    "correct": 2716,
+    "accuracy": 0.9553288779458319,
+    "unscored_counted_wrong": 0,
+    "search_ms_median": 208,
+    "context_tokens_mean": 955,
+    "retrieval": {
+     "hitAtK": 0.7970453746042913,
+     "mrr": 0.5484989587346246,
+     "ndcg": 0.589336684058415,
+     "k": 10
+    },
+    "by_type": {
+     "user_evidence": {
+      "total": 413,
+      "accuracy": 0.9903147699757869
+     },
+     "assistant_facts_evidence": {
+      "total": 541,
+      "accuracy": 0.9944547134935305
+     },
+     "changing_evidence": {
+      "total": 759,
+      "accuracy": 0.9696969696969697
+     },
+     "abstention_evidence": {
+      "total": 542,
+      "accuracy": 0.996309963099631
+     },
+     "preference_evidence": {
+      "total": 269,
+      "accuracy": 0.8884758364312267
+     },
+     "implicit_connection_evidence": {
+      "total": 319,
+      "accuracy": 0.7962382445141066
+     }
+    }
+   },
+   "rag": {
+    "questions": 2843,
+    "correct": 2624,
+    "accuracy": 0.9229686950404502,
+    "unscored_counted_wrong": 0,
+    "search_ms_median": 687,
+    "context_tokens_mean": 964,
+    "retrieval": {
+     "hitAtK": 0.8023214913823425,
+     "mrr": 0.7451576972681427,
+     "ndcg": 0.7582326660072447,
+     "k": 1
+    },
+    "by_type": {
+     "user_evidence": {
+      "total": 413,
+      "accuracy": 0.9757869249394673
+     },
+     "assistant_facts_evidence": {
+      "total": 541,
+      "accuracy": 0.9353049907578558
+     },
+     "changing_evidence": {
+      "total": 759,
+      "accuracy": 0.9130434782608695
+     },
+     "abstention_evidence": {
+      "total": 542,
+      "accuracy": 0.977859778597786
+     },
+     "preference_evidence": {
+      "total": 269,
+      "accuracy": 0.862453531598513
+     },
+     "implicit_connection_evidence": {
+      "total": 319,
+      "accuracy": 0.8150470219435737
+     }
+    }
+   },
+   "paired": {
+    "questions": 2843,
+    "ncm_accuracy": 0.9553288779458319,
+    "rag_accuracy": 0.9229686950404502,
+    "ncm_right_rag_wrong": 168,
+    "rag_right_ncm_wrong": 76,
+    "mcnemar_p": 3.7522575136377645e-09
+   }
+  }
+ },
+ "all_benchmarks": {
+  "questions": 5329,
+  "ncm_accuracy": 0.8476261962844811,
+  "rag_accuracy": 0.822293113154438,
+  "ncm_right_rag_wrong": 464,
+  "rag_right_ncm_wrong": 329,
+  "mcnemar_p": 1.8476126340212266e-06
+ }
+}

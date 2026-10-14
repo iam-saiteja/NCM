@@ -135,3 +135,13 @@ evidence, in its two-person dialogue setting with 30 memories and gpt-oss-120b a
 test asked whether the mood line in the prompt changes the character's replies: it does
 for a 7B model (judged tone fit +0.28 of 5, worse with a wrong label) and barely for a 3B
 one.
+
+### MemoryBench against a RAG memory (14 October 2026)
+
+With a second short-term Bedrock key, NCM was added as a provider to Supermemory's
+MemoryBench and run against its RAG baseline on all of LoCoMo, LongMemEval and ConvoMem,
+one answering model (gpt-oss-120b) and one judge (gpt-oss-20b) for both. NCM came out
+ahead overall (84.8% vs 82.2% of 5,329 questions), clearly on ConvoMem and level on the
+other two, for about an eighth of the cost, since it needs no model to store memories.
+Running it took a few fixes to the harness (checkpoint writes that stalled on Windows, a
+resume that dropped questions, retries for Bedrock throttling); none changes scoring.

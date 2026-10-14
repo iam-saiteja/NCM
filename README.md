@@ -286,6 +286,21 @@ judged correct (token F1 0.537), with 12 ms retrieval, no model calls to store m
 and $0.65 for the whole run. Details:
 [comparisons/](comparisons/README.md#3b-ncm-on-all-of-locomo-with-a-large-model-measured-here).
 
+**Against a RAG memory in Supermemory's MemoryBench** (one model answers, one judge grades,
+same questions for both): NCM against MemoryBench's RAG baseline (LLM-extracted notes,
+hybrid search), with gpt-oss-120b answering and gpt-oss-20b judging.
+
+| benchmark (questions) | NCM | RAG | paired test |
+|---|---|---|---|
+| LoCoMo (1,986) | **70.4%** | 68.5% | p 0.09 |
+| LongMemEval-S (500) | **80.6%** | 79.4% | p 0.63 |
+| ConvoMem (2,843) | **95.5%** | 92.3% | p 4e-9 |
+| all three (5,329) | **84.8%** | 82.2% | p 2e-6 |
+
+NCM costs $4.43 for all three (no model calls to store memories) against RAG's $35.83.
+Details and caveats:
+[comparisons/](comparisons/README.md#3c-memorybench-ncm-against-a-rag-memory-on-three-benchmarks-measured-here).
+
 Published LoCoMo scores of other systems, for reference. Each source used its own answering
 model, judge and prompts, so these are a rough guide, not a head-to-head with the NCM row:
 

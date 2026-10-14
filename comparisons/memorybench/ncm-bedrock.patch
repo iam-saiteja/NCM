@@ -1,0 +1,879 @@
+diff --git a/package.json b/package.json
+index 8c1ab9f..c3af906 100644
+--- a/package.json
++++ b/package.json
+@@ -12,6 +12,7 @@
+     "@ai-sdk/anthropic": "^2.0.56",
+     "@ai-sdk/google": "^2.0.49",
+     "@ai-sdk/openai": "^2.0.88",
++    "@ai-sdk/openai-compatible": "^1",
+     "@anthropic-ai/tokenizer": "^0.0.4",
+     "@getzep/zep-cloud": "^3.13.0",
+     "ai": "^5.0.115",
+diff --git a/src/judges/bedrock.ts b/src/judges/bedrock.ts
+new file mode 100644
+index 0000000..3b23616
+--- /dev/null
++++ b/src/judges/bedrock.ts
+@@ -0,0 +1,54 @@
++import { createBedrock } from "../utils/bedrock"
++import { generateText } from "ai"
++import type { Judge, JudgeConfig, JudgeInput, JudgeResult } from "../types/judge"
++import type { ProviderPrompts } from "../types/prompts"
++import { buildJudgePrompt, parseJudgeResponse, getJudgePrompt } from "./base"
++import { logger } from "../utils/logger"
++import { getModelConfig, ModelConfig, DEFAULT_JUDGE_MODELS } from "../utils/models"
++
++export class BedrockJudge implements Judge {
++  name = "bedrock"
++  private modelConfig: ModelConfig | null = null
++  private client: ReturnType<typeof createBedrock> | null = null
++
++  async initialize(config: JudgeConfig): Promise<void> {
++    this.client = createBedrock(config.apiKey)
++    const modelAlias = config.model || DEFAULT_JUDGE_MODELS.bedrock
++    this.modelConfig = getModelConfig(modelAlias)
++    logger.info(
++      `Initialized Bedrock judge with model: ${this.modelConfig.displayName} (${this.modelConfig.id})`
++    )
++  }
++
++  async evaluate(input: JudgeInput): Promise<JudgeResult> {
++    if (!this.client || !this.modelConfig) throw new Error("Judge not initialized")
++
++    const prompt = buildJudgePrompt(input)
++
++    const params: Record<string, unknown> = {
++      model: this.client(this.modelConfig.id),
++      prompt,
++    }
++
++    if (this.modelConfig.supportsTemperature) {
++      params.temperature = this.modelConfig.defaultTemperature
++    }
++
++    params.maxTokens = this.modelConfig.defaultMaxTokens
++
++    const { text } = await generateText(params as Parameters<typeof generateText>[0])
++
++    return parseJudgeResponse(text)
++  }
++
++  getPromptForQuestionType(questionType: string, providerPrompts?: ProviderPrompts): string {
++    return getJudgePrompt(questionType, providerPrompts)
++  }
++
++  getModel(): import("ai").LanguageModel {
++    if (!this.client || !this.modelConfig) throw new Error("Judge not initialized")
++    return this.client(this.modelConfig.id)
++  }
++}
++
++export default BedrockJudge
+diff --git a/src/judges/index.ts b/src/judges/index.ts
+index 1d404ca..6de2936 100644
+--- a/src/judges/index.ts
++++ b/src/judges/index.ts
+@@ -2,11 +2,13 @@ import type { Judge, JudgeName } from "../types/judge"
+ import { OpenAIJudge } from "./openai"
+ import { AnthropicJudge } from "./anthropic"
+ import { GoogleJudge } from "./google"
++import { BedrockJudge } from "./bedrock"
+ 
+ const judges: Record<JudgeName, new () => Judge> = {
+   openai: OpenAIJudge,
+   anthropic: AnthropicJudge,
+   google: GoogleJudge,
++  bedrock: BedrockJudge,
+ }
+ 
+ export function createJudge(name: JudgeName): Judge {
+@@ -21,5 +23,5 @@ export function getAvailableJudges(): JudgeName[] {
+   return Object.keys(judges) as JudgeName[]
+ }
+ 
+-export { OpenAIJudge, AnthropicJudge, GoogleJudge }
++export { OpenAIJudge, AnthropicJudge, GoogleJudge, BedrockJudge }
+ export { buildJudgePrompt, parseJudgeResponse, getJudgePrompt } from "./base"
+diff --git a/src/orchestrator/checkpoint.ts b/src/orchestrator/checkpoint.ts
+index aa00835..17652fa 100644
+--- a/src/orchestrator/checkpoint.ts
++++ b/src/orchestrator/checkpoint.ts
+@@ -23,10 +23,12 @@ import { PHASE_ORDER } from "../types/checkpoint"
+ import { logger } from "../utils/logger"
+ 
+ const RUNS_DIR = "./data/runs"
++const SAVE_INTERVAL_MS = 3000
+ 
+ export class CheckpointManager {
+   private basePath: string
+   private saveLock = new Map<string, Promise<void>>()
++  private pendingSave = new Map<string, RunCheckpoint>()
+ 
+   constructor(basePath: string = RUNS_DIR) {
+     this.basePath = basePath
+@@ -61,15 +63,35 @@ export class CheckpointManager {
+     }
+   }
+ 
++  /**
++   * Saves are coalesced: while one write is in progress, later calls only replace the state
++   * to write next, so a run with thousands of per-session updates writes the (large) file a
++   * once every few seconds at most instead of once per update.
++   */
+   save(checkpoint: RunCheckpoint): void {
+-    const currentQueue = this.saveLock.get(checkpoint.runId) || Promise.resolve()
+-    const nextQueue = currentQueue.then(() => this._performSave(checkpoint))
+-    this.saveLock.set(checkpoint.runId, nextQueue)
+-
+-    nextQueue.finally(() => {
+-      if (this.saveLock.get(checkpoint.runId) === nextQueue) {
+-        this.saveLock.delete(checkpoint.runId)
++    const runId = checkpoint.runId
++    this.pendingSave.set(runId, checkpoint)
++    if (this.saveLock.has(runId)) return
++
++    const writer = (async () => {
++      while (this.pendingSave.has(runId)) {
++        const next = this.pendingSave.get(runId)!
++        this.pendingSave.delete(runId)
++        try {
++          await this._performSave(next)
++        } catch (e) {
++          logger.warn(`Checkpoint save failed (will retry on next update): ${e}`)
++        }
++        // a large run's checkpoint is tens of MB and written synchronously: leave the
++        // event loop free between writes
++        if (this.pendingSave.has(runId)) await new Promise((r) => setTimeout(r, SAVE_INTERVAL_MS))
+       }
++    })()
++    this.saveLock.set(runId, writer)
++    writer.finally(() => {
++      this.saveLock.delete(runId)
++      const late = this.pendingSave.get(runId)
++      if (late) this.save(late)
+     })
+   }
+ 
+@@ -89,7 +111,7 @@ export class CheckpointManager {
+     // Windows often locks files briefly (EPERM/EBUSY), so we retry a few times
+     for (let attempt = 0; attempt < 5; attempt++) {
+       try {
+-        writeFileSync(tempPath, JSON.stringify(checkpoint, null, 2))
++        writeFileSync(tempPath, JSON.stringify(checkpoint))
+         renameSync(tempPath, path)
+         return // Success
+       } catch (e: any) {
+@@ -111,9 +133,13 @@ export class CheckpointManager {
+ 
+   async flush(runId?: string): Promise<void> {
+     if (runId) {
+-      await this.saveLock.get(runId)
++      while (this.saveLock.has(runId) || this.pendingSave.has(runId)) {
++        await (this.saveLock.get(runId) || new Promise((r) => setTimeout(r, 10)))
++      }
+     } else {
+-      await Promise.all(Array.from(this.saveLock.values()))
++      while (this.saveLock.size || this.pendingSave.size) {
++        await Promise.all([...this.saveLock.values(), new Promise((r) => setTimeout(r, 10))])
++      }
+     }
+   }
+ 
+diff --git a/src/orchestrator/index.ts b/src/orchestrator/index.ts
+index 0db1244..7e2e86a 100644
+--- a/src/orchestrator/index.ts
++++ b/src/orchestrator/index.ts
+@@ -167,9 +167,10 @@ export class Orchestrator {
+               `Old checkpoint detected. Using CLI limit (${limit}) to determine target questions.`
+             )
+           } else {
+-            targetQuestionIds = startedQuestions
++            // no limit: the run covers every question, started or not
++            targetQuestionIds = [...startedQuestions, ...pendingQuestions]
+             logger.warn(
+-              `Old checkpoint without stored limit. Only processing ${startedQuestions.length} already-started questions.`
++              `Checkpoint without stored limit: resuming all ${targetQuestionIds.length} questions.`
+             )
+           }
+ 
+diff --git a/src/orchestrator/phases/answer.ts b/src/orchestrator/phases/answer.ts
+index d9e6df7..0fd4ea0 100644
+--- a/src/orchestrator/phases/answer.ts
++++ b/src/orchestrator/phases/answer.ts
+@@ -3,6 +3,7 @@ import { createOpenAI } from "@ai-sdk/openai"
+ import { createAnthropic } from "@ai-sdk/anthropic"
+ import { createGoogleGenerativeAI } from "@ai-sdk/google"
+ import { generateText } from "ai"
++import { createBedrock } from "../../utils/bedrock"
+ import type { Benchmark } from "../../types/benchmark"
+ import type { RunCheckpoint } from "../../types/checkpoint"
+ import type { Provider } from "../../types/provider"
+@@ -20,6 +21,7 @@ type LanguageModel =
+   | ReturnType<typeof createOpenAI>
+   | ReturnType<typeof createAnthropic>
+   | ReturnType<typeof createGoogleGenerativeAI>
++  | ReturnType<typeof createBedrock>
+ 
+ function getAnsweringModel(modelAlias: string): {
+   client: LanguageModel
+@@ -43,6 +45,11 @@ function getAnsweringModel(modelAlias: string): {
+         client: createGoogleGenerativeAI({ apiKey: config.googleApiKey }),
+         modelConfig,
+       }
++    case "bedrock":
++      return {
++        client: createBedrock(config.bedrockApiKey),
++        modelConfig,
++      }
+   }
+ }
+ 
+diff --git a/src/prompts/extraction.ts b/src/prompts/extraction.ts
+index daca2b9..3c449e7 100644
+--- a/src/prompts/extraction.ts
++++ b/src/prompts/extraction.ts
+@@ -1,5 +1,6 @@
+ import { createOpenAI } from "@ai-sdk/openai"
+ import { generateText } from "ai"
++import type { LanguageModel } from "ai"
+ import type { UnifiedSession } from "../types/unified"
+ 
+ /** Model used for memory extraction (fast, cheap, sufficient for extraction) */
+@@ -69,13 +70,14 @@ Rules:
+  * Returns MEMORY.md-style markdown with categorized facts, events, preferences.
+  */
+ export async function extractMemories(
+-  openai: ReturnType<typeof createOpenAI>,
+-  session: UnifiedSession
++  openai: ReturnType<typeof createOpenAI> | ((modelId: string) => LanguageModel),
++  session: UnifiedSession,
++  modelId: string = EXTRACTION_MODEL
+ ): Promise<string> {
+   const prompt = buildExtractionPrompt(session)
+ 
+   const params: Record<string, unknown> = {
+-    model: openai(EXTRACTION_MODEL),
++    model: openai(modelId),
+     prompt,
+     maxTokens: 2000,
+     temperature: 0,
+diff --git a/src/providers/index.ts b/src/providers/index.ts
+index 5f71566..ff81c8d 100644
+--- a/src/providers/index.ts
++++ b/src/providers/index.ts
+@@ -5,6 +5,7 @@ import { Mem0Provider } from "./mem0"
+ import { ZepProvider } from "./zep"
+ import { FilesystemProvider } from "./filesystem"
+ import { RAGProvider } from "./rag"
++import { NCMProvider } from "./ncm"
+ 
+ const providers: Record<ProviderName, new () => Provider> = {
+   supermemory: SupermemoryProvider,
+@@ -12,6 +13,7 @@ const providers: Record<ProviderName, new () => Provider> = {
+   zep: ZepProvider,
+   filesystem: FilesystemProvider,
+   rag: RAGProvider,
++  ncm: NCMProvider,
+ }
+ 
+ export function createProvider(name: ProviderName): Provider {
+@@ -39,4 +41,4 @@ export function getProviderInfo(name: ProviderName): {
+   }
+ }
+ 
+-export { SupermemoryProvider, Mem0Provider, ZepProvider, FilesystemProvider, RAGProvider }
++export { SupermemoryProvider, Mem0Provider, ZepProvider, FilesystemProvider, RAGProvider, NCMProvider }
+diff --git a/src/providers/ncm/index.ts b/src/providers/ncm/index.ts
+new file mode 100644
+index 0000000..bbd1abb
+--- /dev/null
++++ b/src/providers/ncm/index.ts
+@@ -0,0 +1,94 @@
++import type {
++  Provider,
++  ProviderConfig,
++  IngestOptions,
++  IngestResult,
++  SearchOptions,
++  IndexingProgressCallback,
++} from "../../types/provider"
++import type { UnifiedSession } from "../../types/unified"
++import { logger } from "../../utils/logger"
++import { NCM_PROMPTS } from "./prompts"
++
++/**
++ * NCM (Neural Context Memory), run locally through a small HTTP bridge
++ * (comparisons/memorybench_bridge.py in the NCM repository).
++ *
++ * - Ingestion: every message is stored as one memory (no LLM extraction), with the
++ *   session's date and the speaker. Two-person transcripts (LoCoMo, where messages carry
++ *   speaker names) use NCM's dialogue mode; user/assistant chats use the default.
++ * - Search: NCM's ranking (dense + BM25 + session context), returning the best
++ *   `NCM_TURNS_PER_RESULT x limit` single turns, since one turn is much shorter than a
++ *   RAG chunk (default 3 x 10 = 30 turns).
++ */
++export class NCMProvider implements Provider {
++  name = "ncm"
++  prompts = NCM_PROMPTS
++  concurrency = {
++    default: 16,
++    ingest: 8,
++  }
++
++  private baseUrl = "http://127.0.0.1:8765"
++  private turnsPerResult = parseInt(process.env.NCM_TURNS_PER_RESULT || "3", 10)
++
++  async initialize(config: ProviderConfig): Promise<void> {
++    this.baseUrl = config.baseUrl || this.baseUrl
++    const health = await this.call("health", {})
++    logger.info(`Initialized NCM provider via ${this.baseUrl} (${JSON.stringify(health)})`)
++  }
++
++  private async call(path: string, body: unknown): Promise<any> {
++    for (let attempt = 0; ; attempt++) {
++      try {
++        const response = await fetch(`${this.baseUrl}/${path}`, {
++          method: "POST",
++          headers: { "Content-Type": "application/json" },
++          body: JSON.stringify(body),
++        })
++        if (!response.ok) throw new Error(`NCM bridge ${path}: ${response.status} ${await response.text()}`)
++        return await response.json()
++      } catch (e) {
++        if (attempt >= 10) throw e
++        await new Promise((r) => setTimeout(r, Math.min(30_000, 1000 * 2 ** attempt)))
++      }
++    }
++  }
++
++  async ingest(sessions: UnifiedSession[], options: IngestOptions): Promise<IngestResult> {
++    const payload = sessions.map((s) => ({
++      sessionId: s.sessionId,
++      date: (s.metadata?.date as string) || null,
++      messages: s.messages.map((m) => ({
++        speaker: m.speaker || m.role,
++        content: m.content,
++        timestamp: m.timestamp || null,
++      })),
++      dialogue: s.messages.some((m) => !!m.speaker),
++    }))
++    await this.call("ingest", { tag: options.containerTag, sessions: payload })
++    // one id per session, not per stored turn: MemoryBench keeps every id in its checkpoint
++    return { documentIds: sessions.map((s) => s.sessionId) }
++  }
++
++  async awaitIndexing(
++    result: IngestResult,
++    _containerTag: string,
++    onProgress?: IndexingProgressCallback
++  ): Promise<void> {
++    // NCM indexes synchronously during ingest
++    onProgress?.({ completedIds: result.documentIds, failedIds: [], total: result.documentIds.length })
++  }
++
++  async search(query: string, options: SearchOptions): Promise<unknown[]> {
++    const k = (options.limit || 10) * this.turnsPerResult
++    const out = await this.call("search", { tag: options.containerTag, query, k })
++    return out.results
++  }
++
++  async clear(containerTag: string): Promise<void> {
++    await this.call("clear", { tag: containerTag })
++  }
++}
++
++export default NCMProvider
+diff --git a/src/providers/ncm/prompts.ts b/src/providers/ncm/prompts.ts
+new file mode 100644
+index 0000000..deceaa0
+--- /dev/null
++++ b/src/providers/ncm/prompts.ts
+@@ -0,0 +1,78 @@
++import type { ProviderPrompts } from "../../types/prompts"
++
++interface NCMSearchResult {
++  content: string
++  speaker: string
++  sessionId: string
++  date?: string | null
++  time: number
++  rank: number
++  score: number
++}
++
++/** Retrieved turns, oldest first and grouped by session, so the latest version of a changed fact is read last. */
++function buildNCMContext(context: unknown[]): string {
++  const results = (context as NCMSearchResult[]).slice().sort((a, b) => a.time - b.time || a.rank - b.rank)
++  if (results.length === 0) {
++    return "No relevant memories were retrieved."
++  }
++
++  const blocks: string[] = []
++  let current = ""
++  let lines: string[] = []
++  for (const r of results) {
++    if (r.sessionId !== current) {
++      if (lines.length) blocks.push(lines.join("\n"))
++      current = r.sessionId
++      const date = r.date ? ` | Date: ${r.date}` : ""
++      lines = [`(session: ${r.sessionId}${date})`]
++    }
++    lines.push(`${r.speaker}: ${r.content}`)
++  }
++  if (lines.length) blocks.push(lines.join("\n"))
++  return blocks.join("\n\n---\n\n")
++}
++
++export function buildNCMAnswerPrompt(question: string, context: unknown[], questionDate?: string): string {
++  const retrievedContext = buildNCMContext(context)
++
++  return `You are a question-answering system. Based on the retrieved memories below, answer the question.
++
++Question: ${question}
++Question Date: ${questionDate || "Not specified"}
++
++Retrieved Memories (conversation turns, oldest first, grouped by session):
++${retrievedContext}
++
++**Understanding the Context:**
++The context contains the conversation turns most relevant to the question, retrieved by a memory system and shown verbatim (speaker: what they said), not summaries.
++
++- **Date** indicates when that conversation took place
++- Turns under the same session header are from the same conversation, in order
++- Sessions are in chronological order, so later sessions are more recent
++
++**How to Answer:**
++1. Look for the turns that directly answer the question
++2. Look for specific facts, names, dates, preferences, and relationships in what the speakers said
++3. Cross-reference information across turns from the same or different sessions
++4. For temporal questions, use the session dates and any date references within the turns
++5. If a fact changed over time, prefer the most recent statement
++
++Instructions:
++- Base your answer ONLY on the provided memories
++- If the memories contain enough information, provide a clear, concise answer
++- If the memories do not contain enough information, respond with "I don't know"
++- Pay attention to temporal context for time-based questions
++
++Reasoning:
++[Your step-by-step reasoning process here]
++
++Answer:
++[Your final answer here]`
++}
++
++export const NCM_PROMPTS: ProviderPrompts = {
++  answerPrompt: buildNCMAnswerPrompt,
++}
++
++export default NCM_PROMPTS
+diff --git a/src/providers/rag/index.ts b/src/providers/rag/index.ts
+index c90b723..7b5ffad 100644
+--- a/src/providers/rag/index.ts
++++ b/src/providers/rag/index.ts
+@@ -13,7 +13,15 @@ import { logger } from "../../utils/logger"
+ import { HybridSearchEngine } from "./search"
+ import type { Chunk } from "./search"
+ import { RAG_PROMPTS } from "./prompts"
+-import { extractMemories } from "../../prompts/extraction"
++import { extractMemories, buildExtractionPrompt } from "../../prompts/extraction"
++import { AsyncCache } from "../../utils/disk-cache"
++import { createBedrock, bedrockEmbed, BEDROCK_EMBEDDING_MODEL } from "../../utils/bedrock"
++
++/** On Bedrock: extraction with the run's answering model family, embeddings with Titan v2 */
++const BEDROCK_EXTRACTION_MODEL = process.env.RAG_EXTRACTION_MODEL || "openai.gpt-oss-120b-1:0"
++/** Same session, same model, temperature 0: extract once, embed once (see AsyncCache) */
++const extractionCache = new AsyncCache<string>("data/cache/rag-extraction-bedrock.jsonl")
++const embeddingCache = new AsyncCache<number[]>()
+ 
+ /** Target chunk size in characters (~400 tokens) */
+ const CHUNK_SIZE = 1600
+@@ -96,12 +104,17 @@ export class RAGProvider implements Provider {
+   private searchEngine = new HybridSearchEngine()
+   private openai: ReturnType<typeof createOpenAI> | null = null
+   private apiKey: string = ""
++  private bedrock: ReturnType<typeof createBedrock> | null = null
+ 
+   async initialize(config: ProviderConfig): Promise<void> {
+     this.apiKey = config.apiKey
+     if (!this.apiKey) {
+       throw new Error("RAG provider requires OPENAI_API_KEY for memory extraction and embeddings")
+     }
++    if (config.bedrock) {
++      this.bedrock = createBedrock(this.apiKey)
++      logger.info(`RAG on Bedrock: extraction ${BEDROCK_EXTRACTION_MODEL}, embeddings ${BEDROCK_EMBEDDING_MODEL}`)
++    }
+     this.openai = createOpenAI({ apiKey: this.apiKey })
+     logger.info("Initialized RAG memory provider (OpenClaw/QMD-style with LLM extraction + hybrid search)")
+   }
+@@ -119,7 +132,13 @@ export class RAGProvider implements Provider {
+ 
+     // Step 1: Extract memories from each session via LLM, then chunk
+     for (const session of sessions) {
+-      const extracted = await extractMemories(this.openai, session)
++      const bedrock = this.bedrock
++      const extracted = bedrock
++        ? await extractionCache.get(
++            AsyncCache.key(BEDROCK_EXTRACTION_MODEL, buildExtractionPrompt(session)),
++            () => extractMemories(bedrock, session, BEDROCK_EXTRACTION_MODEL)
++          )
++        : await extractMemories(this.openai, session)
+ 
+       // Extract ISO date for OpenClaw-style date organization
+       const isoDate = (session.metadata?.date as string) || "unknown"
+@@ -157,10 +176,11 @@ export class RAGProvider implements Provider {
+       const batch = allChunks.slice(i, i + EMBEDDING_BATCH_SIZE)
+       const texts = batch.map((c) => c.text)
+ 
+-      const { embeddings } = await embedMany({
+-        model: embeddingModel,
+-        values: texts,
+-      })
++      const embeddings = this.bedrock
++        ? await Promise.all(
++            texts.map((t) => embeddingCache.get(AsyncCache.key(t), () => bedrockEmbed(t, this.apiKey)))
++          )
++        : (await embedMany({ model: embeddingModel, values: texts })).embeddings
+ 
+       for (let j = 0; j < batch.length; j++) {
+         const chunk = batch[j]
+@@ -209,13 +229,15 @@ export class RAGProvider implements Provider {
+     if (!this.openai) throw new Error("Provider not initialized")
+ 
+     // Generate query embedding
+-    const embeddingModel = this.openai.embedding(EMBEDDING_MODEL)
+-    const { embedding: queryEmbedding } = await embed({
+-      model: embeddingModel,
+-      value: query,
+-    })
++    const queryEmbedding = this.bedrock
++      ? await bedrockEmbed(query, this.apiKey)
++      : (await embed({ model: this.openai.embedding(EMBEDDING_MODEL), value: query })).embedding
+ 
+     const limit = options.limit || 10
++    if (this.searchEngine.getChunkCount(options.containerTag) === 0) {
++      // the index lives in this process only: a restart after ingest must re-ingest
++      throw new Error(`RAG has no chunks for ${options.containerTag}; re-run ingest in this process`)
++    }
+ 
+     // Hybrid search
+     const results = this.searchEngine.search(options.containerTag, queryEmbedding, query, limit)
+diff --git a/src/types/judge.ts b/src/types/judge.ts
+index cf8bcb3..0fd70c3 100644
+--- a/src/types/judge.ts
++++ b/src/types/judge.ts
+@@ -30,4 +30,4 @@ export interface Judge {
+   getModel(): import("ai").LanguageModel
+ }
+ 
+-export type JudgeName = "openai" | "anthropic" | "google"
++export type JudgeName = "openai" | "anthropic" | "google" | "bedrock"
+diff --git a/src/types/provider.ts b/src/types/provider.ts
+index cdc0228..b41bbd5 100644
+--- a/src/types/provider.ts
++++ b/src/types/provider.ts
+@@ -47,4 +47,4 @@ export interface Provider {
+   clear(containerTag: string): Promise<void>
+ }
+ 
+-export type ProviderName = "supermemory" | "mem0" | "zep" | "filesystem" | "rag"
++export type ProviderName = "supermemory" | "mem0" | "zep" | "filesystem" | "rag" | "ncm"
+diff --git a/src/utils/bedrock.ts b/src/utils/bedrock.ts
+new file mode 100644
+index 0000000..0244c08
+--- /dev/null
++++ b/src/utils/bedrock.ts
+@@ -0,0 +1,139 @@
++import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
++import { mkdirSync, writeFileSync } from "fs"
++
++/**
++ * Amazon Bedrock through its OpenAI-compatible endpoint, authenticated with a Bedrock API key.
++ *
++ * gpt-oss models on Bedrock return their reasoning inline as <reasoning>...</reasoning> at the
++ * start of the message content; it is stripped here so answers and judge verdicts are clean.
++ * A max_tokens default is added because the reasoning counts against it.
++ */
++
++export const BEDROCK_REGION = process.env.BEDROCK_REGION || "ap-southeast-2"
++export const BEDROCK_API_KEY = process.env.BEDROCK_API_KEY || ""
++
++const DEFAULT_MAX_TOKENS = 4096
++
++export const bedrockEmbeddingTokens = { count: 0 }
++
++/** At most this many Bedrock chat requests (and, separately, embedding requests) in flight. */
++const MAX_IN_FLIGHT = parseInt(process.env.BEDROCK_MAX_IN_FLIGHT || "32", 10)
++const MAX_EMBEDDINGS_IN_FLIGHT = parseInt(process.env.BEDROCK_MAX_EMBEDDINGS_IN_FLIGHT || "8", 10)
++
++type Pool = <T>(fn: () => Promise<T>) => Promise<T>
++
++function pool(size: number): Pool {
++  let inFlight = 0
++  const waiting: Array<() => void> = []
++  return async function <T>(fn: () => Promise<T>): Promise<T> {
++    if (inFlight >= size) await new Promise<void>((r) => waiting.push(r))
++    inFlight++
++    try {
++      return await fn()
++    } finally {
++      inFlight--
++      waiting.shift()?.()
++    }
++  }
++}
++const slot = pool(MAX_IN_FLIGHT)
++const embeddingSlot = pool(MAX_EMBEDDINGS_IN_FLIGHT)
++
++/**
++ * fetch, retried on server errors and network failures (timeouts, resets) up to 8 times;
++ * throttling (429) is waited out for up to ~30 minutes.
++ */
++async function retryingFetch(input: RequestInfo | URL, init?: RequestInit, through: Pool = slot): Promise<Response> {
++  for (let attempt = 0, throttled = 0; ; attempt++) {
++    let response: Response | null = null
++    try {
++      response = await through(() => fetch(input, init))
++    } catch (e) {
++      if (attempt >= 8) throw e
++    }
++    if (response?.status === 429 && throttled++ < 60) {
++      attempt = Math.min(attempt, 4)
++    } else if (response && (response.status < 500 || attempt >= 8)) {
++      return response
++    }
++    await new Promise((r) => setTimeout(r, Math.min(30_000, 2_000 * 2 ** attempt) * (0.5 + Math.random())))
++  }
++}
++
++const REASONING = /<reasoning>[\s\S]*?<\/reasoning>/g
++
++/** Token counts per model for this process, written to data/usage/ so a run's cost can be checked. */
++export const bedrockUsage: Record<string, { calls: number; inputTokens: number; outputTokens: number }> = {}
++const USAGE_FILE = `data/usage/bedrock-${new Date().toISOString().replace(/[:.]/g, "-")}-${process.pid}.json`
++let usageWrites = 0
++function writeUsage(force = false) {
++  if (!force && ++usageWrites % 25 !== 0) return
++  mkdirSync("data/usage", { recursive: true })
++  writeFileSync(
++    USAGE_FILE,
++    JSON.stringify({ argv: process.argv.slice(2), usage: bedrockUsage, embeddingTokens: bedrockEmbeddingTokens.count }, null, 1)
++  )
++}
++process.on("exit", () => {
++  if (Object.keys(bedrockUsage).length || bedrockEmbeddingTokens.count) writeUsage(true)
++})
++
++async function bedrockFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
++  if (init?.body && typeof init.body === "string") {
++    const body = JSON.parse(init.body)
++    if (body.max_tokens === undefined && body.max_completion_tokens === undefined) {
++      body.max_tokens = DEFAULT_MAX_TOKENS
++    }
++    init = { ...init, body: JSON.stringify(body) }
++  }
++
++  const response = await retryingFetch(input, init)
++  if (!response.ok) return response
++
++  const data = await response.json()
++  for (const choice of data.choices || []) {
++    const content = choice.message?.content
++    if (typeof content === "string") {
++      choice.message.content = content.replace(REASONING, "").trim()
++    }
++  }
++  const u = (bedrockUsage[data.model || "unknown"] ||= { calls: 0, inputTokens: 0, outputTokens: 0 })
++  u.calls += 1
++  u.inputTokens += data.usage?.prompt_tokens || 0
++  u.outputTokens += data.usage?.completion_tokens || 0
++  writeUsage()
++
++  return new Response(JSON.stringify(data), {
++    status: response.status,
++    headers: { "content-type": "application/json" },
++  })
++}
++
++export function createBedrock(apiKey: string = BEDROCK_API_KEY) {
++  if (!apiKey) throw new Error("BEDROCK_API_KEY is not set")
++  return createOpenAICompatible({
++    name: "bedrock",
++    baseURL: `https://bedrock-runtime.${BEDROCK_REGION}.amazonaws.com/openai/v1`,
++    apiKey,
++    fetch: bedrockFetch as typeof fetch,
++  })
++}
++
++/** Titan Text Embeddings v2 (1024 dims, normalised): Bedrock's counterpart to text-embedding-3-small. */
++export const BEDROCK_EMBEDDING_MODEL = "amazon.titan-embed-text-v2:0"
++
++export async function bedrockEmbed(text: string, apiKey: string = BEDROCK_API_KEY): Promise<number[]> {
++  const url = `https://bedrock-runtime.${BEDROCK_REGION}.amazonaws.com/model/${encodeURIComponent(BEDROCK_EMBEDDING_MODEL)}/invoke`
++  const body = JSON.stringify({ inputText: text.slice(0, 40_000), dimensions: 1024, normalize: true })
++  const response = await retryingFetch(
++    url,
++    { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body },
++    embeddingSlot
++  )
++  if (!response.ok) throw new Error(`Bedrock embedding failed: ${response.status} ${await response.text()}`)
++  const data = (await response.json()) as { embedding: number[]; inputTextTokenCount?: number }
++  bedrockEmbeddingTokens.count += data.inputTextTokenCount || 0
++  writeUsage()
++  return data.embedding
++}
++
+diff --git a/src/utils/config.ts b/src/utils/config.ts
+index 8ac1268..3d53e59 100644
+--- a/src/utils/config.ts
++++ b/src/utils/config.ts
+@@ -6,6 +6,7 @@ export interface Config {
+   openaiApiKey: string
+   anthropicApiKey: string
+   googleApiKey: string
++  bedrockApiKey: string
+ }
+ 
+ export const config: Config = {
+@@ -16,9 +17,10 @@ export const config: Config = {
+   openaiApiKey: process.env.OPENAI_API_KEY || "",
+   anthropicApiKey: process.env.ANTHROPIC_API_KEY || "",
+   googleApiKey: process.env.GOOGLE_API_KEY || "",
++  bedrockApiKey: process.env.BEDROCK_API_KEY || "",
+ }
+ 
+-export function getProviderConfig(provider: string): { apiKey: string; baseUrl?: string } {
++export function getProviderConfig(provider: string): { apiKey: string; baseUrl?: string; bedrock?: boolean } {
+   switch (provider) {
+     case "supermemory":
+       return { apiKey: config.supermemoryApiKey, baseUrl: config.supermemoryBaseUrl }
+@@ -29,7 +31,10 @@ export function getProviderConfig(provider: string): { apiKey: string; baseUrl?:
+     case "filesystem":
+       return { apiKey: config.openaiApiKey } // Filesystem uses OpenAI for memory extraction
+     case "rag":
+-      return { apiKey: config.openaiApiKey } // RAG provider uses OpenAI for embeddings
++      // RAG uses an LLM for memory extraction and an embedding model: Bedrock when its key is set
++      return { apiKey: config.bedrockApiKey || config.openaiApiKey, bedrock: !!config.bedrockApiKey }
++    case "ncm":
++      return { apiKey: "", baseUrl: process.env.NCM_BRIDGE_URL || "http://127.0.0.1:8765" }
+     default:
+       throw new Error(`Unknown provider: ${provider}`)
+   }
+@@ -43,6 +48,8 @@ export function getJudgeConfig(judge: string): { apiKey: string; model?: string
+       return { apiKey: config.anthropicApiKey }
+     case "google":
+       return { apiKey: config.googleApiKey }
++    case "bedrock":
++      return { apiKey: config.bedrockApiKey }
+     default:
+       throw new Error(`Unknown judge: ${judge}`)
+   }
+diff --git a/src/utils/disk-cache.ts b/src/utils/disk-cache.ts
+new file mode 100644
+index 0000000..329e637
+--- /dev/null
++++ b/src/utils/disk-cache.ts
+@@ -0,0 +1,47 @@
++import { createHash } from "crypto"
++import { existsSync, readFileSync, appendFileSync, mkdirSync } from "fs"
++import { dirname } from "path"
++
++/**
++ * Memoises an async function by key, optionally persisted as JSON lines. Benchmarks ingest
++ * the same session once per question (LoCoMo: ~2,000 times for 272 sessions); with a
++ * deterministic model the result is the same each time, so it is computed once.
++ * Concurrent requests for one key share a single call.
++ */
++export class AsyncCache<T> {
++  private mem = new Map<string, Promise<T>>()
++
++  constructor(private file?: string) {
++    if (!file) return
++    if (existsSync(file)) {
++      for (const line of readFileSync(file, "utf8").split("\n")) {
++        if (!line) continue
++        try {
++          const { k, v } = JSON.parse(line)
++          this.mem.set(k, Promise.resolve(v))
++        } catch {
++          // a line cut short by a crash: recompute it
++        }
++      }
++    } else {
++      mkdirSync(dirname(file), { recursive: true })
++    }
++  }
++
++  static key(...parts: string[]): string {
++    return createHash("sha256").update(parts.join("\u0000")).digest("hex")
++  }
++
++  get(key: string, make: () => Promise<T>): Promise<T> {
++    let p = this.mem.get(key)
++    if (!p) {
++      p = make().then((v) => {
++        if (this.file) appendFileSync(this.file, JSON.stringify({ k: key, v }) + "\n")
++        return v
++      })
++      p.catch(() => this.mem.delete(key))
++      this.mem.set(key, p)
++    }
++    return p
++  }
++}
+diff --git a/src/utils/models.ts b/src/utils/models.ts
+index b29ac80..2db5e64 100644
+--- a/src/utils/models.ts
++++ b/src/utils/models.ts
+@@ -1,6 +1,6 @@
+ export interface ModelConfig {
+   id: string
+-  provider: "openai" | "anthropic" | "google"
++  provider: "openai" | "anthropic" | "google" | "bedrock"
+   displayName: string
+   supportsTemperature: boolean
+   defaultTemperature: number
+@@ -9,6 +9,25 @@ export interface ModelConfig {
+ }
+ 
+ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
++  // Amazon Bedrock (OpenAI-compatible endpoint, Bedrock API key)
++  "gpt-oss-120b": {
++    id: "openai.gpt-oss-120b-1:0",
++    provider: "bedrock",
++    displayName: "gpt-oss-120b (Bedrock)",
++    supportsTemperature: true,
++    defaultTemperature: 0,
++    maxTokensParam: "maxOutputTokens",
++    defaultMaxTokens: 4096,
++  },
++  "gpt-oss-20b": {
++    id: "openai.gpt-oss-20b-1:0",
++    provider: "bedrock",
++    displayName: "gpt-oss-20b (Bedrock)",
++    supportsTemperature: true,
++    defaultTemperature: 0,
++    maxTokensParam: "maxOutputTokens",
++    defaultMaxTokens: 4096,
++  },
+   // OpenAI - Standard models (support temperature)
+   "gpt-4o": {
+     id: "gpt-4o",
+@@ -232,6 +251,7 @@ export const DEFAULT_JUDGE_MODELS: Record<string, string> = {
+   openai: "gpt-4o",
+   anthropic: "sonnet-4",
+   google: "gemini-2.5-flash",
++  bedrock: "gpt-oss-20b",
+ }
+ 
+ export function getModelConfig(alias: string): ModelConfig {
+@@ -326,7 +346,7 @@ export function getModelId(alias: string): string {
+   return getModelConfig(alias).id
+ }
+ 
+-export function getModelProvider(alias: string): "openai" | "anthropic" | "google" {
++export function getModelProvider(alias: string): ModelConfig["provider"] {
+   return getModelConfig(alias).provider
+ }
+ 

@@ -11,6 +11,9 @@ context, ~500-token prompts. Its lead over a well-chosen vector RAG (bge-base) i
 and not statistically significant here. Its lead over full-context prompting, hybrid
 search, Mem0 on a local LLM, and summary memory is significant. A modern learned
 keyword model (SPLADE) beats NCM's default retrieval on one of the two datasets.
+In Supermemory's MemoryBench with a large model ([3c](#3c-memorybench-ncm-against-a-rag-memory-on-three-benchmarks-measured-here)),
+NCM beat MemoryBench's RAG memory over 5,329 questions (84.8% vs 82.2%, p 2e-6): clearly
+on ConvoMem, level within noise on LoCoMo and LongMemEval, at an eighth of the cost.
 
 ## 1. Answers: same reader, different memory
 
@@ -219,6 +222,89 @@ Results: `results/locomo-bedrock-gpt-oss-120b-1-0-judge-gpt-oss-20b-1-0-k30-dial
 
 ```
 python -m comparisons.locomo_bedrock --model openai.gpt-oss-120b-1:0 --judge openai.gpt-oss-20b-1:0 --k 30 --dialogue
+```
+
+## 3c. MemoryBench: NCM against a RAG memory on three benchmarks (measured here)
+
+[MemoryBench](https://github.com/supermemoryai/memorybench) (Supermemory's open benchmark
+harness) runs every memory system through the same pipeline: store each conversation,
+search once per question (10 results), answer with one model, grade with one judge. NCM
+was added as a provider and run against MemoryBench's own RAG baseline (LLM memory
+extraction, ~400-token chunks, hybrid BM25 + vector search), on all questions of its three
+benchmarks. Both systems: **gpt-oss-120b answers, gpt-oss-20b judges** (Amazon Bedrock,
+temperature 0), MemoryBench's prompts and judge rules, one run each.
+
+| benchmark (questions) | NCM | RAG | NCM right, RAG wrong / reverse | McNemar p |
+|---|---|---|---|---|
+| LoCoMo (1,986) | **70.4%** | 68.5% | 240 / 203 | 0.09 |
+| LongMemEval-S (500) | **80.6%** | 79.4% | 56 / 50 | 0.63 |
+| ConvoMem (2,843) | **95.5%** | 92.3% | 168 / 76 | 4e-9 |
+| all three (5,329) | **84.8%** | 82.2% | 464 / 329 | 2e-6 |
+
+| | NCM | RAG |
+|---|---|---|
+| model calls to store memories | 0 | one gpt-oss-120b call per session |
+| memory tokens per answer (LoCoMo / LongMemEval / ConvoMem) | 1,168 / 8,411 / 955 | 3,424 / 3,598 / 964 |
+| search time, median under MemoryBench's concurrency (same order) | 386 / 928 / 208 ms | 2,903 / 709 / 687 ms |
+| Bedrock cost, all three benchmarks | **$4.43** (answering and judging only) | $35.83 ($27.77 of it LongMemEval extraction) |
+
+By kind of question (NCM / RAG):
+
+- **LoCoMo** (LoCoMo's category numbers; MemoryBench names them differently, e.g. it calls
+  category 4 "world-knowledge"): single-hop **86.3** / 73.6 (841), temporal 72.9 / **77.9**
+  (321), multi-hop 36.5 / **42.9** (282), open-domain 43.8 / 43.8 (96), adversarial
+  (unanswerable) 65.7 / **73.8** (446).
+- **LongMemEval:** assistant said **98.2** / 83.9 (56), multi-session **72.7** / 66.2 (132),
+  knowledge update 91.0 / 89.7 (78), user said 88.6 / 91.4 (70), temporal 78.2 / **83.5**
+  (133), preference 50.0 / 56.7 (30).
+- **ConvoMem:** assistant facts **99.4** / 93.5 (541), changing facts **97.0** / 91.3 (759),
+  user facts 99.0 / 97.6 (413), abstention 99.6 / 97.8 (542), preference 88.8 / 86.2 (269),
+  implicit connections 79.6 / 81.5 (319).
+
+**Reading it.** On ConvoMem NCM is clearly ahead, mostly on facts that change over time and
+on things the assistant said, which an extraction step tends to drop or overwrite. On LoCoMo
+and LongMemEval the two are level within noise: NCM wins direct recall (single-hop, what the
+assistant said, multi-session), RAG wins temporal questions and knowing when to say "I don't
+know" (its extracted memories carry resolved dates and are terser). NCM gets there without
+a model call per session, at about an eighth of the cost.
+
+**What differs from stock MemoryBench, and what to keep in mind:**
+
+- **RAG on Bedrock.** Stock RAG extracts with GPT-4o-mini and embeds with OpenAI
+  text-embedding-3-small. Here it extracts with gpt-oss-120b (the same model that answers)
+  and embeds with Amazon Titan Text Embeddings v2 (1,024 dimensions, same price). Its
+  chunking, search and prompts are unchanged. Extraction is cached by session content, so a
+  conversation is extracted once even though MemoryBench ingests it once per question;
+  at temperature 0 this changes the cost, not the result.
+- **NCM's setup.** Every message is one memory with its session date; two-person
+  transcripts (LoCoMo) use NCM's dialogue setting (`lift_next=0.75`, width 3), assistant
+  chats the default. A search returns the 30 best turns (3 x MemoryBench's 10, since a turn
+  is much shorter than a RAG chunk), shown oldest first and grouped by session. NCM's answer
+  prompt is RAG's, with only the description of the context changed.
+- **Retrieval scores.** MemoryBench also has an LLM grade whether the first 10 results hold
+  the evidence (Hit@10: LoCoMo 65% NCM / 69% RAG, LongMemEval 75% / 84%). NCM's 10 first
+  results are 10 single turns and RAG's are 10 chunks of extracted notes, so these are not
+  like for like; the answer accuracy above is.
+- **One empty answer** (LongMemEval, NCM: gpt-oss spent its whole token budget reasoning)
+  is left out of MemoryBench's own report; here it counts as wrong.
+- **LoCoMo here includes the 446 adversarial questions**, so it is not the 1,531-question
+  set of section 3b.
+- **Harness fixes** that do not change scoring: checkpoint writes are batched (on Windows a
+  20-40 MB checkpoint rewritten after every session stalled the run), a resumed run keeps
+  all its questions, and Bedrock calls retry on throttling and network errors. All changes
+  are in `memorybench/ncm-bedrock.patch` (against MemoryBench 94e2af5).
+
+Results: `results/memorybench-bedrock.json` (per benchmark, per kind, paired tests).
+
+```bash
+git clone https://github.com/supermemoryai/memorybench && cd memorybench
+git checkout 94e2af5 && git apply ../NCM-RELEASE/comparisons/memorybench/ncm-bedrock.patch && bun install
+# .env: BEDROCK_API_KEY=..., BEDROCK_REGION=ap-southeast-2
+python ../NCM-RELEASE/comparisons/memorybench_bridge.py --data data/ncm     # NCM, in another shell
+for b in locomo longmemeval convomem; do for p in ncm rag; do
+  bun run src/index.ts run -p $p -b $b -m gpt-oss-120b -j gpt-oss-20b -r $p-$b
+done; done
+python ../NCM-RELEASE/comparisons/memorybench_summary.py --runs data/runs
 ```
 
 ## 4. How it was run, and what to keep in mind

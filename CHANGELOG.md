@@ -11,6 +11,11 @@ No library changes; new measurements.
 - `bench/mood_effect.py`: does the mood line change the character's replies? With
   qwen2.5:7b, yes: tone fit 3.81 -> 4.09 of 5 (p 0.03), worse with a wrong label; with
   qwen2.5:3b, barely. `mood()` reads 61% of users' moods right, never the opposite.
+- `comparisons/memorybench_bridge.py`, `memorybench_summary.py` and
+  `comparisons/memorybench/ncm-bedrock.patch`: NCM as a provider in Supermemory's
+  MemoryBench, run against its RAG baseline with gpt-oss-120b answering and gpt-oss-20b
+  judging. NCM 84.8% vs RAG 82.2% over 5,329 questions (p 2e-6): ConvoMem 95.5 vs 92.3,
+  LongMemEval 80.6 vs 79.4, LoCoMo 70.4 vs 68.5; $4.43 vs $35.83.
 
 ## 2.1.0 (2026-10-12)
 
